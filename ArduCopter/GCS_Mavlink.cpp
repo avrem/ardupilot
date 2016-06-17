@@ -93,7 +93,7 @@ NOINLINE void Copter::send_heartbeat(mavlink_channel_t chan)
     mav_type = MAV_TYPE_OCTOROTOR;
 #elif (FRAME_CONFIG == HELI_FRAME)
     mav_type = MAV_TYPE_HELICOPTER;
-#elif (FRAME_CONFIG == SINGLE_FRAME || FRAME_CONFIG == COAX_FRAME)  //because mavlink did not define a singlecopter, we use a rocket
+#elif (FRAME_CONFIG == SINGLE_FRAME || FRAME_CONFIG == COAX_FRAME || FRAME_CONFIG == TILT_QUAD_FRAME)  //because mavlink did not define a singlecopter, we use a rocket
     mav_type = MAV_TYPE_QUADROTOR;
 #else
   #error Unrecognised frame type

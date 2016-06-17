@@ -33,7 +33,7 @@ def build(bld):
 
     frames = (
         'quad', 'tri', 'hexa', 'y6', 'octa', 'octa-quad', 'heli', 'single',
-        'coax',
+        'coax', 'tilt-quad'
     )
     for frame in frames:
         frame_config = frame.upper().replace('-', '_') + '_FRAME'

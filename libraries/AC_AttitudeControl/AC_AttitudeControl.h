@@ -101,7 +101,7 @@ public:
     void save_accel_yaw_max(float accel_yaw_max) { _accel_yaw_max = accel_yaw_max; _accel_yaw_max.save(); }
 
     // Ensure body-frame rate controller has zero errors to relax rate controller output
-    void relax_bf_rate_controller();
+    virtual void relax_bf_rate_controller();
 
     // Sets yaw target to vehicle heading
     void set_yaw_target_to_current_heading() { _att_target_euler_rad.z = _ahrs.yaw; }
