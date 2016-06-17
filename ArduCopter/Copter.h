@@ -569,6 +569,13 @@ private:
     } heli_flags;
 #endif
 
+#if FRAME_CONFIG == TILT_QUAD_FRAME
+    float p_conversion = 1500.0f; // raw conversion input
+    int16_t _conv; // effective conversion state
+    void update_tiltquad_conversion();
+    void update_tiltquad_tilt(void);
+#endif
+
 #if GNDEFFECT_COMPENSATION == ENABLED
     // ground effect detector
     struct {
