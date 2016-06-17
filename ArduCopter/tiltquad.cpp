@@ -40,6 +40,7 @@ void Copter::update_tiltquad_conversion()
         _conv = constrain_int16(_conv, 0, 1000);
     }
 
+    attitude_control.set_conversion(_conv);
     motors.set_conversion(_conv);
 }
 

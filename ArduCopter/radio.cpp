@@ -116,7 +116,7 @@ void Copter::read_radio()
         // update output on any aux channels, for manual passthru
         RC_Channel_aux::output_ch_all();
 
-#if FRAME_TYPE == TILT_QUAD_FRAME
+#if FRAME_CONFIG == TILT_QUAD_FRAME
         update_tiltquad_conversion();
 #endif
 

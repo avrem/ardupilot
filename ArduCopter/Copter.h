@@ -57,6 +57,7 @@
 #include <AC_PID/AC_P.h>               // P library
 #include <AC_AttitudeControl/AC_AttitudeControl_Multi.h> // Attitude control library
 #include <AC_AttitudeControl/AC_AttitudeControl_Heli.h> // Attitude control library for traditional helicopter
+#include <AC_AttitudeControl/AC_AttitudeControl_TiltQuad.h> // Attitude control library for aeroxo tiltquad
 #include <AC_AttitudeControl/AC_PosControl.h>      // Position control library
 #include <RC_Channel/RC_Channel.h>         // RC Channel Library
 #include <AP_Motors/AP_Motors.h>          // AP Motors library
@@ -457,6 +458,8 @@ private:
     // To-Do: move inertial nav up or other navigation variables down here
 #if FRAME_CONFIG == HELI_FRAME
     AC_AttitudeControl_Heli attitude_control;
+#elif FRAME_CONFIG == TILT_QUAD_FRAME
+    AC_AttitudeControl_TiltQuad attitude_control;
 #else
     AC_AttitudeControl_Multi attitude_control;
 #endif
