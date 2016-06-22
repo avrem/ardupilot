@@ -46,7 +46,7 @@ public:
 
     void loadAeroxoTiltrotorParameters(); 
 
-    void set_conversion(int16_t conv) {_conv = conv;}
+    void set_conversion(int16_t conv) {_conv = (float)conv;}
 
     float aeroxo_rate_bf_to_motor_roll(float rate_target_cds);
     float aeroxo_rate_bf_to_motor_pitch(float rate_target_cds);
@@ -73,7 +73,7 @@ protected:
     AC_PID2  _pid2_rate_pitch_tilt;
     AC_PID2  _pid2_rate_yaw_tilt;
 
-    int16_t _conv; // conversion state
+    float _conv; // conversion state
 };
 
 #endif // AC_AttitudeControl_TiltQuad_H
