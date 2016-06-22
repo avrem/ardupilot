@@ -6,6 +6,15 @@
 
 #if FRAME_CONFIG == TILT_QUAD_FRAME
 
+void Copter::tiltquad_throttle_input_slew()
+{
+    static float f_control_in = -400;
+    int16_t pwm = channel_throttle->read();
+    if (pwm < 1400 || pwm > 1600)
+        f_control_in += (pwm - 1500) * 0.001f;
+    channel_throttle->set_pwm(1500 + f_control_in);
+}
+
 void Copter::update_tiltquad_conversion()
 {
     const long CONV_THROTTLE = 1500;
@@ -28,8 +37,8 @@ void Copter::update_tiltquad_conversion()
                 p_conversion+=( hal.rcout->read(7) - p_conversion)*0.1f;
             }
         }
-    }  
-
+    }
+    
     // calculate conversion state
     if (p_conversion < 1100)
         _conv = 0;
@@ -61,8 +70,8 @@ void Copter::update_tiltquad_tilt()
 
     int32_t s3 = (1500 - p_conversion) * 10 / 4 + 1000;
     int32_t s2 = (1500 - p_conversion) * 10 / 4 + 1000;
-    int32_t s1 = 2000 - (1500 - p_conversion)* 10 /4;
-    int32_t s4 = 2000 - (1500 - p_conversion)* 10 /4;
+    int32_t s1 = 2000 - (1500 - p_conversion) * 10 / 4;
+    int32_t s4 = 2000 - (1500 - p_conversion) * 10 / 4;
 
     s1 = constrain_int32(s1, 1000, 2000) + pitch_angle2;
     s2 = constrain_int32(s2, 1000, 2000) + pitch_angle2;
@@ -74,10 +83,11 @@ void Copter::update_tiltquad_tilt()
     s3 = constrain_int32(s3, 1000, 2000) - roll_angle2 + yaw_angle2;
     s4 = constrain_int32(s4, 1000, 2000) - roll_angle2 + yaw_angle2;
 
-    hal.rcout->write(4, s1);
-    hal.rcout->write(5, s2);
-    hal.rcout->write(6, s3);
-    hal.rcout->write(7, s4);
+    const int servo_offset = 8; // on navio2 servos start from output #9
+    hal.rcout->write(servo_offset + 0, s1);
+    hal.rcout->write(servo_offset + 1, s2);
+    hal.rcout->write(servo_offset + 2, s3);
+    hal.rcout->write(servo_offset + 3, s4);
 }
 
 #endif // FRAME_CONFIG == TILT_QUAD_FRAME

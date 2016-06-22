@@ -118,6 +118,7 @@ void Copter::read_radio()
 
 #if FRAME_CONFIG == TILT_QUAD_FRAME
         update_tiltquad_conversion();
+        tiltquad_throttle_input_slew();
 #endif
 
         // pass pilot input through to motors (used to allow wiggling servos while disarmed on heli, single, coax copters)

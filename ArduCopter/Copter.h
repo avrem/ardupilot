@@ -577,6 +577,7 @@ private:
     int16_t _conv; // effective conversion state
     void update_tiltquad_conversion();
     void update_tiltquad_tilt(void);
+    void tiltquad_throttle_input_slew();
 #endif
 
 #if GNDEFFECT_COMPENSATION == ENABLED
