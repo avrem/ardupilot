@@ -56,14 +56,14 @@ void Copter::update_tiltquad_conversion()
 // update_tiltquad_tilt - sets motor tilt based on conversion
 void Copter::update_tiltquad_tilt()
 {
-    int32_t roll_angle2 = (wrap_180_cd(attitude_control.aeroxo_rate_bf_to_motor_roll(0))) *
-        (1000 - _conv) / 4500 * 2;
+    int32_t roll_angle2 = attitude_control.aeroxo_rate_bf_to_motor_roll(0) *
+        (1000 - _conv) * 2;
 
-    int32_t yaw_angle2 = (wrap_180_cd(attitude_control.aeroxo_rate_bf_to_motor_yaw(0))) *
-        (_conv) / 4500 * 20;
+    int32_t yaw_angle2 = attitude_control.aeroxo_rate_bf_to_motor_yaw(0) *
+        _conv * 20;
 
-    int32_t pitch_angle2 = (wrap_180_cd(attitude_control.aeroxo_rate_bf_to_motor_pitch(0))) *
-        (1000 - _conv) / 4500 * 2;
+    int32_t pitch_angle2 = attitude_control.aeroxo_rate_bf_to_motor_pitch(0) *
+        (1000 - _conv) * 2;
 
     roll_angle2 = constrain_int32(roll_angle2, -250, 250);
     yaw_angle2 = constrain_int32(yaw_angle2, -166, 166);

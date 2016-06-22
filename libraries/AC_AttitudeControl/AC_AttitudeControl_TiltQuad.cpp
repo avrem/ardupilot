@@ -24,7 +24,7 @@ float AC_AttitudeControl_TiltQuad::aeroxo_rate_bf_to_motor_roll(float rate_targe
     float i = _pi_stabilize_roll.get_i(_pid2_rate_roll.kI() * angle_error * _conv / 1000.0f + _pid2_rate_roll_tilt.kI() * angle_error * (1000 - _conv) / 1000.0f, _dt);
     float d = _pid2_rate_roll.kP() * rate_error * _conv / 1000.0f + _pid2_rate_roll_tilt.kP() * rate_error * (1000 - _conv) / 1000.0f;
 
-    return constrain_float((p + i + d) / 57.0f / 5000.f, -1.0f, 1.0f);
+    return constrain_float((p + i + d) / 57.0f / 4500.f, -1.0f, 1.0f);
 }
 
 float AC_AttitudeControl_TiltQuad::aeroxo_rate_bf_to_motor_pitch(float rate_target_cds)
@@ -38,7 +38,7 @@ float AC_AttitudeControl_TiltQuad::aeroxo_rate_bf_to_motor_pitch(float rate_targ
     float i = _pi_stabilize_pitch.get_i(_pid2_rate_pitch.kI() * angle_error * _conv / 1000.0f + _pid2_rate_pitch_tilt.kI() * angle_error * (1000 - _conv) / 1000.0f, _dt);
     float d = _pid2_rate_pitch.kP() * rate_error * _conv / 1000.0f + _pid2_rate_pitch_tilt.kP() * rate_error * (1000 - _conv) / 1000.0f;
 
-    return constrain_float((p + i + d) / 57.0f / 5000.f, -1.0f, 1.0f);
+    return constrain_float((p + i + d) / 57.0f / 4500.f, -1.0f, 1.0f);
 }
 
 // rate_bf_to_motor_yaw - ask the rate controller to calculate the motor outputs to achieve the target rate in centi-degrees / second
