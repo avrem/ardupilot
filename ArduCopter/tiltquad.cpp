@@ -18,28 +18,12 @@ void Copter::tiltquad_throttle_input_slew()
 }
 
 void Copter::update_tiltquad_conversion()
-{
-    const long CONV_THROTTLE = 1500;
-
-    // If signal is more than 1700 (for noise protecting) return.
-    if ( hal.rcout->read(7) > CONV_THROTTLE+200 )
-    {
-
-        p_conversion+=( 1500 - p_conversion)*0.1f;
-    }
-    else
-    {
-        // if 1500-1700 - stop.
-        // if <1500 - proceed.
-        if ( hal.rcout->read(7) < CONV_THROTTLE )
-        {
-            //10.10.2014
-            if (p_conversion >  hal.rcout->read(7)  )
-            {
-                p_conversion+=( hal.rcout->read(7) - p_conversion)*0.1f;
-            }
-        }
-    }
+{    
+    float rc_conv = g.rc_8.norm_input_dz();
+    if (rc_conv > 0.1)
+        p_conversion += (1500 - p_conversion) * 0.01f;
+    else if (rc_conv < -0.1)
+        p_conversion += (1100 - p_conversion) * 0.01f;
     
     // calculate conversion state
     if (p_conversion < 1100)
@@ -47,7 +31,7 @@ void Copter::update_tiltquad_conversion()
     else if (p_conversion > 1500)
         _conv = 1000;
     else {
-        _conv = 1000 - (1500 - p_conversion) / 4 * 10;  //Min 1100 Max 1900 -> (max-x)/800 Default 1900    
+        _conv = 1000 - (1500 - p_conversion) / 4 * 10;
         _conv = constrain_int16(_conv, 0, 1000);
     }
 
@@ -70,10 +54,10 @@ void Copter::update_tiltquad_tilt()
     roll_angle2 = constrain_int32(roll_angle2, -250, 250);
     yaw_angle2 = constrain_int32(yaw_angle2, -166, 166);
 
-    int32_t s3 = (1500 - p_conversion) * 10 / 4 + 1000;
-    int32_t s2 = (1500 - p_conversion) * 10 / 4 + 1000;
-    int32_t s1 = 2000 - (1500 - p_conversion) * 10 / 4;
-    int32_t s4 = 2000 - (1500 - p_conversion) * 10 / 4;
+    int32_t s1 = 1000 + _conv;
+    int32_t s2 = 2000 - _conv;
+    int32_t s3 = 2000 - _conv;
+    int32_t s4 = 1000 + _conv;
 
     s1 = constrain_int32(s1, 1000, 2000) + pitch_angle2;
     s2 = constrain_int32(s2, 1000, 2000) + pitch_angle2;
