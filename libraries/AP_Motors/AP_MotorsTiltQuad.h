@@ -8,7 +8,6 @@
 
 #include <AP_Common/AP_Common.h>
 #include <AP_Math/AP_Math.h>        // ArduPilot Mega Vector/Matrix math Library
-#include <RC_Channel/RC_Channel.h>     // RC Channel Library
 #include "AP_MotorsMatrix.h"
 
 /// @class      AP_MotorsTiltQuad
@@ -22,13 +21,18 @@ public:
 
     // setup_motors - configures the motors for a tiltquad
     virtual void        setup_motors();
-
     virtual void        set_update_rate( uint16_t speed_hz );
 
+    virtual void        set_yaw(float yaw_in);
     void                set_conversion(int16_t conv) {_conv = conv;}
 
-protected:
+    // sets motor tilt based on desired r/p/y and current conversion
+    void                output_tilt();
 
+    const int servo_offset = 8; // on navio2 servos start from output #9
+
+protected:
     int16_t            _conv; // conversion state
+    float              _real_yaw_in;
 };
 #endif  // AP_MOTORS_TILT_QUAD

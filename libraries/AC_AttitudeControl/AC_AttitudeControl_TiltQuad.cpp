@@ -10,7 +10,7 @@ void AC_AttitudeControl_TiltQuad::rate_controller_run()
 {
     _motors.set_roll(aeroxo_rate_bf_to_motor_roll(0));
     _motors.set_pitch(aeroxo_rate_bf_to_motor_pitch(0));
-    _motors.set_yaw(aeroxo_rate_bf_to_motor_yaw(0)*20); // NOTE: motors yaw used only in plane mode
+    _motors.set_yaw(aeroxo_rate_bf_to_motor_yaw(0) * 20);
 }
 
 float AC_AttitudeControl_TiltQuad::aeroxo_rate_bf_to_motor_roll(float rate_target_cds)

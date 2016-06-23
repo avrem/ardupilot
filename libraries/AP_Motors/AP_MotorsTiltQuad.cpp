@@ -32,11 +32,11 @@ void AP_MotorsTiltQuad::setup_motors()
     // call parent
     AP_MotorsMatrix::setup_motors();
 
-    // X frame set-up
-    add_motor(AP_MOTORS_MOT_1,   45, 0, 1);
-    add_motor(AP_MOTORS_MOT_2, -135, 0, 3);
-    add_motor(AP_MOTORS_MOT_3,  -45, 0, 4);
-    add_motor(AP_MOTORS_MOT_4,  135, 0, 2);
+    // X frame set-up, yaw factors for plane mode
+    add_motor(AP_MOTORS_MOT_1,   45, AP_MOTORS_MATRIX_YAW_FACTOR_CW,  1);
+    add_motor(AP_MOTORS_MOT_2, -135, AP_MOTORS_MATRIX_YAW_FACTOR_CCW, 3);
+    add_motor(AP_MOTORS_MOT_3,  -45, AP_MOTORS_MATRIX_YAW_FACTOR_CCW, 4);
+    add_motor(AP_MOTORS_MOT_4,  135, AP_MOTORS_MATRIX_YAW_FACTOR_CW,  2);
 
     // normalise factors to magnitude 0.5
     normalise_rpy_factors();
@@ -57,9 +57,46 @@ void AP_MotorsTiltQuad::set_update_rate( uint16_t speed_hz )
     rc_set_freq(mask, _speed_hz);
 
     uint32_t mask2 =
-        1U << 8 |
-        1U << 9 |
-        1U << 10 |
-        1U << 11;
+        1U << (servo_offset + 0) |
+        1U << (servo_offset + 1) |
+        1U << (servo_offset + 2) |
+        1U << (servo_offset + 3);
     hal.rcout->set_freq(mask2, 50);    
+}
+
+void AP_MotorsTiltQuad::set_yaw(float yaw_in)
+{
+    _real_yaw_in = yaw_in;
+    _yaw_in = yaw_in * (1000 - _conv) / 1000;
+}
+
+// sets motor tilt based on desired r/p/y and current conversion
+void AP_MotorsTiltQuad::output_tilt()
+{
+    int32_t roll_tilt = _roll_in * (1000 - _conv) * 2;
+    int32_t pitch_tilt = _pitch_in * (1000 - _conv) * 2;
+    int32_t yaw_tilt = _real_yaw_in * _conv;
+
+    roll_tilt = constrain_int32(roll_tilt, -250, 250);
+    yaw_tilt = constrain_int32(yaw_tilt, -166, 166);
+
+    int32_t s1 = 1000 + _conv;
+    int32_t s2 = 2000 - _conv;
+    int32_t s3 = 2000 - _conv;
+    int32_t s4 = 1000 + _conv;
+
+    s1 = constrain_int32(s1, 1000, 2000) + pitch_tilt;
+    s2 = constrain_int32(s2, 1000, 2000) + pitch_tilt;
+    s3 = constrain_int32(s3, 1000, 2000) - pitch_tilt;
+    s4 = constrain_int32(s4, 1000, 2000) - pitch_tilt;
+
+    s1 = constrain_int32(s1, 1000, 2000) - roll_tilt + yaw_tilt;
+    s2 = constrain_int32(s2, 1000, 2000) - roll_tilt + yaw_tilt;
+    s3 = constrain_int32(s3, 1000, 2000) - roll_tilt + yaw_tilt;
+    s4 = constrain_int32(s4, 1000, 2000) - roll_tilt + yaw_tilt;
+
+    hal.rcout->write(servo_offset + 0, s1);
+    hal.rcout->write(servo_offset + 1, s2);
+    hal.rcout->write(servo_offset + 2, s3);
+    hal.rcout->write(servo_offset + 3, s4);
 }
