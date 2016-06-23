@@ -25,8 +25,6 @@ public:
 
     virtual void        set_update_rate( uint16_t speed_hz );
 
-    void                add_motor_tq(int8_t motor_num, float angle_degrees, float yaw_factor, uint8_t testing_order);
-
     void                set_conversion(int16_t conv) {_conv = conv;}
 
 protected:

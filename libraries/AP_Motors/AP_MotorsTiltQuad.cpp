@@ -21,6 +21,9 @@
 
 #include "AP_MotorsTiltQuad.h"
 
+#include <AP_HAL/AP_HAL.h>
+extern const AP_HAL::HAL& hal;
+
 // setup_motors - configures the motors for a tiltquad
 void AP_MotorsTiltQuad::setup_motors()
 {
@@ -30,10 +33,10 @@ void AP_MotorsTiltQuad::setup_motors()
     AP_MotorsMatrix::setup_motors();
 
     // X frame set-up
-    add_motor_tq(AP_MOTORS_MOT_1,   45, AP_MOTORS_MATRIX_YAW_FACTOR_CW, 1);
-    add_motor_tq(AP_MOTORS_MOT_2, -135, AP_MOTORS_MATRIX_YAW_FACTOR_CCW, 3);
-    add_motor_tq(AP_MOTORS_MOT_3,  -45, AP_MOTORS_MATRIX_YAW_FACTOR_CCW,  4);
-    add_motor_tq(AP_MOTORS_MOT_4,  135, AP_MOTORS_MATRIX_YAW_FACTOR_CW,  2);
+    add_motor(AP_MOTORS_MOT_1,   45, 0, 1);
+    add_motor(AP_MOTORS_MOT_2, -135, 0, 3);
+    add_motor(AP_MOTORS_MOT_3,  -45, 0, 4);
+    add_motor(AP_MOTORS_MOT_4,  135, 0, 2);
 
     // normalise factors to magnitude 0.5
     normalise_rpy_factors();
@@ -52,21 +55,11 @@ void AP_MotorsTiltQuad::set_update_rate( uint16_t speed_hz )
         1U << AP_MOTORS_MOT_3 |
         1U << AP_MOTORS_MOT_4 ;
     rc_set_freq(mask, _speed_hz);
-    uint32_t mask2 =
-        1U << AP_MOTORS_MOT_5 |
-        1U << AP_MOTORS_MOT_6 |
-        1U << AP_MOTORS_MOT_7 |
-        1U << AP_MOTORS_MOT_8;
-    rc_set_freq(mask2, 50);
-}
 
-void AP_MotorsTiltQuad::add_motor_tq(int8_t motor_num, float angle_degrees, float yaw_factor, uint8_t testing_order)
-{
-    // call raw motor set-up method
-     add_motor_raw(
-        motor_num,
-        cosf(radians(angle_degrees + 90))*sqrt(2),               // roll factor
-        cosf(radians(angle_degrees))*sqrt(2),                    // pitch factor
-        yaw_factor,                                      // yaw factor
-        testing_order);
+    uint32_t mask2 =
+        1U << 8 |
+        1U << 9 |
+        1U << 10 |
+        1U << 11;
+    hal.rcout->set_freq(mask2, 50);    
 }
