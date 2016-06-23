@@ -12,6 +12,8 @@ void Copter::tiltquad_throttle_input_slew()
     int16_t pwm = channel_throttle->read();
     if (pwm < 1400 || pwm > 1600)
         f_control_in += (pwm - 1500) * 0.001f;
+    if (f_control_in < -400)
+        f_control_in = -400;
     channel_throttle->set_pwm(1500 + f_control_in);
 }
 
