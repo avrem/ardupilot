@@ -110,6 +110,11 @@ class VehicleInfo(object):
         "default_frame": "plane",
         "frames": {
             # PLANE
+            "tilt-quad": {
+                "make_target": "sitl-tilt-quad",
+                "waf_target": "bin/arduplane-tilt-quad",
+                "default_params_filename": "default_params/tiltquad.parm",
+            },
             "quadplane-tilttri": {
                 "make_target": "sitl",
                 "waf_target": "bin/arduplane",

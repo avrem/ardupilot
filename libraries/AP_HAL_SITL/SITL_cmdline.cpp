@@ -86,6 +86,7 @@ static const struct {
     { "firefly",            QuadPlane::create },
     { "+",                  MultiCopter::create },
     { "quad",               MultiCopter::create },
+    { "tilt-quad",          QuadPlane::create },
     { "copter",             MultiCopter::create },
     { "x",                  MultiCopter::create },
     { "hexa",               MultiCopter::create },
@@ -348,7 +349,7 @@ void SITL_State::_parse_command_line(int argc, char * const argv[])
 
     fprintf(stdout, "Starting sketch '%s'\n", SKETCH);
 
-    if (strcmp(SKETCH, "ArduCopter") == 0) {
+    if (1 || strcmp(SKETCH, "ArduCopter") == 0) {
         _vehicle = ArduCopter;
         if (_framerate == 0) {
             _framerate = 200;
