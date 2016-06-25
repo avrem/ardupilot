@@ -48,8 +48,8 @@ protected:
     struct {
         // from last_letter skywalker_2013/aerodynamics.yaml
         // thanks to Georacer!
-        float s = 0.45;
-        float b = 1.88;
+        float s = 0.225;
+        float b = 0.94;
         float c = 0.24;
         float c_lift_0 = 0.56;
         float c_lift_deltae = 0;
@@ -62,13 +62,13 @@ protected:
         float c_drag_deltae = 0.0;
         float c_drag_p = 0.1;
         float c_y_0 = 0;
-        float c_y_b = -0.98;
+        float c_y_b = -0.15;
         float c_y_p = 0;
         float c_y_r = 0;
         float c_y_deltaa = 0;
         float c_y_deltar = -0.2;
         float c_l_0 = 0;
-        float c_l_p = -1.0;
+        float c_l_p = -0.3;
         float c_l_b = -0.12;
         float c_l_r = 0.14;
         float c_l_deltaa = 0.25;
@@ -78,9 +78,9 @@ protected:
         float c_m_q = -20;
         float c_m_deltae = 1.0;
         float c_n_0 = 0;
-        float c_n_b = 0.25;
-        float c_n_p = 0.022;
-        float c_n_r = -1;
+        float c_n_b = -0.012;
+        float c_n_p = -0.016;
+        float c_n_r = -0.022;
         float c_n_deltaa = 0.00;
         float c_n_deltar = 0.1;
         float deltaa_max = 0.3491;
@@ -88,7 +88,7 @@ protected:
         float deltar_max = 0.3491;
         // the X CoG offset should be -0.02, but that makes the plane too tail heavy
         // in manual flight. Adjusted to -0.15 gives reasonable flight
-        Vector3f CGOffset{-0.15, 0, -0.05};
+        Vector3f CGOffset{-0.02, 0, -0.05};
     } coefficient;
 
     float thrust_scale;
@@ -103,6 +103,8 @@ protected:
     float launch_accel;
     float launch_time;
     uint64_t launch_start_ms;
+    bool no_controls;
+    bool mirror_wing;
 
     ICEngine icengine{2, 14, 12, 13, 100};
 

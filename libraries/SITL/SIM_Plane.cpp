@@ -286,7 +286,8 @@ void Plane::calculate_forces(const struct sitl_input &input, Vector3f &rot_accel
         aileron  = (elevon_right-elevon_left)/2;
         elevator = (elevon_left+elevon_right)/2;
         rudder = fabsf(dspoiler1_right - dspoiler2_right)/2 - fabsf(dspoiler1_left - dspoiler2_left)/2;
-    }
+    } else if (no_controls)
+        aileron = elevator = rudder = 0;
     //printf("Aileron: %.1f elevator: %.1f rudder: %.1f\n", aileron, elevator, rudder);
 
     if (reverse_thrust) {
@@ -339,6 +340,13 @@ void Plane::calculate_forces(const struct sitl_input &input, Vector3f &rot_accel
     // simulate engine RPM
     rpm1 = thrust * 7000;
     
+    if (mirror_wing) {
+        coefficient.CGOffset.x = -coefficient.CGOffset.x;
+        rot_accel += getTorque(aileron, elevator, rudder, thrust, force);
+        coefficient.CGOffset.x = -coefficient.CGOffset.x;
+        force += force;
+    }
+
     // scale thrust to newtons
     thrust *= thrust_scale;
 
