@@ -6,7 +6,7 @@
 #include <AP_FlashStorage/AP_FlashStorage.h>
 
 #ifndef HAL_STORAGE_FILE
-#define HAL_STORAGE_FILE "eeprom.bin"
+#define HAL_STORAGE_FILE "ArduPlane.stg"
 #endif
 
 // define which storage system to use. This allows us to test flash storage with --sitl-flash-storage
