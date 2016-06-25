@@ -418,6 +418,11 @@ _options_for_frame = {
         "default_params_filename": "default_params/copter-coax.parm",
     },
     # PLANE
+    "tilt-quad": {
+        "make_target": "sitl-tilt-quad",
+        "waf_target": "bin/arduplane-tilt-quad",
+        "default_params_filename": "default_params/tiltquad.parm",
+    },
     "quadplane-tilttri": {
         "make_target": "sitl-tri",
         "waf_target": "bin/arduplane-tri",

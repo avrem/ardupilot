@@ -230,6 +230,8 @@ void Plane::calculate_forces(const struct sitl_input &input, Vector3f &rot_accel
         elevator = (ch2-ch1)/2.0f;
         rudder   = (ch2+ch1)/2.0f;
     }
+    else if (no_controls)
+        aileron = elevator = rudder = 0;
 
     if (reverse_thrust) {
         throttle = constrain_float((input.servos[2]-1500)/500.0f, -1, 1);

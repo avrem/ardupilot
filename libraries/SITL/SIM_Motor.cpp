@@ -40,7 +40,7 @@ void Motor::calculate_forces(const Aircraft::sitl_input &input,
     Vector3f rotor_torque(0, 0, yaw_factor * motor_speed * yaw_scale);
 
     // get thrust for untilted motor
-    thrust(0, 0, -motor_speed);
+    thrust(0, 0, reversed? motor_speed : -motor_speed);
 
     // define the arm position relative to center of mass
     Vector3f arm(arm_scale * cosf(radians(angle)), arm_scale * sinf(radians(angle)), 0);
@@ -54,17 +54,17 @@ void Motor::calculate_forces(const Aircraft::sitl_input &input,
     if (roll_servo >= 0) {
         uint16_t servoval = update_servo(input.servos[roll_servo+motor_offset], now, last_roll_value);
         if (roll_min < roll_max) {
-            roll = constrain_float(roll_min + (servoval-1000)*0.001*(roll_max-roll_min), roll_min, roll_max);
+            roll = roll_min + (servoval-1000)*0.001*(roll_max-roll_min);
         } else {
-            roll = constrain_float(roll_max + (2000-servoval)*0.001*(roll_min-roll_max), roll_max, roll_min);
+            roll = roll_max + (2000-servoval)*0.001*(roll_min-roll_max);
         }
     }
     if (pitch_servo >= 0) {
         uint16_t servoval = update_servo(input.servos[pitch_servo+motor_offset], now, last_pitch_value);
         if (pitch_min < pitch_max) {
-            pitch = constrain_float(pitch_min + (servoval-1000)*0.001*(pitch_max-pitch_min), pitch_min, pitch_max);
+            pitch = pitch_min + (servoval-1000)*0.001*(pitch_max-pitch_min);
         } else {
-            pitch = constrain_float(pitch_max + (2000-servoval)*0.001*(pitch_min-pitch_max), pitch_max, pitch_min);
+            pitch = pitch_max + (2000-servoval)*0.001*(pitch_min-pitch_max);
         }
     }
     last_change_usec = now;
@@ -102,7 +102,6 @@ uint16_t Motor::update_servo(uint16_t demand, uint64_t time_usec, float &last_va
             demand = last_value;
         }
     }
-    demand = constrain_int16(demand, 1000, 2000);
     float dt = (time_usec - last_change_usec) * 1.0e-6f;
     // assume servo moves through 90 degrees over 1000 to 2000
     float max_change = 1000 * (dt / servo_rate) * 60.0f / 90.0f;

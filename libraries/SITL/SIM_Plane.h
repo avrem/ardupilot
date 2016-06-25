@@ -92,11 +92,12 @@ protected:
     } coefficient;
 
     float thrust_scale;
-    bool reverse_thrust;
-    bool elevons;
-    bool vtail;
-    bool reverse_elevator_rudder;
-    bool ice_engine;
+    bool reverse_thrust = false;
+    bool elevons = false;
+    bool vtail = false;
+    bool reverse_elevator_rudder = false;
+    bool ice_engine = false;
+    bool no_controls = false;
 
     ICEngine icengine{2, 14, 12, 13, 100};
 
