@@ -69,6 +69,7 @@ static const struct {
     { "firefly",            QuadPlane::create },
     { "+",                  MultiCopter::create },
     { "quad",               MultiCopter::create },
+    { "tilt-quad",          QuadPlane::create },
     { "copter",             MultiCopter::create },
     { "x",                  MultiCopter::create },
     { "hexa",               MultiCopter::create },

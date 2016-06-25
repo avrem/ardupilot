@@ -39,6 +39,8 @@ public:
     int8_t pitch_servo = -1;
     float pitch_min, pitch_max;
 
+    bool reversed = false;
+
     Motor(uint8_t _servo, float _angle, float _yaw_factor, uint8_t _display_order) :
         servo(_servo), // what servo output drives this motor
         angle(_angle), // angle in degrees from front
@@ -51,7 +53,7 @@ public:
      */
     Motor(uint8_t _servo, float _angle, float _yaw_factor, uint8_t _display_order,
           int8_t _roll_servo, float _roll_min, float _roll_max,
-          int8_t _pitch_servo, float _pitch_min, float _pitch_max) :
+          int8_t _pitch_servo, float _pitch_min, float _pitch_max, bool _reversed = false) :
         servo(_servo), // what servo output drives this motor
         angle(_angle), // angle in degrees from front
         yaw_factor(_yaw_factor), // positive is clockwise
@@ -61,7 +63,8 @@ public:
         roll_max(_roll_max),
         pitch_servo(_pitch_servo),
         pitch_min(_pitch_min),
-        pitch_max(_pitch_max)
+        pitch_max(_pitch_max),
+        reversed(_reversed)
     {}
     
     void calculate_forces(const Aircraft::sitl_input &input,

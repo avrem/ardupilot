@@ -40,7 +40,7 @@ void Motor::calculate_forces(const Aircraft::sitl_input &input,
     Vector3f rotor_torque(0, 0, yaw_factor * motor_speed * yaw_scale);
 
     // get thrust for untilted motor
-    thrust(0, 0, -motor_speed);
+    thrust(0, 0, reversed? motor_speed : -motor_speed);
 
     // define the arm position relative to center of mass
     Vector3f arm(arm_scale * cosf(radians(angle)), arm_scale * sinf(radians(angle)), 0);
@@ -59,11 +59,10 @@ void Motor::calculate_forces(const Aircraft::sitl_input &input,
     }
     if (pitch_servo >= 0) {
         uint16_t servoval = input.servos[pitch_servo+motor_offset];
-        if (pitch_min < pitch_max) {
-            pitch = constrain_float(pitch_min + (servoval-1000)*0.001*(pitch_max-pitch_min), pitch_min, pitch_max);
-        } else {
-            pitch = constrain_float(pitch_max + (2000-servoval)*0.001*(pitch_min-pitch_max), pitch_max, pitch_min);
-        }
+        if (pitch_min < pitch_max)
+            pitch = pitch_min + (servoval-1000)*0.001*(pitch_max-pitch_min);
+        else
+            pitch = pitch_max + (2000-servoval)*0.001*(pitch_min-pitch_max);
     }
 
     // possibly rotate the thrust vector and the rotor torque

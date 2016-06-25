@@ -57,6 +57,11 @@ QuadPlane::QuadPlane(const char *home_str, const char *frame_str) :
         elevons = true;
         // fwd motor gives zero thrust
         thrust_scale = 0;
+    } else if (strstr(frame_str, "tilt-quad")) {
+        frame_type = "tilt-quad";
+        // fwd motor gives zero thrust
+        thrust_scale = 0;
+        no_controls = true;
     }
     frame = Frame::find_frame(frame_type);
     if (frame == nullptr) {
@@ -64,8 +69,8 @@ QuadPlane::QuadPlane(const char *home_str, const char *frame_str) :
         exit(1);
     }
 
-    // leave first 4 servos free for plane
-    frame->motor_offset = 4;
+    if (!no_controls)    
+        frame->motor_offset = 4; // leave first 4 servos free for plane
 
     // we use zero terminal velocity to let the plane model handle the drag
     frame->init(mass, 0.51, 0, 0);
