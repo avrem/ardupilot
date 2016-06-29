@@ -278,6 +278,11 @@ case $FRAME in
         MODEL="$FRAME"
         DEFAULTS_PATH="$autotest/firefly.parm"
 	;;
+    tilt-quad)
+        BUILD_TARGET="sitl-tilt-quad"
+        MODEL="$FRAME"
+        DEFAULTS_PATH="$autotest/tiltquad.parm"
+	;;     
     heli-dual)
         BUILD_TARGET="sitl-heli-dual"
         MODEL="heli-dual"
