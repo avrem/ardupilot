@@ -8,6 +8,12 @@ round100 = func(v) {
 	return 0.01*int(v*100);
 }
 
+tilt_a = func(v, a1, a2) {
+        if (v == nil) return 0;
+        if (a1 < a2) return a1 + (v - 1000) * 0.001 * (a2 - a1);
+        return a2 + (2000 - v) * 0.001 * (a1 - a2);
+}
+
 var update_quad = func( ) {
     asl_ft = getprop("/position/altitude-ft");
     ground = getprop("/position/ground-elev-ft");
@@ -26,6 +32,11 @@ var update_quad = func( ) {
     setprop("/apm/motor_left",   round10(getprop("/engines/engine[1]/rpm")/10.0));
     setprop("/apm/motor_front",  round10(getprop("/engines/engine[2]/rpm")/10.0));
     setprop("/apm/motor_back",   round10(getprop("/engines/engine[3]/rpm")/10.0));
+
+    setprop("/engines/engine[0]/tilt", tilt_a(getprop("/engines/engine[0]/oil-pressure-psi"), -90, 0));
+    setprop("/engines/engine[1]/tilt", tilt_a(getprop("/engines/engine[1]/oil-pressure-psi"), 180, 90));
+    setprop("/engines/engine[2]/tilt", tilt_a(getprop("/engines/engine[2]/oil-pressure-psi"), 0, -90));
+    setprop("/engines/engine[3]/tilt", tilt_a(getprop("/engines/engine[3]/oil-pressure-psi"), 90, 180));
 }
 
 var main_loop = func {

@@ -242,6 +242,10 @@ void SITL_State::_output_to_flightgear(void)
         for (uint8_t i=0; i<4; i++) {
             fdm.rpm[i] = constrain_float((pwm_output[i]-1000), 0, 1000);
         }
+#if FRAME_CONFIG == TILT_QUAD_FRAME
+        for (uint8_t i=0; i<4; i++) 
+            fdm.oil_px[i] = pwm_output[i+8]; // NOTE: no more engines available, so use oil pressure
+#endif
     } else {
         fdm.num_engines = 4;
         fdm.rpm[0] = constrain_float((pwm_output[2]-1000)*3, 0, 3000);
