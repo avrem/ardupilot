@@ -6,15 +6,15 @@
 
 #if FRAME_CONFIG == TILT_QUAD_FRAME
 
-void Copter::tiltquad_throttle_input_slew()
+void Copter::update_tiltquad_manual_throttle()
 {
-    static float f_control_in = -400;
-    int16_t pwm = channel_throttle->read();
-    if (pwm < 1400 || pwm > 1600)
-        f_control_in += (pwm - 1500) * 0.001f;
-    if (f_control_in < -400)
-        f_control_in = -400;
-    channel_throttle->set_pwm(1500 + f_control_in);
+    if (mode_has_manual_throttle(control_mode)) {
+        int16_t t_off = channel_throttle->get_control_in() - channel_throttle->get_control_mid();
+        if (abs(t_off) > g.throttle_deadzone)
+            _tilt_manual_throttle = constrain_float(_tilt_manual_throttle + 0.2f * 0.01f * t_off / 500, 0, 1);
+    }
+    else if (motors.armed()) // reset manual throttle to hover if we're flying in any autopilot mode
+        _tilt_manual_throttle = 0.5f;
 }
 
 void Copter::update_tiltquad_conversion()

@@ -104,9 +104,6 @@ void Copter::read_radio()
     if (hal.rcin->new_input()) {
         ap.new_radio_frame = true;
         RC_Channel::set_pwm_all();
-#if FRAME_CONFIG == TILT_QUAD_FRAME
-        tiltquad_throttle_input_slew();
-#endif
 
         set_throttle_and_failsafe(channel_throttle->get_radio_in());
         set_throttle_zero_flag(channel_throttle->get_control_in());
