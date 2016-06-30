@@ -62,6 +62,7 @@ QuadPlane::QuadPlane(const char *home_str, const char *frame_str) :
         // fwd motor gives zero thrust
         thrust_scale = 0;
         no_controls = true;
+        mirror_wing = true;
     }
     frame = Frame::find_frame(frame_type);
     if (frame == nullptr) {
@@ -73,7 +74,8 @@ QuadPlane::QuadPlane(const char *home_str, const char *frame_str) :
         frame->motor_offset = 4; // leave first 4 servos free for plane
 
     // we use zero terminal velocity to let the plane model handle the drag
-    frame->init(mass, 0.51, 0, 0);
+    // mirror_wing requires more raw power
+    frame->init(mass, mirror_wing ? 0.2 : 0.51, 0, 0);
 
 }
 
