@@ -233,6 +233,13 @@ void Plane::calculate_forces(const struct sitl_input &input, Vector3f &rot_accel
     Vector3f force = getForce(aileron, elevator, rudder);
     rot_accel = getTorque(aileron, elevator, rudder, force);
 
+    if (mirror_wing) {
+        coefficient.CGOffset.x = -coefficient.CGOffset.x;
+        rot_accel += getTorque(aileron, elevator, rudder, force);
+        coefficient.CGOffset.x = -coefficient.CGOffset.x;
+        force += force;
+    }
+
     // scale thrust to newtons
     thrust *= thrust_scale;
 
