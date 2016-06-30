@@ -255,6 +255,13 @@ void Plane::calculate_forces(const struct sitl_input &input, Vector3f &rot_accel
     // simulate engine RPM
     rpm1 = thrust * 7000;
     
+    if (mirror_wing) {
+        coefficient.CGOffset.x = -coefficient.CGOffset.x;
+        rot_accel += getTorque(aileron, elevator, rudder, force);
+        coefficient.CGOffset.x = -coefficient.CGOffset.x;
+        force += force;
+    }
+
     // scale thrust to newtons
     thrust *= thrust_scale;
 
