@@ -372,7 +372,7 @@ void SITL_State::_simulator_servos(SITL::Aircraft::sitl_input &input)
 
     // pass wind into simulators, using a wind gradient below 60m
     float altitude = _barometer?_barometer->get_altitude():0;
-    float wind_speed = _sitl?_sitl->wind_speed:0;
+    float wind_speed = _sitl?(float)_sitl->wind_speed:0.f;
     if (altitude < 0) {
         altitude = 0;
     }
@@ -380,8 +380,8 @@ void SITL_State::_simulator_servos(SITL::Aircraft::sitl_input &input)
         wind_speed *= sqrtf(MAX(altitude / 60, 0));
     }
     input.wind.speed = wind_speed;
-    input.wind.direction = _sitl?_sitl->wind_direction:0;
-    input.wind.turbulence = _sitl?_sitl->wind_turbulance:0;
+    input.wind.direction = _sitl?(float)_sitl->wind_direction:0.f;
+    input.wind.turbulence = _sitl?(float)_sitl->wind_turbulance:0.f;
 
     for (i=0; i<SITL_NUM_CHANNELS; i++) {
         if (pwm_output[i] == 0xFFFF) {
