@@ -394,6 +394,39 @@ void Aircraft::update_wind(const struct sitl_input &input)
 {
     // wind vector in earth frame
     wind_ef = Vector3f(cosf(radians(input.wind.direction)), sinf(radians(input.wind.direction)), 0) * input.wind.speed;
+
+    if (!is_zero(input.wind.turbulence)) {
+        const double Lu = 533.0;
+        const double Lw = 533.0;
+        const double sigmau = 155.0;
+        const double sigmaw = 155.0;
+
+        double input, temp[2];
+        double dt = frame_time_us * 1.0e-6f;
+
+        Vector3f velocity_air_ef = velocity_ef - wind_ef;
+        double Va = velocity_air_ef.length(); // sqrt(pow(airspeed.x,2)+pow(airspeed.y,2)+pow(airspeed.z,2));
+
+        input = (((double)rand()) / (RAND_MAX) - 0.5); //turbulence u-component
+
+        windDistU = windDistU*(1-Va/Lu*dt) + sigmau*sqrt(2*Va/(M_PI*Lu))*dt*input;
+
+        input = (((double)rand()) / (RAND_MAX) - 0.5); //turbulence v-component
+        temp[0] = windDistV[0];
+        temp[1] = windDistV[1];
+        windDistV[1] = -pow(Va/Lu,2)*dt*temp[0] + temp[1] + sigmau*sqrt(3*Va/(M_PI*Lu))*Va/(sqrt(3)*Lu)*dt*input;
+        windDistV[0] = (1.0-2.0*Va/Lu*dt)*temp[0] + dt*temp[1] + sigmau*sqrt(3*Va/(M_PI*Lu))*dt*input;
+
+        input = ((double)rand() / (RAND_MAX) - 0.5); //turbulence w-component
+        temp[0] = windDistW[0];
+        temp[1] = windDistW[1];
+        windDistW[1] = -pow(Va/Lw,2)*dt*temp[0] + temp[1] + sigmaw*sqrt(3*Va/(M_PI*Lw))*Va/(sqrt(3)*Lw)*dt*input;
+        windDistW[0] = (1.0-2.0*Va/Lw*dt)*temp[0] + dt*temp[1] + sigmaw*sqrt(3*Va/(M_PI*Lw))*dt*input;
+
+        wind_ef.x += windDistU;
+        wind_ef.y += windDistV[0];
+        wind_ef.z += windDistW[0];
+    }
 }
     
 } // namespace SITL
