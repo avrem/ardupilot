@@ -3,6 +3,7 @@
 #include <AP_Motors/AP_Motors.h>
 #include <AC_PID/AC_PID.h>
 #include <AC_AttitudeControl/AC_AttitudeControl_Multi.h> // Attitude control library
+#include <AC_AttitudeControl/AC_AttitudeControl_TiltQuad.h>
 #include <AP_InertialNav/AP_InertialNav.h>
 #include <AC_AttitudeControl/AC_PosControl.h>
 #include <AC_WPNav/AC_WPNav.h>
@@ -14,6 +15,7 @@
  */
 #define MULTICOPTER_FRAME 1
 #define TRI_FRAME 2
+#define TILT_QUAD_FRAME 3
 
 #ifndef FRAME_CONFIG
 # define FRAME_CONFIG MULTICOPTER_FRAME
@@ -21,6 +23,8 @@
 
 #if FRAME_CONFIG == TRI_FRAME
 #define AP_MOTORS_CLASS AP_MotorsTri
+#elif FRAME_CONFIG == TILT_QUAD_FRAME
+#define AP_MOTORS_CLASS AP_MotorsTiltQuad
 #else
 #define AP_MOTORS_CLASS AP_MotorsMulticopter
 #endif
@@ -124,7 +128,11 @@ private:
     AP_Int8 frame_type;
     
     AP_MOTORS_CLASS *motors;
+#if FRAME_CONFIG == TILT_QUAD_FRAME
+    AC_AttitudeControl_TiltQuad *attitude_control;
+#else
     AC_AttitudeControl_Multi *attitude_control;
+#endif
     AC_PosControl *pos_control;
     AC_WPNav *wp_nav;
     
