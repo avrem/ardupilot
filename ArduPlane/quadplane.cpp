@@ -381,6 +381,9 @@ bool QuadPlane::setup(void)
     RC_Channel_aux::set_aux_channel_default(RC_Channel_aux::k_motor4, CH_8);
     RC_Channel_aux::set_aux_channel_default(RC_Channel_aux::k_motor7, CH_11);
     motors = new AP_MOTORS_CLASS(plane.scheduler.get_loop_rate_hz());
+#elif FRAME_CONFIG == TILT_QUAD_FRAME
+    motors = new AP_MotorsTiltQuad(plane.scheduler.get_loop_rate_hz());
+    motors->set_conversion(1000);
 #else
     /*
       dynamically allocate the key objects for quadplane. This ensures
@@ -419,7 +422,12 @@ bool QuadPlane::setup(void)
     }
     
     AP_Param::load_object_from_eeprom(motors, motors->var_info);
+#if FRAME_CONFIG == TILT_QUAD_FRAME
+    attitude_control = new AC_AttitudeControl_TiltQuad(ahrs, aparm, *motors, loop_delta_t);
+    attitude_control->set_conversion(1000);
+#else
     attitude_control = new AC_AttitudeControl_Multi(ahrs, aparm, *motors, loop_delta_t);
+#endif
     if (!attitude_control) {
         hal.console->printf("Unable to allocate attitude_control\n");
         goto failed;
@@ -1016,6 +1024,7 @@ void QuadPlane::motors_output(void)
         return;
     }
     motors->output();
+    motors->output_tilt();
     if (motors->armed()) {
         plane.DataFlash.Log_Write_Rate(plane.ahrs, *motors, *attitude_control, *pos_control);
         Log_Write_QControl_Tuning();
