@@ -17,10 +17,21 @@ void QuadPlane::tiltrotor_slew(float newtilt)
     tilt.current_tilt = constrain_float(newtilt, tilt.current_tilt-max_change, tilt.current_tilt+max_change);
 
     // translate to 0..1000 range and output
+#if FRAME_CONFIG == TILT_QUAD_FRAME
+    int16_t conv = constrain_int16(1000 * (1 - tilt.current_tilt), 0, 1000);
+    motors->set_conversion(conv);
+    attitude_control->set_conversion(conv);
+#if CONFIG_HAL_BOARD == HAL_BOARD_SITL
+    hal.rcout->write(7, conv);
+#endif
+#else
     RC_Channel_aux::set_servo_out_for(RC_Channel_aux::k_motor_tilt, 1000 * tilt.current_tilt);
+#endif
 
+#if FRAME_CONFIG != TILT_QUAD_FRAME
     // setup tilt compensation
     motors->set_thrust_compensation_callback(FUNCTOR_BIND_MEMBER(&QuadPlane::tilt_compensate, void, float *, uint8_t));
+#endif
 }
 
 /*
@@ -55,7 +66,20 @@ void QuadPlane::tiltrotor_update(void)
         if (!hal.util->get_soft_armed()) {
             tilt.current_throttle = 0;
         } else {
+#if FRAME_CONFIG == TILT_QUAD_FRAME
+            attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw_smooth(
+                plane.nav_roll_cd, 
+                plane.nav_pitch_cd, 
+                desired_auto_yaw_rate_cds(), 
+                smoothing_gain);
+            attitude_control->set_throttle_out(tilt.current_throttle, true, 0);
+            attitude_control->rate_controller_run();
+
+            motors->set_desired_spool_state(AP_Motors::DESIRED_THROTTLE_UNLIMITED);
+            motors_output();
+#else
             motors->output_motor_mask(tilt.current_throttle, (uint8_t)tilt.tilt_mask.get());
+#endif
             // prevent motor shutdown
             tilt.motors_active = true;
         }

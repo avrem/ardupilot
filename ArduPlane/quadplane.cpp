@@ -950,7 +950,14 @@ void QuadPlane::update_transition(void)
             GCS_MAVLINK::send_statustext_all(MAV_SEVERITY_INFO, "Transition done");
         }
         float trans_time_ms = (float)transition_time_ms.get();
+#if FRAME_CONFIG != TILT_QUAD_FRAME
         float throttle_scaled = last_throttle * (trans_time_ms - (millis() - transition_start_ms)) / trans_time_ms;
+#else
+        float tc = (trans_time_ms - (millis() - transition_start_ms)) / trans_time_ms;
+        tc = constrain_float(tc, 0, 1);
+        float throttle_fwd = plane.channel_throttle->get_servo_out() * 0.01f;
+        float throttle_scaled = last_throttle * tc + throttle_fwd * (1 - tc);
+#endif
         if (throttle_scaled < 0) {
             throttle_scaled = 0;
         }
