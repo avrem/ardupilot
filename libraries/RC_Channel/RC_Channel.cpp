@@ -404,6 +404,9 @@ RC_Channel::range_to_pwm()
 float
 RC_Channel::norm_input()
 {
+#if FRAME_CONFIG == TILT_QUAD_FRAME
+    return norm_input_dz();
+#endif
     float ret;
     int16_t reverse_mul = (_reverse==-1?-1:1);
     if (_radio_in < _radio_trim) {
