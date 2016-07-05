@@ -28,7 +28,7 @@ public:
 
     void loadAeroxoTiltrotorParameters(); 
 
-    void set_conversion(int16_t conv) {_conv = (float)conv;}
+    void set_conversion(int16_t conv) {_conv = constrain_float(conv * 0.001f, 0.f, 1.f);}
 
     float aeroxo_rate_bf_to_motor_roll(float rate_target_rads);
     float aeroxo_rate_bf_to_motor_pitch(float rate_target_rads);
@@ -36,6 +36,8 @@ public:
 
     // relax_bf_rate_controller - ensure body-frame rate controller has zero errors to relax rate controller output
     virtual void relax_bf_rate_controller();
+
+    float control_mix(float k_copter, float k_plane);
 
 protected:
 
@@ -55,7 +57,7 @@ protected:
     AC_PID2  _pid2_rate_pitch_tilt;
     AC_PID2  _pid2_rate_yaw_tilt;
 
-    float _conv; // conversion state
+    float _conv; // conversion state, 0..1
 };
 
 #endif // AC_AttitudeControl_TiltQuad_H
