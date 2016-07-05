@@ -283,6 +283,11 @@ case $FRAME in
         MODEL="$FRAME"
         DEFAULTS_PATH="$autotest/tiltquad.parm"
 	;;     
+    tilt-quad-copter)
+        BUILD_TARGET="sitl-tilt-quad"
+        MODEL="$FRAME"
+        DEFAULTS_PATH="$autotest/tiltquad_copter.parm"
+	;;     
     heli-dual)
         BUILD_TARGET="sitl-heli-dual"
         MODEL="heli-dual"
