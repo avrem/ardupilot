@@ -46,13 +46,11 @@ protected:
     APM_PI2 _pi_stabilize_pitch_tilt;
     APM_PI2 _pi_stabilize_yaw_tilt;
 
-    AC_PID _pid2_rate_roll;
-    AC_PID _pid2_rate_pitch;
-    AC_PID  _pid2_rate_yaw;
+    AC_P _p_rate_roll;
+    AC_P _p_rate_pitch;
 
-    AC_PID  _pid2_rate_roll_tilt;
-    AC_PID  _pid2_rate_pitch_tilt;
-    AC_PID  _pid2_rate_yaw_tilt;
+    AC_P _p_rate_roll_tilt;
+    AC_P _p_rate_pitch_tilt;
 
     float _conv; // conversion state, 0..1
 };
