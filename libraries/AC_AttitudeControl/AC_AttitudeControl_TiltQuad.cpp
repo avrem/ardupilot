@@ -25,7 +25,7 @@ float AC_AttitudeControl_TiltQuad::aeroxo_rate_bf_to_motor_roll(float rate_targe
     float angle_error_rads = _att_error_rot_vec_rad.x;
 
     float p = control_mix(_pi_stabilize_roll.kP(), _pi_stabilize_roll_tilt.kP()) * angle_error_rads;
-    float i = _pi_stabilize_roll.get_i(control_mix(_pi_stabilize_roll.kI(), _pi_stabilize_roll_tilt.kI()) * angle_error_rads, _dt);
+    float i = control_mix(_pi_stabilize_roll.get_i(angle_error_rads, _dt), _pi_stabilize_roll_tilt.get_i(angle_error_rads, _dt));
     float d = control_mix(_p_rate_roll.kP(), _p_rate_roll_tilt.kP()) * rate_error_rads;
 
     return constrain_float(p + i + d, -1.0f, 1.0f);
@@ -38,7 +38,7 @@ float AC_AttitudeControl_TiltQuad::aeroxo_rate_bf_to_motor_pitch(float rate_targ
     float angle_error_rads = _att_error_rot_vec_rad.y;
 
     float p = control_mix(_pi_stabilize_pitch.kP(), _pi_stabilize_pitch_tilt.kP()) * angle_error_rads;
-    float i = _pi_stabilize_pitch.get_i(control_mix(_pi_stabilize_pitch.kI(), _pi_stabilize_pitch_tilt.kI()) * angle_error_rads, _dt);
+    float i = control_mix(_pi_stabilize_pitch.get_i(angle_error_rads, _dt), _pi_stabilize_pitch_tilt.get_i(angle_error_rads, _dt));
     float d = control_mix(_p_rate_pitch.kP(), _p_rate_pitch_tilt.kP()) * rate_error_rads;
 
     return constrain_float(p + i + d, -1.0f, 1.0f);
@@ -50,7 +50,7 @@ float AC_AttitudeControl_TiltQuad::aeroxo_rate_bf_to_motor_yaw(float rate_target
     float rate_error_rads = rate_target_rads - current_rate_rads;
   
     float p = control_mix(_pi_stabilize_yaw.kP(), _pi_stabilize_yaw_tilt.kP()) * rate_error_rads;
-    float i = _pi_stabilize_yaw.get_i(control_mix(_pi_stabilize_yaw.kI(), _pi_stabilize_yaw_tilt.kI()) * rate_error_rads, _dt);
+    float i = control_mix(_pi_stabilize_yaw.get_i(rate_error_rads, _dt), _pi_stabilize_yaw_tilt.get_i(rate_error_rads, _dt));
 	
     return constrain_float(p + i, -1.0f, 1.0f);
 }
