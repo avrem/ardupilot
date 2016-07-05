@@ -77,6 +77,20 @@ void AC_AttitudeControl_TiltQuad::relax_bf_rate_controller()
     _pid2_rate_yaw_tilt.reset_I();
 }
 
+AC_AttitudeControl_TiltQuad::AC_AttitudeControl_TiltQuad(AP_AHRS &ahrs, const AP_Vehicle::MultiCopter &aparm, AP_MotorsMulticopter& motors, float dt) :
+    AC_AttitudeControl_Multi(ahrs, aparm, motors, dt),
+
+    _pid2_rate_roll (600, 3300, 0, 0, 0, dt),
+    _pid2_rate_pitch(600, 3300, 0, 0, 0, dt),
+    _pid2_rate_yaw  (  0, 1000, 0, 0, 0, dt),
+
+    _pid2_rate_roll_tilt (400, 2300, 0, 0, 0, dt),
+    _pid2_rate_pitch_tilt(400, 2300, 0, 0, 0, dt),
+    _pid2_rate_yaw_tilt  (  0, 2000, 0, 0, 0, dt) 
+{
+        loadAeroxoTiltrotorParameters(); 
+}
+
 void AC_AttitudeControl_TiltQuad::loadAeroxoTiltrotorParameters()
 {
     ElytraConfigurator elCfg;
@@ -92,13 +106,13 @@ void AC_AttitudeControl_TiltQuad::loadAeroxoTiltrotorParameters()
         _pi_stabilize_pitch_tilt=APM_PI2(elCfg.getPPitchTilt(),elCfg.getIMaxPitch());
         _pi_stabilize_yaw_tilt=APM_PI2(elCfg.getPYawTilt(),0,elCfg.getIMaxYaw());
 
-        _pid2_rate_roll=AC_PID2(elCfg.getDRoll(),elCfg.getIRoll(),0);
-        _pid2_rate_pitch=AC_PID2(elCfg.getDPitch(),elCfg.getIPitch(),0);
-        _pid2_rate_yaw=AC_PID2(0,elCfg.getIYaw(),0);
+        _pid2_rate_roll  = AC_PID( elCfg.getDRoll(),  elCfg.getIRoll(), 0, 0, 0, _dt);
+        _pid2_rate_pitch = AC_PID(elCfg.getDPitch(), elCfg.getIPitch(), 0, 0, 0, _dt);
+        _pid2_rate_yaw   = AC_PID(                0,   elCfg.getIYaw(), 0, 0, 0, _dt);
 
-        _pid2_rate_roll_tilt=AC_PID2(elCfg.getDRollTilt(),elCfg.getIRollTilt(),0);
-        _pid2_rate_pitch_tilt=AC_PID2(elCfg.getDPitchTilt(),elCfg.getIPitchTilt(),0);
-        _pid2_rate_yaw_tilt=AC_PID2(0,elCfg.getIYawTilt(),0);
+        _pid2_rate_roll_tilt  = AC_PID( elCfg.getDRollTilt(),  elCfg.getIRollTilt(), 0, 0, 0, _dt);
+        _pid2_rate_pitch_tilt = AC_PID(elCfg.getDPitchTilt(), elCfg.getIPitchTilt(), 0, 0, 0, _dt);
+        _pid2_rate_yaw_tilt   = AC_PID(                    0,   elCfg.getIYawTilt(), 0, 0, 0, _dt);
 
         printf("Elytra: loaded parameters from XML!\n");
     }
@@ -110,14 +124,6 @@ void AC_AttitudeControl_TiltQuad::loadAeroxoTiltrotorParameters()
         _pi_stabilize_roll_tilt  = APM_PI2(1200,    0, 600);
         _pi_stabilize_pitch_tilt = APM_PI2(1200,    0, 600);
         _pi_stabilize_yaw_tilt   = APM_PI2(1000,    0, 600);
-
-        _pid2_rate_roll          = AC_PID2( 600, 3300,   0);
-        _pid2_rate_pitch         = AC_PID2( 600, 3300,   0);
-        _pid2_rate_yaw           = AC_PID2(   0, 1000,   0);
-
-        _pid2_rate_roll_tilt     = AC_PID2( 400, 2300,   0);
-        _pid2_rate_pitch_tilt    = AC_PID2( 400, 2300,   0);
-        _pid2_rate_yaw_tilt      = AC_PID2(   0, 2000,   0);
 
         printf("Elytra: loaded default parameters!\n");
     }

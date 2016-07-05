@@ -7,7 +7,6 @@
 #define AC_AttitudeControl_TiltQuad_H
 
 #include "AC_AttitudeControl_Multi.h"
-#include <AC_PID/AC_PID2.h>
 #include <AC_PID/APM_PI2.h>
 
 class AC_AttitudeControl_TiltQuad : public AC_AttitudeControl_Multi {
@@ -15,9 +14,7 @@ public:
 	AC_AttitudeControl_TiltQuad(AP_AHRS &ahrs,
                         const AP_Vehicle::MultiCopter &aparm,
                         AP_MotorsMulticopter& motors,
-                        float dt) :
-        AC_AttitudeControl_Multi(ahrs, aparm, motors, dt)
-        { loadAeroxoTiltrotorParameters(); }
+                        float dt);
 
 	// empty destructor to suppress compiler warning
 	virtual ~AC_AttitudeControl_TiltQuad() {}
@@ -49,13 +46,13 @@ protected:
     APM_PI2 _pi_stabilize_pitch_tilt;
     APM_PI2 _pi_stabilize_yaw_tilt;
 
-    AC_PID2 _pid2_rate_roll;
-    AC_PID2 _pid2_rate_pitch;
-    AC_PID2  _pid2_rate_yaw;
+    AC_PID _pid2_rate_roll;
+    AC_PID _pid2_rate_pitch;
+    AC_PID  _pid2_rate_yaw;
 
-    AC_PID2  _pid2_rate_roll_tilt;
-    AC_PID2  _pid2_rate_pitch_tilt;
-    AC_PID2  _pid2_rate_yaw_tilt;
+    AC_PID  _pid2_rate_roll_tilt;
+    AC_PID  _pid2_rate_pitch_tilt;
+    AC_PID  _pid2_rate_yaw_tilt;
 
     float _conv; // conversion state, 0..1
 };
