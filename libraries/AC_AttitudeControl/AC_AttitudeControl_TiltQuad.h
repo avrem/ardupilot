@@ -32,7 +32,7 @@ public:
 
     float aeroxo_rate_bf_to_motor_roll(float rate_target_cds);
     float aeroxo_rate_bf_to_motor_pitch(float rate_target_cds);
-    float aeroxo_rate_bf_to_motor_yaw(float rate_target_cds);
+    float aeroxo_rate_bf_to_motor_yaw(float rate_target_rads);
 
     // relax_bf_rate_controller - ensure body-frame rate controller has zero errors to relax rate controller output
     virtual void relax_bf_rate_controller();

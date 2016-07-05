@@ -10,7 +10,7 @@ void AC_AttitudeControl_TiltQuad::rate_controller_run()
 {
     _motors.set_roll(aeroxo_rate_bf_to_motor_roll(0));
     _motors.set_pitch(aeroxo_rate_bf_to_motor_pitch(0));
-    _motors.set_yaw(aeroxo_rate_bf_to_motor_yaw(0));
+    _motors.set_yaw(aeroxo_rate_bf_to_motor_yaw(_ang_vel_target_rads.z));
 }
 
 float AC_AttitudeControl_TiltQuad::aeroxo_rate_bf_to_motor_roll(float rate_target_cds)
@@ -42,11 +42,11 @@ float AC_AttitudeControl_TiltQuad::aeroxo_rate_bf_to_motor_pitch(float rate_targ
 }
 
 // rate_bf_to_motor_yaw - ask the rate controller to calculate the motor outputs to achieve the target rate in centi-degrees / second
-float AC_AttitudeControl_TiltQuad::aeroxo_rate_bf_to_motor_yaw(float rate_target_cds)
+float AC_AttitudeControl_TiltQuad::aeroxo_rate_bf_to_motor_yaw(float rate_target_rads)
 {
     float current_rate = _ahrs.get_gyro().z * AC_ATTITUDE_CONTROL_DEGX100;
-    float rate_error = _att_target_euler_rate_rads.z * AC_ATTITUDE_CONTROL_DEGX100 - current_rate;//rate_target_cds - current_rate; NOOOOOOO!
-   
+    float rate_error = rate_target_rads * AC_ATTITUDE_CONTROL_DEGX100 - current_rate;
+  
     float p = _pi_stabilize_yaw.kP() * rate_error *_conv / 1000.0f + _pi_stabilize_yaw_tilt.kP() * rate_error * (1000 - _conv) / 1000.0f;
     float i = _pi_stabilize_yaw.get_i(_pid2_rate_yaw.kI() * rate_error * _conv / 1000.0f + _pid2_rate_yaw_tilt.kI() * rate_error * (1000 - _conv) / 1000.0f, _dt);
 	
