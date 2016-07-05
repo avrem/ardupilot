@@ -13,7 +13,7 @@ class AC_AttitudeControl_TiltQuad : public AC_AttitudeControl_Multi {
 public:
 	AC_AttitudeControl_TiltQuad(AP_AHRS &ahrs,
                         const AP_Vehicle::MultiCopter &aparm,
-                        AP_MotorsMulticopter& motors,
+                        AP_MotorsTiltQuad& motors,
                         float dt);
 
 	// empty destructor to suppress compiler warning
@@ -51,6 +51,8 @@ protected:
 
     AC_P _p_rate_roll_tilt;
     AC_P _p_rate_pitch_tilt;
+
+    AP_MotorsTiltQuad& _motors_tq;
 
     float _conv; // conversion state, 0..1
 };

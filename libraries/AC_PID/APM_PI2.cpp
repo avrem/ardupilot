@@ -38,7 +38,7 @@ float APM_PI2::get_i(float error, float dt)
 {
 	//_imax=350000;
     if(dt != 0) {
-        _integrator += (error) * dt;
+        _integrator += (error * _ki) * dt;
 
         if (_integrator < -_imax) {
             _integrator = -_imax;
@@ -49,7 +49,7 @@ float APM_PI2::get_i(float error, float dt)
     return _integrator;
 }
 
-int32_t APM_PI2::get_pi(int32_t error, float dt)
+float APM_PI2::get_pi(float error, float dt)
 {
     return get_p(error) + get_i(error, dt);
 }
