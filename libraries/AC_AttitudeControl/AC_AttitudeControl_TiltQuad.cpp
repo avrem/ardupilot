@@ -82,24 +82,41 @@ void AC_AttitudeControl_TiltQuad::loadAeroxoTiltrotorParameters()
     elCfg.scanSetupFile();
 
     if (elCfg.getOkLoad()) {
-        _pi_stabilize_roll=APM_PI2(elCfg.getPRoll(),0,elCfg.getIMaxRoll()); //
-        _pi_stabilize_pitch=APM_PI2(elCfg.getPPitch(),0,elCfg.getIMaxPitch()); //
-        _pi_stabilize_yaw=APM_PI2(elCfg.getPYaw(),0,elCfg.getIMaxYaw()); //
+        _pi_stabilize_roll=APM_PI2(elCfg.getPRoll(),0,elCfg.getIMaxRoll());
+        _pi_stabilize_pitch=APM_PI2(elCfg.getPPitch(),0,elCfg.getIMaxPitch());
+        _pi_stabilize_yaw=APM_PI2(elCfg.getPYaw(),0,elCfg.getIMaxYaw());
 
         _pi_stabilize_roll_tilt=APM_PI2(elCfg.getPRollTilt(),0,elCfg.getIMaxRoll());
         _pi_stabilize_pitch_tilt=APM_PI2(elCfg.getPPitchTilt(),elCfg.getIMaxPitch());
         _pi_stabilize_yaw_tilt=APM_PI2(elCfg.getPYawTilt(),0,elCfg.getIMaxYaw());
 
-        _pid2_rate_roll=AC_PID2(elCfg.getDRoll(),elCfg.getIRoll(),0); //
-        _pid2_rate_pitch=AC_PID2(elCfg.getDPitch(),elCfg.getIPitch(),0); //
-        _pid2_rate_yaw=AC_PID2(0,elCfg.getIYaw(),0); //
+        _pid2_rate_roll=AC_PID2(elCfg.getDRoll(),elCfg.getIRoll(),0);
+        _pid2_rate_pitch=AC_PID2(elCfg.getDPitch(),elCfg.getIPitch(),0);
+        _pid2_rate_yaw=AC_PID2(0,elCfg.getIYaw(),0);
 
-        _pid2_rate_roll_tilt=AC_PID2(elCfg.getDRollTilt(),elCfg.getIRollTilt(),0); //
-        _pid2_rate_pitch_tilt=AC_PID2(elCfg.getDPitchTilt(),elCfg.getIPitchTilt(),0); //
-        _pid2_rate_yaw_tilt=AC_PID2(0,elCfg.getIYawTilt(),0); //
+        _pid2_rate_roll_tilt=AC_PID2(elCfg.getDRollTilt(),elCfg.getIRollTilt(),0);
+        _pid2_rate_pitch_tilt=AC_PID2(elCfg.getDPitchTilt(),elCfg.getIPitchTilt(),0);
+        _pid2_rate_yaw_tilt=AC_PID2(0,elCfg.getIYawTilt(),0);
 
         printf("Elytra: loaded parameters from XML!\n");
     }
-    else 
+    else {
+        _pi_stabilize_roll       = APM_PI2(  17,   0, 35000);
+        _pi_stabilize_pitch      = APM_PI2(  17,   0, 35000);
+        _pi_stabilize_yaw        = APM_PI2(0.25,   0, 35000);
+
+        _pi_stabilize_roll_tilt  = APM_PI2(  12,   0, 35000);
+        _pi_stabilize_pitch_tilt = APM_PI2(  12,   0, 35000);
+        _pi_stabilize_yaw_tilt   = APM_PI2( 0.5,   0, 35000);
+
+        _pid2_rate_roll          = AC_PID2(   6,  33,     0);
+        _pid2_rate_pitch         = AC_PID2(   6,  33,     0);
+        _pid2_rate_yaw           = AC_PID2(   0, 0.5,     0);
+
+        _pid2_rate_roll_tilt     = AC_PID2(   4,  23,     0);
+        _pid2_rate_pitch_tilt    = AC_PID2(   4,  23,     0);
+        _pid2_rate_yaw_tilt      = AC_PID2(   0,   1,     0);
+
         printf("Elytra: loaded default parameters!\n");
+    }
 }

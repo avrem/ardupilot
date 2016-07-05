@@ -17,25 +17,7 @@ public:
                         AP_MotorsMulticopter& motors,
                         float dt) :
         AC_AttitudeControl_Multi(ahrs, aparm, motors, dt)
-        {
-            _pi_stabilize_roll=APM_PI2(16.0f,0,350000); //
-            _pi_stabilize_pitch=APM_PI2(16.0f,0,350000); //
-            _pi_stabilize_yaw=APM_PI2(0.5f,0,350000); //
-
-            _pi_stabilize_roll_tilt=APM_PI2(6.0f,0,350000);
-            _pi_stabilize_pitch_tilt=APM_PI2(12.0f,0,350000);
-            _pi_stabilize_yaw_tilt=APM_PI2(0.5f,0,350000);
-
-            _pid2_rate_roll=AC_PID2(6.0f,32.0f,0); //
-            _pid2_rate_pitch=AC_PID2(6.0f,32.0f,0); //
-            _pid2_rate_yaw=AC_PID2(0,1.0f,0); //
-
-            _pid2_rate_roll_tilt=AC_PID2(2.0f,12.0f,0);
-            _pid2_rate_pitch_tilt=AC_PID2(4.0f,24.0f,0);
-            _pid2_rate_yaw_tilt=AC_PID2(0,1.0f,0,0);
-
-            loadAeroxoTiltrotorParameters();
-        }
+        { loadAeroxoTiltrotorParameters(); }
 
 	// empty destructor to suppress compiler warning
 	virtual ~AC_AttitudeControl_TiltQuad() {}
