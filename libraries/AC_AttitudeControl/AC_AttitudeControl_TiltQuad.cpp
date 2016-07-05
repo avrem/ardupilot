@@ -10,7 +10,7 @@ void AC_AttitudeControl_TiltQuad::rate_controller_run()
 {
     _motors.set_roll(aeroxo_rate_bf_to_motor_roll(0));
     _motors.set_pitch(aeroxo_rate_bf_to_motor_pitch(0));
-    _motors.set_yaw(aeroxo_rate_bf_to_motor_yaw(0) * 20);
+    _motors.set_yaw(aeroxo_rate_bf_to_motor_yaw(0));
 }
 
 float AC_AttitudeControl_TiltQuad::aeroxo_rate_bf_to_motor_roll(float rate_target_cds)
@@ -101,21 +101,21 @@ void AC_AttitudeControl_TiltQuad::loadAeroxoTiltrotorParameters()
         printf("Elytra: loaded parameters from XML!\n");
     }
     else {
-        _pi_stabilize_roll       = APM_PI2(  17,   0, 35000);
-        _pi_stabilize_pitch      = APM_PI2(  17,   0, 35000);
-        _pi_stabilize_yaw        = APM_PI2(0.25,   0, 35000);
+        _pi_stabilize_roll       = APM_PI2(17,  0, 35000);
+        _pi_stabilize_pitch      = APM_PI2(17,  0, 35000);
+        _pi_stabilize_yaw        = APM_PI2( 5,  0, 35000);
 
-        _pi_stabilize_roll_tilt  = APM_PI2(  12,   0, 35000);
-        _pi_stabilize_pitch_tilt = APM_PI2(  12,   0, 35000);
-        _pi_stabilize_yaw_tilt   = APM_PI2( 0.5,   0, 35000);
+        _pi_stabilize_roll_tilt  = APM_PI2(12,  0, 35000);
+        _pi_stabilize_pitch_tilt = APM_PI2(12,  0, 35000);
+        _pi_stabilize_yaw_tilt   = APM_PI2(10,  0, 35000);
 
-        _pid2_rate_roll          = AC_PID2(   6,  33,     0);
-        _pid2_rate_pitch         = AC_PID2(   6,  33,     0);
-        _pid2_rate_yaw           = AC_PID2(   0, 0.5,     0);
+        _pid2_rate_roll          = AC_PID2( 6, 33,     0);
+        _pid2_rate_pitch         = AC_PID2( 6, 33,     0);
+        _pid2_rate_yaw           = AC_PID2( 0, 10,     0);
 
-        _pid2_rate_roll_tilt     = AC_PID2(   4,  23,     0);
-        _pid2_rate_pitch_tilt    = AC_PID2(   4,  23,     0);
-        _pid2_rate_yaw_tilt      = AC_PID2(   0,   1,     0);
+        _pid2_rate_roll_tilt     = AC_PID2( 4, 23,     0);
+        _pid2_rate_pitch_tilt    = AC_PID2( 4, 23,     0);
+        _pid2_rate_yaw_tilt      = AC_PID2( 0, 20,     0);
 
         printf("Elytra: loaded default parameters!\n");
     }
