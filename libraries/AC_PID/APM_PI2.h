@@ -47,7 +47,7 @@ public:
     /// @returns		The updated control output.
     ///
     //long  get_pi(int32_t error, float	 dt);
-    int32_t         get_pi(int32_t error, float dt);
+    float         get_pi(float error, float dt);
     float         get_p(float error);
     //int32_t         get_i(int32_t error, float dt); // OBSOLETE from ARDUINO
 	float         get_i(float error, float dt);

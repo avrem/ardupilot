@@ -64,21 +64,12 @@ void AP_MotorsTiltQuad::set_update_rate( uint16_t speed_hz )
     hal.rcout->set_freq(mask2, 50);    
 }
 
-void AP_MotorsTiltQuad::set_yaw(float yaw_in)
-{
-    _real_yaw_in = yaw_in;
-    _yaw_in = yaw_in * (1000 - _conv) / 1000;
-}
-
 // sets motor tilt based on desired r/p/y and current conversion
 void AP_MotorsTiltQuad::output_tilt()
 {
-    int32_t roll_tilt = _roll_in * (1000 - _conv) * 2;
-    int32_t pitch_tilt = _pitch_in * (1000 - _conv) * 2;
-    int32_t yaw_tilt = _real_yaw_in * _conv;
-
-    roll_tilt = constrain_int32(roll_tilt, -250, 250);
-    yaw_tilt = constrain_int32(yaw_tilt, -166, 166);
+    int32_t roll_tilt = constrain_int32(_roll_tilt * 2000, -250, 250);
+    int32_t pitch_tilt = _pitch_tilt * 2000;
+    int32_t yaw_tilt = constrain_int32(_yaw_tilt * 1000, -166, 166);
 
     int32_t s1 = 1000 + _conv;
     int32_t s2 = 2000 - _conv;

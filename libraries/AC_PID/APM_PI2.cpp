@@ -49,7 +49,7 @@ float APM_PI2::get_i(float error, float dt)
     return _integrator;
 }
 
-int32_t APM_PI2::get_pi(int32_t error, float dt)
+float APM_PI2::get_pi(float error, float dt)
 {
     return get_p(error) + get_i(error, dt);
 }
