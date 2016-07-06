@@ -79,8 +79,8 @@ AC_AttitudeControl_TiltQuad::AC_AttitudeControl_TiltQuad(AP_AHRS &ahrs, const AP
     _motors_tq(motors),
     _p_rate_roll(0.133f),
     _p_rate_pitch(0.133f),
-    _p_rate_roll_tilt(0.089f),
-    _p_rate_pitch_tilt(0.089f)
+    _p_rate_roll_tilt(0.178f),
+    _p_rate_pitch_tilt(0.178f)
 {
         loadAeroxoTiltrotorParameters(); 
 }
@@ -113,8 +113,8 @@ void AC_AttitudeControl_TiltQuad::loadAeroxoTiltrotorParameters()
         _pi_stabilize_pitch      = APM_PI2(0.378f, 0.733f, 0.133f);
         _pi_stabilize_yaw        = APM_PI2(0.111f, 0.222f, 0.133f);
 
-        _pi_stabilize_roll_tilt  = APM_PI2(0.267f, 0.511f, 0.133f);
-        _pi_stabilize_pitch_tilt = APM_PI2(0.267f, 0.511f, 0.133f);
+        _pi_stabilize_roll_tilt  = APM_PI2(0.534f, 1.022f, 0.266f);
+        _pi_stabilize_pitch_tilt = APM_PI2(0.534f, 1.022f, 0.266f);
         _pi_stabilize_yaw_tilt   = APM_PI2(0.222f, 0.444f, 0.133f);
 
         printf("Elytra: loaded default parameters!\n");

@@ -67,8 +67,8 @@ void AP_MotorsTiltQuad::set_update_rate( uint16_t speed_hz )
 // sets motor tilt based on desired r/p/y and current conversion
 void AP_MotorsTiltQuad::output_tilt()
 {
-    int32_t roll_tilt = constrain_int32(_roll_tilt * 2000, -250, 250);
-    int32_t pitch_tilt = _pitch_tilt * 2000;
+    int32_t roll_tilt = constrain_int32(_roll_tilt * 1000, -250, 250);
+    int32_t pitch_tilt = _pitch_tilt * 1000;
     int32_t yaw_tilt = constrain_int32(_yaw_tilt * 1000, -166, 166);
 
     int32_t s1 = 1000 + _conv;
