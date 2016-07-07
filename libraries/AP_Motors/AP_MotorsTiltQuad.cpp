@@ -71,6 +71,8 @@ void AP_MotorsTiltQuad::output_tilt()
     int32_t pitch_tilt = _pitch_tilt * 1000;
     int32_t yaw_tilt = constrain_int32(_yaw_tilt * 1000, -166, 166);
 
+	roll_tilt *= 2; pitch_tilt *= 2;
+
     int32_t s1 = 1000 + _conv;
     int32_t s2 = 2000 - _conv;
     int32_t s3 = 2000 - _conv;

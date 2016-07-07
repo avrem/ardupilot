@@ -23,8 +23,6 @@ public:
     // should be called at 100hz or more
     virtual void rate_controller_run();
 
-    void loadAeroxoTiltrotorParameters(); 
-
     void set_conversion(int16_t conv) {_conv = constrain_float(conv * 0.001f, 0.f, 1.f);}
 
     float aeroxo_rate_bf_to_motor_roll(float rate_target_rads);
@@ -36,25 +34,23 @@ public:
 
     float control_mix(float k_copter, float k_plane);
 
+    // user settable parameters
+    static const struct AP_Param::GroupInfo var_info[];
+
 protected:
 
-    APM_PI2 _pi_stabilize_roll;
-    APM_PI2 _pi_stabilize_pitch;
-    APM_PI2 _pi_stabilize_yaw;
+    AC_PID _pid_stabilize_roll;
+    AC_PID _pid_stabilize_pitch;
+    AC_PID _pi_stabilize_yaw;
 
-    APM_PI2 _pi_stabilize_roll_tilt;
-    APM_PI2 _pi_stabilize_pitch_tilt;
-    APM_PI2 _pi_stabilize_yaw_tilt;
-
-    AC_P _p_rate_roll;
-    AC_P _p_rate_pitch;
-
-    AC_P _p_rate_roll_tilt;
-    AC_P _p_rate_pitch_tilt;
+    AC_PID _pid_stabilize_roll_tilt;
+    AC_PID _pid_stabilize_pitch_tilt;
+    AC_PID _pi_stabilize_yaw_tilt;
 
     AP_MotorsTiltQuad& _motors_tq;
 
     float _conv; // conversion state, 0..1
+
 };
 
 #endif // AC_AttitudeControl_TiltQuad_H
