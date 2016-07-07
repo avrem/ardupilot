@@ -2,8 +2,21 @@
 
 #include "AC_AttitudeControl_TiltQuad.h"
 #include <AP_Math/AP_Math.h>
-#include "ElytraConfigurator.h"
 
+// table of user settable parameters
+const AP_Param::GroupInfo AC_AttitudeControl_TiltQuad::var_info[] = {
+    // parameters from parent vehicle
+    AP_NESTEDGROUPINFO(AC_AttitudeControl, 0),
+
+    AP_SUBGROUPINFO(_pid_stabilize_roll, "STB_RLL_", 1, AC_AttitudeControl_TiltQuad, AC_PID),
+    AP_SUBGROUPINFO(_pid_stabilize_pitch, "STB_PIT_", 2, AC_AttitudeControl_TiltQuad, AC_PID),
+    AP_SUBGROUPINFO(_pi_stabilize_yaw, "RAT_YAW_", 3, AC_AttitudeControl_TiltQuad, AC_PID),
+    AP_SUBGROUPINFO(_pid_stabilize_roll_tilt, "STB_RL2_", 4, AC_AttitudeControl_TiltQuad, AC_PID),
+    AP_SUBGROUPINFO(_pid_stabilize_pitch_tilt, "STB_PI2_", 5, AC_AttitudeControl_TiltQuad, AC_PID),
+    AP_SUBGROUPINFO(_pi_stabilize_yaw_tilt, "RAT_YA2_", 6, AC_AttitudeControl_TiltQuad, AC_PID),
+
+    AP_GROUPEND
+};
 
 // rate_controller_run - run lowest level rate controller and send outputs to the motors
 // should be called at 100hz or more
@@ -90,28 +103,4 @@ AC_AttitudeControl_TiltQuad::AC_AttitudeControl_TiltQuad(AP_AHRS &ahrs, const AP
     _pid_stabilize_roll_tilt(0.534f, 1.022f, 0.178f, 1.000f, 0, _dt),
     _pid_stabilize_pitch_tilt(0.756f, 1.466f, 0.266f, 1.000f, 0, _dt),
     _pi_stabilize_yaw_tilt(0.055f, 0.111f, 0, 0.133f, 0, _dt)
-{
-        loadAeroxoTiltrotorParameters(); 
-}
-
-void AC_AttitudeControl_TiltQuad::loadAeroxoTiltrotorParameters()
-{
-    ElytraConfigurator elCfg;
-    printf("Scanning XML Elytra config...\n");
-    elCfg.scanSetupFile();
-
-    if (elCfg.getOkLoad()) {
-        _pid_stabilize_roll  = AC_PID( elCfg.getPRoll(),  elCfg.getIRoll(),  elCfg.getDRoll(),  elCfg.getIMaxRoll(), 0, _dt);
-        _pid_stabilize_pitch = AC_PID(elCfg.getPPitch(), elCfg.getIPitch(), elCfg.getDPitch(), elCfg.getIMaxPitch(), 0, _dt);
-        _pi_stabilize_yaw    = AC_PID(  elCfg.getPYaw(),   elCfg.getIYaw(),                 0,   elCfg.getIMaxYaw(), 0, _dt);
-
-        _pid_stabilize_roll_tilt  = AC_PID( elCfg.getPRollTilt(),  elCfg.getIRollTilt(),  elCfg.getDRollTilt(),  elCfg.getIMaxRoll(), 0, _dt);
-        _pid_stabilize_pitch_tilt = AC_PID(elCfg.getPPitchTilt(), elCfg.getIPitchTilt(), elCfg.getDPitchTilt(), elCfg.getIMaxPitch(), 0, _dt);
-        _pi_stabilize_yaw_tilt    = AC_PID(  elCfg.getPYawTilt(),   elCfg.getIYawTilt(),                     0,   elCfg.getIMaxYaw(), 0, _dt);
-
-        printf("Elytra: loaded parameters from XML!\n");
-    }
-    else {
-        printf("Elytra: loaded default parameters!\n");
-    }
-}
+{ }

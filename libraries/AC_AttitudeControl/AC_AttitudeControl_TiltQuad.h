@@ -22,8 +22,6 @@ public:
     // should be called at 100hz or more
     virtual void rate_controller_run();
 
-    void loadAeroxoTiltrotorParameters(); 
-
     void set_conversion(int16_t conv) {_conv = constrain_float(conv * 0.001f, 0.f, 1.f);}
 
     float aeroxo_rate_bf_to_motor_roll(float rate_target_rads);
@@ -34,6 +32,9 @@ public:
     virtual void relax_bf_rate_controller();
 
     float control_mix(float k_copter, float k_plane);
+
+    // user settable parameters
+    static const struct AP_Param::GroupInfo var_info[];
 
 protected:
 
