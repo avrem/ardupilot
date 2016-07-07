@@ -4,6 +4,7 @@
 #include <AP_Math/AP_Math.h>
 #include "ElytraConfigurator.h"
 
+
 // rate_controller_run - run lowest level rate controller and send outputs to the motors
 // should be called at 100hz or more
 void AC_AttitudeControl_TiltQuad::rate_controller_run()
@@ -24,12 +25,14 @@ float AC_AttitudeControl_TiltQuad::aeroxo_rate_bf_to_motor_roll(float rate_targe
     float rate_error_rads = rate_target_rads - current_rate_rads;  
     float angle_error_rads = _att_error_rot_vec_rad.x;
 
-    float pi_tilt = _pi_stabilize_roll_tilt.get_pi(angle_error_rads, _dt);
-    float d_tilt = _p_rate_roll_tilt.get_p(rate_error_rads);
+    _pid_stabilize_roll_tilt.set_input_filter_d(angle_error_rads);
+    float pi_tilt = _pid_stabilize_roll_tilt.get_pi();
+    float d_tilt = _pid_stabilize_roll_tilt.kD() * rate_error_rads;
     _motors_tq.set_roll_tilt(control_mix(0, constrain_float(pi_tilt + d_tilt, -1.0f, 1.0f)));
 
-    float pi = _pi_stabilize_roll.get_pi(angle_error_rads, _dt);
-    float d = _p_rate_roll.get_p(rate_error_rads);
+    _pid_stabilize_roll.set_input_filter_d(angle_error_rads);
+    float pi = _pid_stabilize_roll.get_pi();
+    float d = _pid_stabilize_roll.kD() * rate_error_rads;
     return control_mix(constrain_float(pi + d, -1.0f, 1.0f), 0);
 }
 
@@ -39,12 +42,14 @@ float AC_AttitudeControl_TiltQuad::aeroxo_rate_bf_to_motor_pitch(float rate_targ
     float rate_error_rads = rate_target_rads - current_rate_rads;
     float angle_error_rads = _att_error_rot_vec_rad.y;
 
-    float pi_tilt = _pi_stabilize_pitch_tilt.get_pi(angle_error_rads, _dt);
-    float d_tilt = _p_rate_pitch_tilt.get_p(rate_error_rads);
+    _pid_stabilize_pitch_tilt.set_input_filter_d(angle_error_rads);
+    float pi_tilt = _pid_stabilize_pitch_tilt.get_pi();
+    float d_tilt = _pid_stabilize_pitch_tilt.kD() * rate_error_rads;
     _motors_tq.set_pitch_tilt(control_mix(0, constrain_float(pi_tilt + d_tilt, -1.0f, 1.0f)));
 
-    float pi = _pi_stabilize_pitch.get_pi(angle_error_rads, _dt);
-    float d = _p_rate_pitch.get_p(rate_error_rads);
+    _pid_stabilize_pitch.set_input_filter_d(angle_error_rads);
+    float pi = _pid_stabilize_pitch.get_pi();
+    float d = _pid_stabilize_pitch.kD() * rate_error_rads;
     return control_mix(constrain_float(pi + d, -1.0f, 1.0f), 0);
 }
 
@@ -53,10 +58,12 @@ float AC_AttitudeControl_TiltQuad::aeroxo_rate_bf_to_motor_yaw(float rate_target
     float current_rate_rads = _ahrs.get_gyro().z;
     float rate_error_rads = rate_target_rads - current_rate_rads;
 
-    float pi = constrain_float(_pi_stabilize_yaw.get_pi(rate_error_rads, _dt), -1.0f, 1.0f);
+    _pi_stabilize_yaw.set_input_filter_d(rate_error_rads);
+    float pi = constrain_float(_pi_stabilize_yaw.get_pi(), -1.0f, 1.0f);
     _motors_tq.set_yaw_tilt(control_mix(pi, 0));
 
-    float pi_tilt = constrain_float(_pi_stabilize_yaw_tilt.get_pi(rate_error_rads, _dt), -1.0f, 1.0f);
+    _pi_stabilize_yaw_tilt.set_input_filter_d(rate_error_rads);
+    float pi_tilt = constrain_float(_pi_stabilize_yaw_tilt.get_pi(), -1.0f, 1.0f);
     return control_mix(0, pi_tilt);
 }
 
@@ -65,22 +72,24 @@ void AC_AttitudeControl_TiltQuad::relax_bf_rate_controller()
 {
     AC_AttitudeControl::relax_bf_rate_controller();
 
-    _pi_stabilize_roll.reset_I();
-    _pi_stabilize_pitch.reset_I();
+    _pid_stabilize_roll.reset_I();
+    _pid_stabilize_pitch.reset_I();
     _pi_stabilize_yaw.reset_I();
 
-    _pi_stabilize_roll_tilt.reset_I();
-    _pi_stabilize_pitch_tilt.reset_I();
+    _pid_stabilize_roll_tilt.reset_I();
+    _pid_stabilize_pitch_tilt.reset_I();
     _pi_stabilize_yaw_tilt.reset_I();
 }
 
 AC_AttitudeControl_TiltQuad::AC_AttitudeControl_TiltQuad(AP_AHRS &ahrs, const AP_Vehicle::MultiCopter &aparm, AP_MotorsTiltQuad& motors, float dt) :
     AC_AttitudeControl_Multi(ahrs, aparm, motors, dt),
     _motors_tq(motors),
-    _p_rate_roll(0.133f),
-    _p_rate_pitch(0.133f),
-    _p_rate_roll_tilt(0.178f),
-    _p_rate_pitch_tilt(0.266f)
+    _pid_stabilize_roll(0.378f, 0.733f, 0.133f, 0.133f, 0, _dt),
+    _pid_stabilize_pitch(0.378f, 0.733f, 0.133f, 0.133f, 0, _dt),
+    _pi_stabilize_yaw(0.111f, 0.222f, 0, 0.133f, 0, _dt),
+    _pid_stabilize_roll_tilt(0.534f, 1.022f, 0.178f, 1.000f, 0, _dt),
+    _pid_stabilize_pitch_tilt(0.756f, 1.466f, 0.266f, 1.000f, 0, _dt),
+    _pi_stabilize_yaw_tilt(0.055f, 0.111f, 0, 0.133f, 0, _dt)
 {
         loadAeroxoTiltrotorParameters(); 
 }
@@ -92,31 +101,17 @@ void AC_AttitudeControl_TiltQuad::loadAeroxoTiltrotorParameters()
     elCfg.scanSetupFile();
 
     if (elCfg.getOkLoad()) {
-        _pi_stabilize_roll  = APM_PI2( elCfg.getPRoll(), elCfg.getIRoll(), elCfg.getIMaxRoll());
-        _pi_stabilize_pitch = APM_PI2(elCfg.getPPitch(),elCfg.getIPitch(),elCfg.getIMaxPitch());
-        _pi_stabilize_yaw   = APM_PI2(  elCfg.getPYaw(),  elCfg.getIYaw(),  elCfg.getIMaxYaw());
+        _pid_stabilize_roll  = AC_PID( elCfg.getPRoll(),  elCfg.getIRoll(),  elCfg.getDRoll(),  elCfg.getIMaxRoll(), 0, _dt);
+        _pid_stabilize_pitch = AC_PID(elCfg.getPPitch(), elCfg.getIPitch(), elCfg.getDPitch(), elCfg.getIMaxPitch(), 0, _dt);
+        _pi_stabilize_yaw    = AC_PID(  elCfg.getPYaw(),   elCfg.getIYaw(),                 0,   elCfg.getIMaxYaw(), 0, _dt);
 
-        _pi_stabilize_roll_tilt  = APM_PI2( elCfg.getPRollTilt(), elCfg.getIRollTilt(),  elCfg.getIMaxRoll());
-        _pi_stabilize_pitch_tilt = APM_PI2(elCfg.getPPitchTilt(),elCfg.getIPitchTilt(), elCfg.getIMaxPitch());
-        _pi_stabilize_yaw_tilt   = APM_PI2(  elCfg.getPYawTilt(),  elCfg.getIYawTilt(),   elCfg.getIMaxYaw());
-
-        _p_rate_roll  = AC_P(elCfg.getDRoll());
-        _p_rate_pitch = AC_P(elCfg.getDPitch());
-
-        _p_rate_roll_tilt  = AC_P(elCfg.getDRollTilt());
-        _p_rate_pitch_tilt = AC_P(elCfg.getDPitchTilt());
+        _pid_stabilize_roll_tilt  = AC_PID( elCfg.getPRollTilt(),  elCfg.getIRollTilt(),  elCfg.getDRollTilt(),  elCfg.getIMaxRoll(), 0, _dt);
+        _pid_stabilize_pitch_tilt = AC_PID(elCfg.getPPitchTilt(), elCfg.getIPitchTilt(), elCfg.getDPitchTilt(), elCfg.getIMaxPitch(), 0, _dt);
+        _pi_stabilize_yaw_tilt    = AC_PID(  elCfg.getPYawTilt(),   elCfg.getIYawTilt(),                     0,   elCfg.getIMaxYaw(), 0, _dt);
 
         printf("Elytra: loaded parameters from XML!\n");
     }
     else {
-        _pi_stabilize_roll       = APM_PI2(0.378f, 0.733f, 0.133f);
-        _pi_stabilize_pitch      = APM_PI2(0.378f, 0.733f, 0.133f);
-        _pi_stabilize_yaw        = APM_PI2(0.111f, 0.222f, 0.133f);
-
-        _pi_stabilize_roll_tilt  = APM_PI2(0.534f, 1.022f, 1.000f);
-        _pi_stabilize_pitch_tilt = APM_PI2(0.756f, 1.466f, 1.000f);
-        _pi_stabilize_yaw_tilt   = APM_PI2(0.055f, 0.111f, 0.133f);
-
         printf("Elytra: loaded default parameters!\n");
     }
 }

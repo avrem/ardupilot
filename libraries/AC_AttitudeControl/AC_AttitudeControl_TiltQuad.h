@@ -7,7 +7,6 @@
 #define AC_AttitudeControl_TiltQuad_H
 
 #include "AC_AttitudeControl_Multi.h"
-#include <AC_PID/APM_PI2.h>
 
 class AC_AttitudeControl_TiltQuad : public AC_AttitudeControl_Multi {
 public:
@@ -38,23 +37,18 @@ public:
 
 protected:
 
-    APM_PI2 _pi_stabilize_roll;
-    APM_PI2 _pi_stabilize_pitch;
-    APM_PI2 _pi_stabilize_yaw;
+    AC_PID _pid_stabilize_roll;
+    AC_PID _pid_stabilize_pitch;
+    AC_PID _pi_stabilize_yaw;
 
-    APM_PI2 _pi_stabilize_roll_tilt;
-    APM_PI2 _pi_stabilize_pitch_tilt;
-    APM_PI2 _pi_stabilize_yaw_tilt;
-
-    AC_P _p_rate_roll;
-    AC_P _p_rate_pitch;
-
-    AC_P _p_rate_roll_tilt;
-    AC_P _p_rate_pitch_tilt;
+    AC_PID _pid_stabilize_roll_tilt;
+    AC_PID _pid_stabilize_pitch_tilt;
+    AC_PID _pi_stabilize_yaw_tilt;
 
     AP_MotorsTiltQuad& _motors_tq;
 
     float _conv; // conversion state, 0..1
+
 };
 
 #endif // AC_AttitudeControl_TiltQuad_H
