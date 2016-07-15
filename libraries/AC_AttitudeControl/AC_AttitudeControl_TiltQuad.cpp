@@ -13,7 +13,7 @@ const AP_Param::GroupInfo AC_AttitudeControl_TiltQuad::var_info[] = {
     AP_SUBGROUPINFO(_pi_stabilize_yaw, "RAT_YAW_", 3, AC_AttitudeControl_TiltQuad, AC_PID),
     AP_SUBGROUPINFO(_pid_stabilize_roll_tilt, "STB_RL2_", 4, AC_AttitudeControl_TiltQuad, AC_PID),
     AP_SUBGROUPINFO(_pid_stabilize_pitch_tilt, "STB_PI2_", 5, AC_AttitudeControl_TiltQuad, AC_PID),
-    AP_SUBGROUPINFO(_pi_stabilize_yaw_tilt, "RAT_YA2_", 6, AC_AttitudeControl_TiltQuad, AC_PID),
+    AP_SUBGROUPINFO(_pid_stabilize_yaw_tilt, "RAT_YA2_", 6, AC_AttitudeControl_TiltQuad, AC_PID),
 
     AP_GROUPEND
 };
@@ -75,9 +75,9 @@ float AC_AttitudeControl_TiltQuad::aeroxo_rate_bf_to_motor_yaw(float rate_target
     float pi = constrain_float(_pi_stabilize_yaw.get_pi(), -1.0f, 1.0f);
     _motors_tq.set_yaw_tilt(control_mix(pi, 0));
 
-    _pi_stabilize_yaw_tilt.set_input_filter_d(rate_error_rads);
-    float pi_tilt = constrain_float(_pi_stabilize_yaw_tilt.get_pi(), -1.0f, 1.0f);
-    return control_mix(0, pi_tilt);
+    _pid_stabilize_yaw_tilt.set_input_filter_d(rate_error_rads);
+    float pid_tilt = constrain_float(_pid_stabilize_yaw_tilt.get_pid(), -1.0f, 1.0f);
+    return control_mix(0, pid_tilt);
 }
 
 // relax_bf_rate_controller - ensure body-frame rate controller has zero errors to relax rate controller output
@@ -91,16 +91,16 @@ void AC_AttitudeControl_TiltQuad::relax_bf_rate_controller()
 
     _pid_stabilize_roll_tilt.reset_I();
     _pid_stabilize_pitch_tilt.reset_I();
-    _pi_stabilize_yaw_tilt.reset_I();
+    _pid_stabilize_yaw_tilt.reset_I();
 }
 
 AC_AttitudeControl_TiltQuad::AC_AttitudeControl_TiltQuad(AP_AHRS &ahrs, const AP_Vehicle::MultiCopter &aparm, AP_MotorsTiltQuad& motors, float dt) :
     AC_AttitudeControl_Multi(ahrs, aparm, motors, dt),
     _motors_tq(motors),
-    _pid_stabilize_roll(0.378f, 0.733f, 0.133f, 0.133f, 0, _dt),
-    _pid_stabilize_pitch(0.378f, 0.733f, 0.133f, 0.133f, 0, _dt),
-    _pi_stabilize_yaw(0.111f, 0.222f, 0, 0.133f, 0, _dt),
-    _pid_stabilize_roll_tilt(0.534f, 1.022f, 0.178f, 1.000f, 0, _dt),
-    _pid_stabilize_pitch_tilt(0.756f, 1.466f, 0.266f, 1.000f, 0, _dt),
-    _pi_stabilize_yaw_tilt(0.055f, 0.111f, 0, 0.133f, 0, _dt)
+    _pid_stabilize_roll(0.5f, 0.25f, 0.2f, 0.133f, 0, _dt),
+    _pid_stabilize_pitch(0.378f, 0.25f, 0.2f, 0.133f, 0, _dt),
+    _pi_stabilize_yaw(0.15f, 0.025f, 0, 0.266f, 0, _dt),
+    _pid_stabilize_roll_tilt(0.5f, 0.25f, 0.2f, 1.000f, 0, _dt),
+    _pid_stabilize_pitch_tilt(1.2f, 0.3f, 0.5f, 1.000f, 0, _dt),
+    _pid_stabilize_yaw_tilt(0.075f, 0.0125f, 0.025f, 0.266f, 5, _dt)
 { }

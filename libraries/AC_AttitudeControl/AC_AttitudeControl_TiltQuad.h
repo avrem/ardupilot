@@ -44,7 +44,7 @@ protected:
 
     AC_PID _pid_stabilize_roll_tilt;
     AC_PID _pid_stabilize_pitch_tilt;
-    AC_PID _pi_stabilize_yaw_tilt;
+    AC_PID _pid_stabilize_yaw_tilt;
 
     AP_MotorsTiltQuad& _motors_tq;
 
