@@ -20,20 +20,15 @@ void Copter::update_tiltquad_manual_throttle()
 void Copter::update_tiltquad_conversion()
 {    
     float rc_conv = g.rc_8.norm_input_dz();
-    if (rc_conv > 0.1)
-        p_conversion += (1500 - p_conversion) * 0.01f;
-    else if (rc_conv < -0.1)
-        p_conversion += (1100 - p_conversion) * 0.01f;
-    
-    // calculate conversion state
-    if (p_conversion < 1100)
-        _conv = 0;
-    else if (p_conversion > 1500)
-        _conv = 1000;
-    else {
-        _conv = 1000 - (1500 - p_conversion) / 4 * 10;
+    if (failsafe.rc_override_active) {
+        if (rc_conv > 0.1)
+            _conv += 10;
+        else if (rc_conv < -0.1)
+            _conv -= 10;
         _conv = constrain_int16(_conv, 0, 1000);
     }
+    else 
+        _conv = constrain_int16((rc_conv + 1.f) * 500, 0, 1000);
 
     attitude_control.set_conversion(_conv);
     motors.set_conversion(_conv);

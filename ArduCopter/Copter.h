@@ -573,7 +573,6 @@ private:
 #endif
 
 #if FRAME_CONFIG == TILT_QUAD_FRAME
-    float p_conversion = 1500.0f; // raw conversion input
     int16_t _conv; // effective conversion state
     void update_tiltquad_conversion();
     void update_tiltquad_tilt();

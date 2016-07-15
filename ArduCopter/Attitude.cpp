@@ -134,7 +134,8 @@ void Copter::set_throttle_takeoff()
 float Copter::get_pilot_desired_throttle(int16_t throttle_control)
 {
 #if FRAME_CONFIG == TILT_QUAD_FRAME
-    return _tilt_manual_throttle;
+    if (failsafe.rc_override_active)
+        return _tilt_manual_throttle;
 #endif
 
     float throttle_out;
