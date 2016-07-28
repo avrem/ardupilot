@@ -798,8 +798,7 @@ void Plane::change_arm_state(void)
     // log flight mode in case it was changed while vehicle was disarmed
     DataFlash.Log_Write_Mode(control_mode);
 
-    hal.util->set_soft_armed(arming.is_armed() &&
-                             hal.util->safety_switch_state() != AP_HAL::Util::SAFETY_DISARMED);
+    update_soft_armed();
     quadplane.set_armed(hal.util->get_soft_armed());
 }
 
