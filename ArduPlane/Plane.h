@@ -1079,6 +1079,7 @@ private:
     void parachute_release();
     bool parachute_manual_release();
     void accel_cal_update(void);
+    void update_soft_armed();
 
 public:
     void mavlink_delay_cb();
