@@ -1152,12 +1152,22 @@ const AP_Param::Info Plane::var_info[] = {
     // @Group: TUNE_
     // @Path: tuning.cpp,../libraries/AP_Tuning/AP_Tuning.cpp
     GOBJECT(tuning,           "TUNE_", AP_Tuning_Plane),
-    
+
+#if FRAME_CONFIG == TILT_QUAD_FRAME 
+    // NOTE: we keep parameter names from copter because why not?
+    // @Group: ATC_
+    // @Path: ../libraries/AC_AttitudeControl/AC_AttitudeControl_TiltQuad.cpp
+    { AP_PARAM_GROUP, "ATC_", Parameters::k_param_q_attitude_control, 
+      (const void *)&plane.quadplane.attitude_control,
+      {group_info : AC_AttitudeControl_TiltQuad::var_info}, AP_PARAM_FLAG_POINTER },
+#else
     // @Group: Q_A_
     // @Path: ../libraries/AC_AttitudeControl/AC_AttitudeControl_Multi.cpp
     { AP_PARAM_GROUP, "Q_A_", Parameters::k_param_q_attitude_control,
       (const void *)&plane.quadplane.attitude_control,
       {group_info : AC_AttitudeControl_Multi::var_info}, AP_PARAM_FLAG_POINTER },
+#endif
+
     
     // RC channel
     //-----------
