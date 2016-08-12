@@ -325,6 +325,9 @@ private:
         // flag to hold whether battery low voltage threshold has been breached
         uint8_t low_battery:1;
 
+        // true if rc control are overwritten by ground station
+        uint8_t rc_override_active:1;
+
         // saved flight mode
         enum FlightMode saved_mode;
 
