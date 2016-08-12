@@ -346,7 +346,8 @@ static const struct {
 };
 
 QuadPlane::QuadPlane(AP_AHRS_NavEKF &_ahrs) :
-    ahrs(_ahrs)
+    ahrs(_ahrs),
+    motors(NULL)
 {
     AP_Param::setup_object_defaults(this, var_info);
 }

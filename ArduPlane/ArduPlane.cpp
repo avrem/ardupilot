@@ -914,6 +914,9 @@ void Plane::update_alt()
         sink_rate = -barometer.get_climb_rate();        
     }
 
+    if (quadplane.motors)
+        quadplane.motors->set_air_density_ratio(barometer.get_air_density_ratio());
+
     // low pass the sink rate to take some of the noise out
     auto_state.sink_rate = 0.8f * auto_state.sink_rate + 0.2f*sink_rate;
     
