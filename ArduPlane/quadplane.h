@@ -334,7 +334,12 @@ private:
     void tiltrotor_slew(float tilt);
     void tiltrotor_update(void);
     void tilt_compensate(float *thrust, uint8_t num_motors);
-  
+
+#if FRAME_CONFIG == TILT_QUAD_FRAME
+    float tilt_manual_throttle = 0.f;
+    void update_tiltquad_manual_throttle();
+#endif
+
 public:
     void motor_test_output();
     uint8_t mavlink_motor_test_start(mavlink_channel_t chan, uint8_t motor_seq, uint8_t throttle_type,
