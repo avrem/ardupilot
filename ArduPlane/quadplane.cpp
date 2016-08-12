@@ -556,6 +556,36 @@ void QuadPlane::hold_stabilize(float throttle_in)
     }
 }
 
+// get_pilot_desired_throttle - transform pilot's throttle input to make cruise throttle mid stick
+// used only for manual throttle modes
+// returns throttle output 0 to 1
+float QuadPlane::get_pilot_desired_throttle(int16_t throttle_control)
+{
+    float throttle_out;
+
+    int16_t mid_stick = plane.channel_throttle->get_control_mid();
+
+    // ensure reasonable throttle values
+    throttle_control = constrain_int16(throttle_control,0,1000);
+    // ensure mid throttle is set within a reasonable range
+    throttle_mid = constrain_int16(throttle_mid,throttle_min+50,700);
+    float thr_mid = MAX(0,throttle_mid-throttle_min) / (float)(1000-throttle_min);
+
+    // check throttle is above, below or in the deadband
+    if (throttle_control < mid_stick) {
+        // below the deadband
+        throttle_out = ((float)throttle_control)*thr_mid/(float)mid_stick;
+    }else if(throttle_control > mid_stick) {
+        // above the deadband
+        throttle_out = (thr_mid) + ((float)(throttle_control-mid_stick)) * (1.0f - thr_mid) / (float)(1000-mid_stick);
+    }else{
+        // must be in the deadband
+        throttle_out = thr_mid;
+    }
+
+    return throttle_out;
+}
+
 // quadplane stabilize mode
 void QuadPlane::control_stabilize(void)
 {
@@ -566,7 +596,7 @@ void QuadPlane::control_stabilize(void)
     }
 
     // normal QSTABILIZE mode
-    float pilot_throttle_scaled = plane.channel_throttle->get_control_in() / 100.0f;
+    float pilot_throttle_scaled = get_pilot_desired_throttle(plane.channel_throttle->get_control_in());
     hold_stabilize(pilot_throttle_scaled);
 
 }

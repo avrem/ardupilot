@@ -160,6 +160,8 @@ private:
     // get desired climb rate in cm/s
     float get_pilot_desired_climb_rate_cms(void);
 
+    float get_pilot_desired_throttle(int16_t throttle_control);
+
     // initialise throttle_wait when entering mode
     void init_throttle_wait();
 
@@ -257,7 +259,7 @@ private:
     // last throttle value when active
     float last_throttle;
 
-    const float smoothing_gain = 6;
+    const float smoothing_gain = 7;
 
     // true if we have reached the airspeed threshold for transition
     enum {
@@ -332,7 +334,7 @@ private:
     void tiltrotor_slew(float tilt);
     void tiltrotor_update(void);
     void tilt_compensate(float *thrust, uint8_t num_motors);
-    
+  
 public:
     void motor_test_output();
     uint8_t mavlink_motor_test_start(mavlink_channel_t chan, uint8_t motor_seq, uint8_t throttle_type,
