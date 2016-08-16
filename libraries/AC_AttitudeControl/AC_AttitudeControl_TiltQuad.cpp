@@ -22,8 +22,8 @@ const AP_Param::GroupInfo AC_AttitudeControl_TiltQuad::var_info[] = {
 // should be called at 100hz or more
 void AC_AttitudeControl_TiltQuad::rate_controller_run()
 {
-    _motors.set_roll(aeroxo_rate_bf_to_motor_roll(0));
-    _motors.set_pitch(aeroxo_rate_bf_to_motor_pitch(0));
+    _motors.set_roll(aeroxo_rate_bf_to_motor_roll(_ang_vel_target_rads.x));
+    _motors.set_pitch(aeroxo_rate_bf_to_motor_pitch(_ang_vel_target_rads.y));
     _motors.set_yaw(aeroxo_rate_bf_to_motor_yaw(_ang_vel_target_rads.z));
 }
 
@@ -40,13 +40,12 @@ float AC_AttitudeControl_TiltQuad::aeroxo_rate_bf_to_motor_roll(float rate_targe
 
     _pid_stabilize_roll_tilt.set_input_filter_d(angle_error_rads);
     float pi_tilt = _pid_stabilize_roll_tilt.get_pi();
-    float d_tilt = _pid_stabilize_roll_tilt.kD() * rate_error_rads;
+    float d_tilt = _pid_stabilize_roll_tilt.kD() * - current_rate_rads;
     _motors_tq.set_roll_tilt(control_mix(0, constrain_float(pi_tilt + d_tilt, -1.0f, 1.0f)));
 
-    _pid_stabilize_roll.set_input_filter_d(angle_error_rads);
-    float pi = _pid_stabilize_roll.get_pi();
-    float d = _pid_stabilize_roll.kD() * rate_error_rads;
-    return control_mix(constrain_float(pi + d, -1.0f, 1.0f), 0);
+    _pid_stabilize_roll.set_input_filter_d(rate_error_rads);
+    float pid = _pid_stabilize_roll.get_pid();
+    return control_mix(constrain_float(pid, -1.0f, 1.0f), 0);
 }
 
 float AC_AttitudeControl_TiltQuad::aeroxo_rate_bf_to_motor_pitch(float rate_target_rads)
@@ -57,13 +56,12 @@ float AC_AttitudeControl_TiltQuad::aeroxo_rate_bf_to_motor_pitch(float rate_targ
 
     _pid_stabilize_pitch_tilt.set_input_filter_d(angle_error_rads);
     float pi_tilt = _pid_stabilize_pitch_tilt.get_pi();
-    float d_tilt = _pid_stabilize_pitch_tilt.kD() * rate_error_rads;
+    float d_tilt = _pid_stabilize_pitch_tilt.kD() * - current_rate_rads;
     _motors_tq.set_pitch_tilt(control_mix(0, constrain_float(pi_tilt + d_tilt, -1.0f, 1.0f)));
 
-    _pid_stabilize_pitch.set_input_filter_d(angle_error_rads);
-    float pi = _pid_stabilize_pitch.get_pi();
-    float d = _pid_stabilize_pitch.kD() * rate_error_rads;
-    return control_mix(constrain_float(pi + d, -1.0f, 1.0f), 0);
+    _pid_stabilize_pitch.set_input_filter_d(rate_error_rads);
+    float pid = _pid_stabilize_pitch.get_pid();
+    return control_mix(constrain_float(pid, -1.0f, 1.0f), 0);
 }
 
 float AC_AttitudeControl_TiltQuad::aeroxo_rate_bf_to_motor_yaw(float rate_target_rads)
