@@ -8,8 +8,8 @@ const AP_Param::GroupInfo AC_AttitudeControl_TiltQuad::var_info[] = {
     // parameters from parent vehicle
     AP_NESTEDGROUPINFO(AC_AttitudeControl, 0),
 
-    AP_SUBGROUPINFO(_pid_stabilize_roll, "STB_RLL_", 1, AC_AttitudeControl_TiltQuad, AC_PID),
-    AP_SUBGROUPINFO(_pid_stabilize_pitch, "STB_PIT_", 2, AC_AttitudeControl_TiltQuad, AC_PID),
+    AP_SUBGROUPINFO(_pid_rate_roll, "RAT_RLL_", 1, AC_AttitudeControl_TiltQuad, AC_PID),
+    AP_SUBGROUPINFO(_pid_rate_pitch, "RAT_PIT_", 2, AC_AttitudeControl_TiltQuad, AC_PID),
     AP_SUBGROUPINFO(_pi_stabilize_yaw, "RAT_YAW_", 3, AC_AttitudeControl_TiltQuad, AC_PID),
     AP_SUBGROUPINFO(_pid_stabilize_roll_tilt, "STB_RL2_", 4, AC_AttitudeControl_TiltQuad, AC_PID),
     AP_SUBGROUPINFO(_pid_stabilize_pitch_tilt, "STB_PI2_", 5, AC_AttitudeControl_TiltQuad, AC_PID),
@@ -43,9 +43,22 @@ float AC_AttitudeControl_TiltQuad::aeroxo_rate_bf_to_motor_roll(float rate_targe
     float d_tilt = _pid_stabilize_roll_tilt.kD() * - current_rate_rads;
     _motors_tq.set_roll_tilt(control_mix(0, constrain_float(pi_tilt + d_tilt, -1.0f, 1.0f)));
 
-    _pid_stabilize_roll.set_input_filter_d(rate_error_rads);
-    float pid = _pid_stabilize_roll.get_pid();
-    return control_mix(constrain_float(pid, -1.0f, 1.0f), 0);
+    // pass error to PID controller
+    get_rate_roll_pid().set_input_filter_d(rate_error_rads);
+    get_rate_roll_pid().set_desired_rate(rate_target_rads);
+
+    float integrator = get_rate_roll_pid().get_integrator();
+
+    // Ensure that integrator can only be reduced if the output is saturated
+    if (!_motors.limit.roll_pitch || ((integrator > 0 && rate_error_rads < 0) || (integrator < 0 && rate_error_rads > 0))) {
+        integrator = get_rate_roll_pid().get_i();
+    }
+
+    // Compute output in range -1 ~ +1
+    float output = get_rate_roll_pid().get_p() + integrator + get_rate_roll_pid().get_d();
+
+    // Constrain output
+    return control_mix(constrain_float(output, -1.0f, 1.0f), 0);
 }
 
 float AC_AttitudeControl_TiltQuad::aeroxo_rate_bf_to_motor_pitch(float rate_target_rads)
@@ -59,9 +72,22 @@ float AC_AttitudeControl_TiltQuad::aeroxo_rate_bf_to_motor_pitch(float rate_targ
     float d_tilt = _pid_stabilize_pitch_tilt.kD() * - current_rate_rads;
     _motors_tq.set_pitch_tilt(control_mix(0, constrain_float(pi_tilt + d_tilt, -1.0f, 1.0f)));
 
-    _pid_stabilize_pitch.set_input_filter_d(rate_error_rads);
-    float pid = _pid_stabilize_pitch.get_pid();
-    return control_mix(constrain_float(pid, -1.0f, 1.0f), 0);
+    // pass error to PID controller
+    get_rate_pitch_pid().set_input_filter_d(rate_error_rads);
+    get_rate_pitch_pid().set_desired_rate(rate_target_rads);
+
+    float integrator = get_rate_pitch_pid().get_integrator();
+
+    // Ensure that integrator can only be reduced if the output is saturated
+    if (!_motors.limit.roll_pitch || ((integrator > 0 && rate_error_rads < 0) || (integrator < 0 && rate_error_rads > 0))) {
+        integrator = get_rate_pitch_pid().get_i();
+    }
+
+    // Compute output in range -1 ~ +1
+    float output = get_rate_pitch_pid().get_p() + integrator + get_rate_pitch_pid().get_d();
+
+    // Constrain output
+    return control_mix(constrain_float(output, -1.0f, 1.0f), 0);
 }
 
 float AC_AttitudeControl_TiltQuad::aeroxo_rate_bf_to_motor_yaw(float rate_target_rads)
@@ -83,8 +109,6 @@ void AC_AttitudeControl_TiltQuad::relax_bf_rate_controller()
 {
     AC_AttitudeControl::relax_bf_rate_controller();
 
-    _pid_stabilize_roll.reset_I();
-    _pid_stabilize_pitch.reset_I();
     _pi_stabilize_yaw.reset_I();
 
     _pid_stabilize_roll_tilt.reset_I();
@@ -95,8 +119,6 @@ void AC_AttitudeControl_TiltQuad::relax_bf_rate_controller()
 AC_AttitudeControl_TiltQuad::AC_AttitudeControl_TiltQuad(AP_AHRS &ahrs, const AP_Vehicle::MultiCopter &aparm, AP_MotorsTiltQuad& motors, float dt) :
     AC_AttitudeControl_Multi(ahrs, aparm, motors, dt),
     _motors_tq(motors),
-    _pid_stabilize_roll(0.5f, 0.25f, 0.2f, 0.133f, 0, _dt),
-    _pid_stabilize_pitch(0.378f, 0.25f, 0.2f, 0.133f, 0, _dt),
     _pi_stabilize_yaw(0.15f, 0.025f, 0, 0.266f, 0, _dt),
     _pid_stabilize_roll_tilt(0.5f, 0.25f, 0.2f, 1.000f, 0, _dt),
     _pid_stabilize_pitch_tilt(1.2f, 0.3f, 0.5f, 1.000f, 0, _dt),

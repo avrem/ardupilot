@@ -38,8 +38,6 @@ public:
 
 protected:
 
-    AC_PID _pid_stabilize_roll;
-    AC_PID _pid_stabilize_pitch;
     AC_PID _pi_stabilize_yaw;
 
     AC_PID _pid_stabilize_roll_tilt;
