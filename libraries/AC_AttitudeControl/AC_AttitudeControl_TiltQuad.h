@@ -28,6 +28,8 @@ public:
     float aeroxo_rate_bf_to_motor_pitch(float rate_target_rads);
     float aeroxo_rate_bf_to_motor_yaw(float rate_target_rads);
 
+    static float process_rate_pid(AC_PID &pid, float rate_error_rads, float rate_target_rads, bool saturated);
+
     // relax_bf_rate_controller - ensure body-frame rate controller has zero errors to relax rate controller output
     virtual void relax_bf_rate_controller();
 
