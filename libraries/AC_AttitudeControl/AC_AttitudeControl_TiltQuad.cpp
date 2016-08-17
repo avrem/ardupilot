@@ -32,6 +32,26 @@ float AC_AttitudeControl_TiltQuad::control_mix(float k_copter, float k_plane)
     return k_copter * _conv + k_plane * (1 - _conv);
 }
 
+float AC_AttitudeControl_TiltQuad::process_rate_pid(AC_PID &pid, float rate_error_rads, float rate_target_rads, bool saturated)
+{
+    // Pass error to PID controller
+    pid.set_input_filter_d(rate_error_rads);
+    pid.set_desired_rate(rate_target_rads);
+
+    float integrator = pid.get_integrator();
+
+    // Ensure that integrator can only be reduced if the output is saturated
+    if (!saturated || ((integrator > 0 && rate_error_rads < 0) || (integrator < 0 && rate_error_rads > 0))) {
+        integrator = pid.get_i();
+    }
+
+    // Compute output in range -1 ~ +1
+    float output = pid.get_p() + integrator + pid.get_d();
+
+    // Constrain output
+    return constrain_float(output, -1.0f, 1.0f);
+}
+
 float AC_AttitudeControl_TiltQuad::aeroxo_rate_bf_to_motor_roll(float rate_target_rads)
 {
     float current_rate_rads = _ahrs.get_gyro().x;
@@ -43,22 +63,8 @@ float AC_AttitudeControl_TiltQuad::aeroxo_rate_bf_to_motor_roll(float rate_targe
     float d_tilt = _pid_stabilize_roll_tilt.kD() * - current_rate_rads;
     _motors_tq.set_roll_tilt(control_mix(0, constrain_float(pi_tilt + d_tilt, -1.0f, 1.0f)));
 
-    // pass error to PID controller
-    get_rate_roll_pid().set_input_filter_d(rate_error_rads);
-    get_rate_roll_pid().set_desired_rate(rate_target_rads);
-
-    float integrator = get_rate_roll_pid().get_integrator();
-
-    // Ensure that integrator can only be reduced if the output is saturated
-    if (!_motors.limit.roll_pitch || ((integrator > 0 && rate_error_rads < 0) || (integrator < 0 && rate_error_rads > 0))) {
-        integrator = get_rate_roll_pid().get_i();
-    }
-
-    // Compute output in range -1 ~ +1
-    float output = get_rate_roll_pid().get_p() + integrator + get_rate_roll_pid().get_d();
-
-    // Constrain output
-    return control_mix(constrain_float(output, -1.0f, 1.0f), 0);
+    float output = process_rate_pid(get_rate_roll_pid(), rate_error_rads, rate_target_rads, _motors.limit.roll_pitch);
+    return control_mix(output, 0);
 }
 
 float AC_AttitudeControl_TiltQuad::aeroxo_rate_bf_to_motor_pitch(float rate_target_rads)
@@ -72,22 +78,8 @@ float AC_AttitudeControl_TiltQuad::aeroxo_rate_bf_to_motor_pitch(float rate_targ
     float d_tilt = _pid_stabilize_pitch_tilt.kD() * - current_rate_rads;
     _motors_tq.set_pitch_tilt(control_mix(0, constrain_float(pi_tilt + d_tilt, -1.0f, 1.0f)));
 
-    // pass error to PID controller
-    get_rate_pitch_pid().set_input_filter_d(rate_error_rads);
-    get_rate_pitch_pid().set_desired_rate(rate_target_rads);
-
-    float integrator = get_rate_pitch_pid().get_integrator();
-
-    // Ensure that integrator can only be reduced if the output is saturated
-    if (!_motors.limit.roll_pitch || ((integrator > 0 && rate_error_rads < 0) || (integrator < 0 && rate_error_rads > 0))) {
-        integrator = get_rate_pitch_pid().get_i();
-    }
-
-    // Compute output in range -1 ~ +1
-    float output = get_rate_pitch_pid().get_p() + integrator + get_rate_pitch_pid().get_d();
-
-    // Constrain output
-    return control_mix(constrain_float(output, -1.0f, 1.0f), 0);
+    float output = process_rate_pid(get_rate_pitch_pid(), rate_error_rads, rate_target_rads, _motors.limit.roll_pitch);
+    return control_mix(output, 0);
 }
 
 float AC_AttitudeControl_TiltQuad::aeroxo_rate_bf_to_motor_yaw(float rate_target_rads)
