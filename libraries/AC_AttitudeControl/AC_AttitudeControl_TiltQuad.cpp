@@ -11,8 +11,8 @@ const AP_Param::GroupInfo AC_AttitudeControl_TiltQuad::var_info[] = {
     AP_SUBGROUPINFO(_pid_rate_roll, "RAT_RLL_", 1, AC_AttitudeControl_TiltQuad, AC_PID),
     AP_SUBGROUPINFO(_pid_rate_pitch, "RAT_PIT_", 2, AC_AttitudeControl_TiltQuad, AC_PID),
     AP_SUBGROUPINFO(_pid_rate_yaw, "RAT_YAW_", 3, AC_AttitudeControl_TiltQuad, AC_PID),
-    AP_SUBGROUPINFO(_pid_stabilize_roll_tilt, "STB_RL2_", 4, AC_AttitudeControl_TiltQuad, AC_PID),
-    AP_SUBGROUPINFO(_pid_stabilize_pitch_tilt, "STB_PI2_", 5, AC_AttitudeControl_TiltQuad, AC_PID),
+    AP_SUBGROUPINFO(_pid_rate_roll_tilt, "RAT_RL2_", 4, AC_AttitudeControl_TiltQuad, AC_PID),
+    AP_SUBGROUPINFO(_pid_rate_pitch_tilt, "RAT_PI2_", 5, AC_AttitudeControl_TiltQuad, AC_PID),
     AP_SUBGROUPINFO(_pid_rate_yaw_tilt, "RAT_YA2_", 6, AC_AttitudeControl_TiltQuad, AC_PID),
 
     AP_GROUPEND
@@ -56,12 +56,9 @@ float AC_AttitudeControl_TiltQuad::aeroxo_rate_bf_to_motor_roll(float rate_targe
 {
     float current_rate_rads = _ahrs.get_gyro().x;
     float rate_error_rads = rate_target_rads - current_rate_rads;  
-    float angle_error_rads = _att_error_rot_vec_rad.x;
 
-    _pid_stabilize_roll_tilt.set_input_filter_d(angle_error_rads);
-    float pi_tilt = _pid_stabilize_roll_tilt.get_pi();
-    float d_tilt = _pid_stabilize_roll_tilt.kD() * - current_rate_rads;
-    _motors_tq.set_roll_tilt(control_mix(0, constrain_float(pi_tilt + d_tilt, -1.0f, 1.0f)));
+    float output_tilt = process_rate_pid(_pid_rate_roll_tilt, rate_error_rads, rate_target_rads, false);
+    _motors_tq.set_roll_tilt(control_mix(0, output_tilt));
 
     float output = process_rate_pid(get_rate_roll_pid(), rate_error_rads, rate_target_rads, _motors.limit.roll_pitch);
     return control_mix(output, 0);
@@ -71,12 +68,9 @@ float AC_AttitudeControl_TiltQuad::aeroxo_rate_bf_to_motor_pitch(float rate_targ
 {
     float current_rate_rads = _ahrs.get_gyro().y;
     float rate_error_rads = rate_target_rads - current_rate_rads;
-    float angle_error_rads = _att_error_rot_vec_rad.y;
 
-    _pid_stabilize_pitch_tilt.set_input_filter_d(angle_error_rads);
-    float pi_tilt = _pid_stabilize_pitch_tilt.get_pi();
-    float d_tilt = _pid_stabilize_pitch_tilt.kD() * - current_rate_rads;
-    _motors_tq.set_pitch_tilt(control_mix(0, constrain_float(pi_tilt + d_tilt, -1.0f, 1.0f)));
+    float output_tilt = process_rate_pid(_pid_rate_pitch_tilt, rate_error_rads, rate_target_rads, false);
+    _motors_tq.set_pitch_tilt(control_mix(0, output_tilt));
 
     float output = process_rate_pid(get_rate_pitch_pid(), rate_error_rads, rate_target_rads, _motors.limit.roll_pitch);
     return control_mix(output, 0);
@@ -101,16 +95,16 @@ void AC_AttitudeControl_TiltQuad::relax_bf_rate_controller()
 {
     AC_AttitudeControl::relax_bf_rate_controller();
 
-    _pid_stabilize_roll_tilt.reset_I();
-    _pid_stabilize_pitch_tilt.reset_I();
+    _pid_rate_roll_tilt.reset_I();
+    _pid_rate_pitch_tilt.reset_I();
     _pid_rate_yaw_tilt.reset_I();
 }
 
 AC_AttitudeControl_TiltQuad::AC_AttitudeControl_TiltQuad(AP_AHRS &ahrs, const AP_Vehicle::MultiCopter &aparm, AP_MotorsTiltQuad& motors, float dt) :
     AC_AttitudeControl_Multi(ahrs, aparm, motors, dt),
     _motors_tq(motors),
-    _pid_stabilize_roll_tilt(0.5f, 0.25f, 0.2f, 1.000f, 0, _dt),
-    _pid_stabilize_pitch_tilt(1.2f, 0.3f, 0.5f, 1.000f, 0, _dt),
+    _pid_rate_roll_tilt(0.5f, 0.25f, 0.2f, 1.000f, 0, _dt),
+    _pid_rate_pitch_tilt(1.2f, 0.3f, 0.5f, 1.000f, 0, _dt),
     _pid_rate_yaw_tilt(0.075f, 0.0125f, 0.025f, 0.266f, 5, _dt)
 { 
     _pid_rate_yaw = AC_PID(0.15f, 0.025f, 0, 0.266f, 0, _dt);
