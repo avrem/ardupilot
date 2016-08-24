@@ -21,6 +21,7 @@ public:
 
     // setup_motors - configures the motors for a tiltquad
     virtual void        setup_motors();
+    void                add_motor_tq(int8_t motor_num, float angle_degrees, float yaw_factor, uint8_t testing_order, float rt_factor, float pt_factor, float yt_factor);
     virtual void        set_update_rate( uint16_t speed_hz );
 
     void                set_conversion(int16_t conv) {_conv = conv;}
@@ -36,8 +37,13 @@ public:
 
 protected:
     int16_t            _conv; // conversion state
+
     float              _roll_tilt;
     float              _pitch_tilt;
     float              _yaw_tilt;
+
+    float              _roll_tilt_factor[4];
+    float              _pitch_tilt_factor[4];
+    float              _yaw_tilt_factor[4];
 };
 #endif  // AP_MOTORS_TILT_QUAD
