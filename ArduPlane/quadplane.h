@@ -260,7 +260,7 @@ private:
     // last throttle value when active
     float last_throttle;
 
-    const float smoothing_gain = 7;
+    const float smoothing_gain = 4.5f;
 
     // true if we have reached the airspeed threshold for transition
     enum {
