@@ -103,9 +103,9 @@ void AC_AttitudeControl_TiltQuad::relax_bf_rate_controller()
 AC_AttitudeControl_TiltQuad::AC_AttitudeControl_TiltQuad(AP_AHRS &ahrs, const AP_Vehicle::MultiCopter &aparm, AP_MotorsTiltQuad& motors, float dt) :
     AC_AttitudeControl_Multi(ahrs, aparm, motors, dt),
     _motors_tq(motors),
-    _pid_rate_roll_tilt(0.5f, 0.25f, 0.2f, 1.000f, 0, _dt),
-    _pid_rate_pitch_tilt(1.2f, 0.3f, 0.5f, 1.000f, 0, _dt),
+    _pid_rate_roll_tilt(0.045f, 0.0135f, 0.00165f, 0.06f, 10, _dt),
+    _pid_rate_pitch_tilt(0.05f, 0.015f, 0.002f, 0.1f, 10, _dt),
     _pid_rate_yaw_tilt(0.075f, 0.0125f, 0.025f, 0.266f, 5, _dt)
 { 
-    _pid_rate_yaw = AC_PID(0.15f, 0.025f, 0, 0.266f, 0, _dt);
+    _pid_rate_yaw = AC_PID(0.015f, 0.0025f, 0.0008f, 0.04f, 5, _dt);
 }
