@@ -1079,8 +1079,8 @@ void QuadPlane::motors_output(void)
         // output is direct from run_esc_calibration()
         return;
     }
-    motors->output();
-    motors->output_tilt();
+
+    motors->output();   
     if (motors->armed()) {
         plane.DataFlash.Log_Write_Rate(plane.ahrs, *motors, *attitude_control, *pos_control);
         Log_Write_QControl_Tuning();
@@ -1089,6 +1089,11 @@ void QuadPlane::motors_output(void)
             attitude_control->control_monitor_log();
         }
     }
+}
+
+void QuadPlane::tilt_output(void)
+{
+    motors->output_tilt();
 }
 
 /*
