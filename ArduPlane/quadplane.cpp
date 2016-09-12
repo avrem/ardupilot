@@ -335,16 +335,12 @@ static const struct {
     const char *name;
     float value;
 } defaults_table[] = {
-#if FRAME_CONFIG == TILT_QUAD_FRAME
-    { "ATC_ANGLE_BOOST",     0 },
-#else
     { "Q_A_RAT_RLL_P",    0.25 },
     { "Q_A_RAT_RLL_I",    0.25 },
     { "Q_A_RAT_RLL_FILT", 10.0 },
     { "Q_A_RAT_PIT_P",    0.25 },
     { "Q_A_RAT_PIT_I",    0.25 },
     { "Q_A_RAT_PIT_FILT", 10.0 },
-#endif
 };
 
 QuadPlane::QuadPlane(AP_AHRS_NavEKF &_ahrs) :
@@ -476,7 +472,9 @@ bool QuadPlane::setup(void)
     
     transition_state = TRANSITION_DONE;
 
+#if FRAME_CONFIG != TILT_QUAD_FRAME
     setup_defaults();
+#endif
     
     GCS_MAVLINK::send_statustext_all(MAV_SEVERITY_INFO, "QuadPlane initialised");
     initialised = true;
