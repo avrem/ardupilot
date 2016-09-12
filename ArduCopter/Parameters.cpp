@@ -873,6 +873,11 @@ const AP_Param::Info Copter::var_info[] = {
     // @Path: ../libraries/AP_Motors/AP_MotorsTri.cpp
     GOBJECT(motors, "MOT_",           AP_MotorsTri),
 
+#elif FRAME_CONFIG == TILT_QUAD_FRAME
+    // @Group: MOT_
+    // @Path: ../libraries/AP_Motors/AP_MotorsTri.cpp
+    GOBJECT(motors, "MOT_",           AP_MotorsTiltQuad),
+
 #else
     // @Group: MOT_
     // @Path: ../libraries/AP_Motors/AP_MotorsMulticopter.cpp

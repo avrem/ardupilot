@@ -24,6 +24,32 @@
 #include <AP_HAL/AP_HAL.h>
 extern const AP_HAL::HAL& hal;
 
+
+const AP_Param::GroupInfo AP_MotorsTiltQuad::var_info[] = {
+    // variables from parent vehicle
+    AP_NESTEDGROUPINFO(AP_MotorsMulticopter, 0),
+
+    // parameters 1 ~ 29 were reserved for tradheli
+    // parameters 30 ~ 39 reserved for tricopter
+    // parameters 40 ~ 49 for single copter and coax copter (these have identical parameter files)
+    // parameters 50 ~ 59 for tilt-quad
+
+	// @Param: SV_SPEED
+    // @DisplayName: Servo speed 
+    // @Description: Servo update speed in hz
+    // @Values: 50, 125, 250
+    AP_GROUPINFO("SV_SPEED", 50, AP_MotorsTiltQuad, _servo_speed, 50),
+
+    AP_GROUPINFO("SV_OFFSET", 51, AP_MotorsTiltQuad, _servo_offset, 8),
+
+    AP_GROUPINFO("SV1_TRIM", 52, AP_MotorsTiltQuad, _servo1_trim, 0),
+    AP_GROUPINFO("SV2_TRIM", 53, AP_MotorsTiltQuad, _servo2_trim, 0),
+    AP_GROUPINFO("SV3_TRIM", 54, AP_MotorsTiltQuad, _servo3_trim, 0),
+    AP_GROUPINFO("SV4_TRIM", 55, AP_MotorsTiltQuad, _servo4_trim, 0),
+
+    AP_GROUPEND
+};
+
 void AP_MotorsTiltQuad::add_motor_tq(int8_t motor_num, float angle_degrees, float yaw_factor, uint8_t testing_order, float rt_factor, float pt_factor, float yt_factor)
 {
     add_motor(motor_num, angle_degrees, yaw_factor, testing_order);
@@ -65,11 +91,11 @@ void AP_MotorsTiltQuad::set_update_rate( uint16_t speed_hz )
     rc_set_freq(mask, _speed_hz);
 
     uint32_t mask2 =
-        1U << (servo_offset + 0) |
-        1U << (servo_offset + 1) |
-        1U << (servo_offset + 2) |
-        1U << (servo_offset + 3);
-    hal.rcout->set_freq(mask2, 50);    
+        1U << (_servo_offset + 0) |
+        1U << (_servo_offset + 1) |
+        1U << (_servo_offset + 2) |
+        1U << (_servo_offset + 3);
+    hal.rcout->set_freq(mask2, _servo_speed);    
 }
 
 // sets motor tilt based on desired r/p/y and current conversion
@@ -78,10 +104,10 @@ void AP_MotorsTiltQuad::output_tilt()
     uint16_t s[4];
 
     // base conversion angles
-    s[0] = 1000 + _conv;
-    s[1] = 2000 - _conv;
-    s[2] = 2000 - _conv;
-    s[3] = 1000 + _conv;
+    s[0] = 1000 + _conv + _servo1_trim;
+    s[1] = 2000 - _conv - _servo2_trim;
+    s[2] = 2000 - _conv - _servo3_trim;
+    s[3] = 1000 + _conv + _servo4_trim;
 
     for (int i = 0; i < 4; i++) {
         float throttle = ((float)calc_thrust_to_pwm(_thrust_rpyt_out[i]) - get_pwm_output_min()) / (get_pwm_output_max() - get_pwm_output_min());
@@ -96,6 +122,6 @@ void AP_MotorsTiltQuad::output_tilt()
             s[i] += constrain_int16(angle / M_PI_2 * 1000, -300, 300);
         }
 
-        hal.rcout->write(servo_offset + i, s[i]);
+        hal.rcout->write(_servo_offset + i, s[i]);
     }
 }

@@ -17,7 +17,9 @@ public:
     /// Constructor
     AP_MotorsTiltQuad(uint16_t loop_rate, uint16_t speed_hz = AP_MOTORS_SPEED_DEFAULT) :
         AP_MotorsMatrix(loop_rate, speed_hz)
-    {};
+    {
+        AP_Param::setup_object_defaults(this, var_info);
+    };
 
     // setup_motors - configures the motors for a tiltquad
     virtual void        setup_motors();
@@ -29,13 +31,22 @@ public:
     // sets motor tilt based on desired r/p/y and current conversion
     void                output_tilt();
 
-    const int servo_offset = 8; // on navio2 servos start from output #9
-
     void                set_roll_tilt(float roll_tilt) { _roll_tilt = roll_tilt; }
     void                set_pitch_tilt(float pitch_tilt) { _pitch_tilt = pitch_tilt; }
     void                set_yaw_tilt(float yaw_tilt) { _yaw_tilt = yaw_tilt; }
 
+    // var_info for holding Parameter information
+    static const struct AP_Param::GroupInfo var_info[];
+
 protected:
+    // parameters
+    AP_Int16           _servo_speed;
+    AP_Int8            _servo_offset;
+    AP_Int16           _servo1_trim;
+    AP_Int16           _servo2_trim;
+    AP_Int16           _servo3_trim;
+    AP_Int16           _servo4_trim;
+
     int16_t            _conv; // conversion state
 
     float              _roll_tilt;
