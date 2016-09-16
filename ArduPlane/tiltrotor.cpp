@@ -21,9 +21,7 @@ void QuadPlane::tiltrotor_slew(float newtilt)
     int16_t conv = constrain_int16(1000 * (1 - tilt.current_tilt), 0, 1000);
     motors->set_conversion(conv);
     attitude_control->set_conversion(conv);
-#if CONFIG_HAL_BOARD == HAL_BOARD_SITL
-    hal.rcout->write(7, conv);
-#endif
+    hal.rcout->write(7, conv); // telemetry feedback
 #else
     RC_Channel_aux::set_servo_out_for(RC_Channel_aux::k_motor_tilt, 1000 * tilt.current_tilt);
 #endif
