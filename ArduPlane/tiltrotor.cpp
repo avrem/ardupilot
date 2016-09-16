@@ -108,7 +108,13 @@ void QuadPlane::tiltrotor_update(void)
     */
     if (plane.control_mode == QSTABILIZE ||
         plane.control_mode == QHOVER) {
+#if FRAME_CONFIG == TILT_QUAD_FRAME
+        // use manual copter modes for tilt test flights
+        float manual_tilt = constrain_float(1.0f - plane.g.rc_8.percent_input() * 0.01f, 0, 1);
+        tiltrotor_slew(manual_tilt);
+#else
         tiltrotor_slew(0);
+#endif
         return;
     }
 
