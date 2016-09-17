@@ -19,7 +19,7 @@ void Copter::update_tiltquad_manual_throttle()
 
 void Copter::update_tiltquad_conversion()
 {    
-    float rc_conv = g.rc_8.norm_input_dz();
+    float rc_conv = g.rc_6.norm_input_dz();
     if (failsafe.rc_override_active) {
         if (rc_conv > 0.1)
             _conv += 10;
