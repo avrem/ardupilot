@@ -124,12 +124,18 @@ void QuadPlane::tiltrotor_update(void)
         // we are transitioning to fixed wing - tilt the motors all
         // the way forward
         tiltrotor_slew(1);
-    } else {
+    } 
+    else if (!in_vtol_mode() && 
+        transition_state == TRANSITION_AIRSPEED_WAIT) {
+        // we are starting fixed wing transition - tilt the motors to intermediate state
+        tiltrotor_slew(tilt.max_angle_deg / 90.0f);
+    }
+    else { // VTOL forward assist
         // until we have completed the transition we limit the tilt to
         // Q_TILT_MAX. Anything above 50% throttle gets
         // Q_TILT_MAX. Below 50% throttle we decrease linearly. This
         // relies heavily on Q_VFWD_GAIN being set appropriately.
-        float settilt = constrain_float(plane.channel_throttle->get_servo_out() / 50.0f, 0, 1);
+        float settilt = constrain_float(plane.channel_throttle->get_servo_out() / (plane.aparm.throttle_max * 0.5f), 0, 1);
         tiltrotor_slew(settilt * tilt.max_angle_deg / 90.0f);
     }
 }
