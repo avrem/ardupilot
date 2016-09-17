@@ -590,7 +590,7 @@ float QuadPlane::get_pilot_desired_throttle(int16_t throttle_control)
         throttle_out = ((float)throttle_control)*thr_mid/(float)mid_stick;
     }else if(throttle_control > mid_stick) {
         // above the deadband
-        throttle_out = (thr_mid) + ((float)(throttle_control-mid_stick)) * (1.0f - thr_mid) / (float)(1000-mid_stick);
+        throttle_out = (thr_mid) + ((float)(throttle_control-mid_stick)) * (1.0f - thr_mid) / (float)(100-mid_stick);
     }else{
         // must be in the deadband
         throttle_out = thr_mid;
