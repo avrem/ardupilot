@@ -32,9 +32,7 @@ void Copter::update_tiltquad_conversion()
 
     attitude_control.set_conversion(_conv);
     motors.set_conversion(_conv);
-#if CONFIG_HAL_BOARD == HAL_BOARD_SITL
     hal.rcout->write(7, _conv);
-#endif
 }
 
 #endif // FRAME_CONFIG == TILT_QUAD_FRAME
