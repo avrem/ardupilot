@@ -65,10 +65,13 @@ void QuadPlane::tiltrotor_update(void)
             tilt.current_throttle = 0;
         } else {
 #if FRAME_CONFIG == TILT_QUAD_FRAME
+            float desired_yaw_rate = desired_auto_yaw_rate_cds();
+            if (plane.control_mode == FLY_BY_WIRE_A || plane.control_mode == FLY_BY_WIRE_B)
+                desired_yaw_rate += get_pilot_input_yaw_rate_cds();
             attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw_smooth(
                 plane.nav_roll_cd, 
                 plane.nav_pitch_cd, 
-                desired_auto_yaw_rate_cds(), 
+                desired_yaw_rate, 
                 smoothing_gain);
             attitude_control->set_throttle_out(tilt.current_throttle, true, 0);
             attitude_control->rate_controller_run();
