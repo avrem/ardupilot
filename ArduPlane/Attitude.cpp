@@ -819,9 +819,6 @@ void Plane::set_servos(void)
 {
     int16_t last_throttle = channel_throttle->get_radio_out();
 
-    // do any transition updates for quadplane
-    quadplane.update();    
-
     if (control_mode == AUTO && auto_state.idle_mode) {
         // special handling for balloon launch
         set_servos_idle();
@@ -1033,6 +1030,9 @@ void Plane::set_servos(void)
         }
 #endif
     }
+
+    // do any transition updates for quadplane
+    quadplane.update();    
 
     // Auto flap deployment
     int8_t auto_flap_percent = 0;
