@@ -72,6 +72,11 @@ void Plane::failsafe_long_on_event(enum failsafe_state fstype, ModeReason reason
     //  If the GCS is locked up we allow control to revert to RC
     RC_Channels::clear_overrides();
     failsafe.state = fstype;
+
+    // if motors are not armed there is nothing more to do
+    if (!hal.util->get_soft_armed())
+        return;
+
     switch (control_mode->mode_number())
     {
     case Mode::Number::MANUAL:
@@ -116,7 +121,7 @@ void Plane::failsafe_long_on_event(enum failsafe_state fstype, ModeReason reason
 #endif
         } else if (g.fs_action_long == FS_ACTION_LONG_GLIDE) {
             set_mode(mode_fbwa, reason);
-        } else if (g.fs_action_long == FS_ACTION_LONG_RTL) {
+        } else if (g.fs_action_long == FS_ACTION_LONG_RTL || fstype == FAILSAFE_GCS) {
             set_mode(mode_rtl, reason);
         }
         break;

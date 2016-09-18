@@ -369,6 +369,10 @@ void Plane::check_long_failsafe()
         } else if (failsafe.state == FAILSAFE_LONG && 
                    !failsafe.rc_failsafe) {
             failsafe_long_off_event(ModeReason::RADIO_FAILSAFE);
+        } else if (failsafe.state == FAILSAFE_GCS &&
+            g.gcs_heartbeat_fs_enabled == GCS_FAILSAFE_HB_AUTO &&
+            control_mode != &mode_auto) {
+            failsafe_long_off_event(ModeReason::GCS_FAILSAFE);
         }
     }
 }
@@ -382,7 +386,11 @@ void Plane::check_short_failsafe()
        flight_stage != AP_Vehicle::FixedWing::FLIGHT_LAND) {
         // The condition is checked and the flag rc_failsafe is set in radio.cpp
         if(failsafe.rc_failsafe) {
+#if FRAME_CONFIG == TILT_QUAD_FRAME
+            failsafe_long_on_event(FAILSAFE_LONG, ModeReason::RADIO_FAILSAFE);
+#else
             failsafe_short_on_event(FAILSAFE_SHORT, ModeReason::RADIO_FAILSAFE);
+#endif
         }
     }
 
