@@ -8,6 +8,7 @@ void Plane::failsafe_short_on_event(enum failsafe_state fstype, mode_reason_t re
     failsafe.state = fstype;
     failsafe.ch3_timer_ms = millis();
     gcs_send_text(MAV_SEVERITY_WARNING, "Failsafe. Short event on, ");
+#if FRAME_CONFIG != TILT_QUAD_FRAME
     switch(control_mode)
     {
     case MANUAL:
@@ -57,6 +58,7 @@ void Plane::failsafe_short_on_event(enum failsafe_state fstype, mode_reason_t re
     default:
         break;
     }
+#endif
     gcs_send_text_fmt(MAV_SEVERITY_INFO, "Flight mode = %u", (unsigned)control_mode);
 }
 
@@ -85,14 +87,14 @@ void Plane::failsafe_long_on_event(enum failsafe_state fstype, mode_reason_t rea
         } else if (g.long_fs_action == 2) {
             set_mode(FLY_BY_WIRE_A, reason);
         } else {
-            set_mode(RTL, reason);
+            set_mode(QRTL, reason);
         }
         break;
 
     case QSTABILIZE:
     case QHOVER:
     case QLOITER:
-        set_mode(QLAND, reason);
+        set_mode(QRTL, reason);
         break;
         
     case AUTO:
@@ -106,7 +108,7 @@ void Plane::failsafe_long_on_event(enum failsafe_state fstype, mode_reason_t rea
         } else if (g.long_fs_action == 2) {
             set_mode(FLY_BY_WIRE_A, reason);
         } else if (g.long_fs_action == 1) {
-            set_mode(RTL, reason);
+            set_mode(QRTL, reason);
         }
         break;
 

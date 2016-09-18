@@ -246,6 +246,7 @@ void Plane::read_radio()
 
 void Plane::control_failsafe(uint16_t pwm)
 {
+#if FRAME_CONFIG != TILT_QUAD_FRAME
     if (millis() - failsafe.last_valid_rc_ms > 1000 || rc_failsafe_active()) {
         // we do not have valid RC input. Set all primary channel
         // control inputs to the trim value and throttle to min
@@ -260,6 +261,7 @@ void Plane::control_failsafe(uint16_t pwm)
         channel_rudder->set_control_in(0);
         channel_throttle->set_control_in(0);
     }
+#endif
 
     if(g.throttle_fs_enabled == 0)
         return;
@@ -269,13 +271,13 @@ void Plane::control_failsafe(uint16_t pwm)
             // we detect a failsafe from radio
             // throttle has dropped below the mark
             failsafe.ch3_counter++;
-            if (failsafe.ch3_counter == 10) {
+            if (failsafe.ch3_counter == 3) {
                 gcs_send_text_fmt(MAV_SEVERITY_WARNING, "Throttle failsafe on %u", (unsigned)pwm);
                 failsafe.ch3_failsafe = true;
                 AP_Notify::flags.failsafe_radio = true;
             }
-            if (failsafe.ch3_counter > 10) {
-                failsafe.ch3_counter = 10;
+            if (failsafe.ch3_counter > 3) {
+                failsafe.ch3_counter = 3;
             }
 
         }else if(failsafe.ch3_counter > 0) {
