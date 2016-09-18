@@ -65,6 +65,11 @@ void Plane::failsafe_long_on_event(enum failsafe_state fstype, mode_reason_t rea
     //  If the GCS is locked up we allow control to revert to RC
     RC_Channels::clear_overrides();
     failsafe.state = fstype;
+
+    // if motors are not armed there is nothing more to do
+    if (!hal.util->get_soft_armed())
+        return;
+
     switch(control_mode)
     {
     case MANUAL:
@@ -90,7 +95,7 @@ void Plane::failsafe_long_on_event(enum failsafe_state fstype, mode_reason_t rea
     case QSTABILIZE:
     case QHOVER:
     case QLOITER:
-        set_mode(QLAND, reason);
+        set_mode(QRTL, reason);
         break;
         
     case AUTO:
@@ -103,7 +108,7 @@ void Plane::failsafe_long_on_event(enum failsafe_state fstype, mode_reason_t rea
 #endif
         } else if (g.fs_action_long == FS_ACTION_LONG_GLIDE) {
             set_mode(FLY_BY_WIRE_A, reason);
-        } else if (g.fs_action_long == FS_ACTION_LONG_RTL) {
+        } else if (g.fs_action_long == FS_ACTION_LONG_RTL || fstype == FAILSAFE_GCS) {
             set_mode(RTL, reason);
         }
         break;

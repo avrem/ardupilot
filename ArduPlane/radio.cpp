@@ -230,6 +230,7 @@ void Plane::read_radio()
 
 void Plane::control_failsafe()
 {
+#if FRAME_CONFIG != TILT_QUAD_FRAME
     if (millis() - failsafe.last_valid_rc_ms > 1000 || rc_failsafe_active()) {
         // we do not have valid RC input. Set all primary channel
         // control inputs to the trim value and throttle to min
@@ -245,6 +246,7 @@ void Plane::control_failsafe()
         channel_rudder->set_control_in(0);
         channel_throttle->set_control_in(0);
     }
+#endif
 
     if(g.throttle_fs_enabled == 0)
         return;
@@ -254,13 +256,13 @@ void Plane::control_failsafe()
             // we detect a failsafe from radio
             // throttle has dropped below the mark
             failsafe.throttle_counter++;
-            if (failsafe.throttle_counter == 10) {
+            if (failsafe.throttle_counter == 3) {
                 gcs().send_text(MAV_SEVERITY_WARNING, "Throttle failsafe on");
                 failsafe.rc_failsafe = true;
                 AP_Notify::flags.failsafe_radio = true;
             }
-            if (failsafe.throttle_counter > 10) {
-                failsafe.throttle_counter = 10;
+            if (failsafe.throttle_counter > 3) {
+                failsafe.throttle_counter = 3;
             }
 
         }else if(failsafe.throttle_counter > 0) {
@@ -345,6 +347,8 @@ bool Plane::rc_failsafe_active(void)
     if (!g.throttle_fs_enabled) {
         return false;
     }
+    if (g.fs_action_long == FS_ACTION_LONG_CONTINUE && (control_mode == AUTO || control_mode == GUIDED || control_mode == LOITER))
+        return false;
     if (millis() - failsafe.last_valid_rc_ms > 1000) {
         // we haven't had a valid RC frame for 1 seconds
         return true;
