@@ -1,8 +1,12 @@
 ATC_ANGLE_BOOST	0
 ARMING_CHECK    -65
+
 MOT_PWM_MIN     1100
 MOT_PWM_MAX     2000
 MOT_THST_EXPO   0
+THR_MIN         10
+MOT_SPIN_ARMED  0
+
 EK2_ENABLE      1
 AHRS_EKF_TYPE   2
 FRAME		10
@@ -46,7 +50,6 @@ RC8_MAX         1900.000000
 RC8_MIN         1100.000000
 RC8_TRIM        1500.000000
 RC8_DZ          100
-THR_MIN         10
 FLTMODE1        7
 FLTMODE2        9
 FLTMODE3        6
@@ -85,20 +88,3 @@ INS_ACC3SCAL_X   1.000
 INS_ACC3SCAL_Y   1.000
 INS_ACC3SCAL_Z   1.000
 THR_DZ 30
-# flightmodes
-# switch 1 Circle
-# switch 2 LAND
-# switch 3 RTL
-# switch 4 Auto
-# switch 5 Loiter
-# switch 6 Stab
-# STABILIZE 	0 !
-# ACRO 			1
-# ALT_HOLD 		2
-# AUTO 			3 !
-# GUIDED 		4
-# LOITER 		5 !
-# RTL 			6 !
-# CIRCLE 		7 !
-# POSITION 		8
-# LAND 			9 !
