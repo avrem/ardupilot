@@ -75,7 +75,7 @@ QuadPlane::QuadPlane(const char *home_str, const char *frame_str) :
 
     // we use zero terminal velocity to let the plane model handle the drag
     // mirror_wing requires more raw power
-    frame->init(mass, mirror_wing ? 0.2 : 0.51, 0, 0);
+    frame->init(mass, mirror_wing ? 0.4 : 0.51, 0, 0);
 
 }
 
