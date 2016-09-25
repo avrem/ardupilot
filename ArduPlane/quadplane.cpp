@@ -555,25 +555,11 @@ void QuadPlane::hold_stabilize(float throttle_in)
     }
 }
 
-#if FRAME_CONFIG == TILT_QUAD_FRAME
-void QuadPlane::update_tiltquad_manual_throttle()
-{
-    int16_t t_off = plane.channel_throttle->get_control_in() - plane.channel_throttle->get_control_mid();
-    if (abs(t_off) > plane.channel_throttle->get_dead_zone())
-        tilt_manual_throttle = constrain_float(tilt_manual_throttle + 0.02f * 0.01f * t_off / 50, 0, 1);
-}
-#endif
-
 // get_pilot_desired_throttle - transform pilot's throttle input to make cruise throttle mid stick
 // used only for manual throttle modes
 // returns throttle output 0 to 1
 float QuadPlane::get_pilot_desired_throttle(int16_t throttle_control)
 {
-#if FRAME_CONFIG == TILT_QUAD_FRAME
-    if (plane.failsafe.rc_override_active)
-        return tilt_manual_throttle;
-#endif
-
     float throttle_out;
 
     int16_t mid_stick = plane.channel_throttle->get_control_mid();
