@@ -731,7 +731,7 @@ void QuadPlane::hold_stabilize(float throttle_in)
     // call attitude controller
     multicopter_attitude_rate_update(get_desired_yaw_rate_cds());
 
-    if (throttle_in <= 0) {
+    if (throttle_in <= 0 && (AP_HAL::millis() - last_motors_active_ms >= 400)) {
         motors->set_desired_spool_state(AP_Motors::DESIRED_SPIN_WHEN_ARMED);
         if (is_tailsitter()) {
             // always stabilize with tailsitters so we can do belly takeoffs
@@ -1565,9 +1565,9 @@ void QuadPlane::update(void)
  */
 void QuadPlane::check_throttle_suppression(void)
 {
-    // if the motors have been running in the last 2 seconds then
+    // if the motors have been running in the last 0.4 seconds then
     // allow them to run now
-    if (AP_HAL::millis() - last_motors_active_ms < 2000) {
+    if (AP_HAL::millis() - last_motors_active_ms < 400) {
         return;
     }
 
