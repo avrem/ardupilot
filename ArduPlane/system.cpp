@@ -814,6 +814,10 @@ int8_t Plane::throttle_percentage(void)
 void Plane::change_arm_state(void)
 {
     Log_Arm_Disarm();
+
+    // log flight mode in case it was changed while vehicle was disarmed
+    DataFlash.Log_Write_Mode(control_mode);
+
     hal.util->set_soft_armed(arming.is_armed() &&
                              hal.util->safety_switch_state() != AP_HAL::Util::SAFETY_DISARMED);
     quadplane.set_armed(hal.util->get_soft_armed());
