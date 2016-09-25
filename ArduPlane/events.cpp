@@ -64,6 +64,10 @@ void Plane::failsafe_short_on_event(enum failsafe_state fstype, mode_reason_t re
 
 void Plane::failsafe_long_on_event(enum failsafe_state fstype, mode_reason_t reason)
 {
+    // if motors are not armed there is nothing to do
+    if (!hal.util->get_soft_armed())
+        return;
+
     // This is how to handle a long loss of control signal failsafe.
     gcs_send_text(MAV_SEVERITY_WARNING, "Failsafe. Long event on, ");
     //  If the GCS is locked up we allow control to revert to RC
