@@ -47,6 +47,8 @@ const AP_Param::GroupInfo AP_MotorsTiltQuad::var_info[] = {
     AP_GROUPINFO("SV3_TRIM", 54, AP_MotorsTiltQuad, _servo3_trim, 0),
     AP_GROUPINFO("SV4_TRIM", 55, AP_MotorsTiltQuad, _servo4_trim, 0),
 
+    AP_GROUPINFO("SV_SCALE", 56, AP_MotorsTiltQuad, _servo_scale, 1),
+
     AP_GROUPEND
 };
 
@@ -121,6 +123,8 @@ void AP_MotorsTiltQuad::output_tilt()
 
             s[i] += constrain_int16(angle / M_PI_2 * 1000, -300, 300);
         }
+
+        s[i] = 1500 + (s[i] - 1500) * _servo_scale;
 
         hal.rcout->write(_servo_offset + i, s[i]);
     }
