@@ -44,6 +44,7 @@ protected:
     AP_Int8            _servo_offset;
     AP_Int16           _servo_trim[4];
     AP_Float           _servo_scale;
+    AP_Int16           _servo_limit;
 
     int16_t            _conv; // conversion state
 

@@ -49,6 +49,8 @@ const AP_Param::GroupInfo AP_MotorsTiltQuad::var_info[] = {
 
     AP_GROUPINFO("SV_SCALE", 56, AP_MotorsTiltQuad, _servo_scale, 1),
 
+    AP_GROUPINFO("SV_LIMIT", 57, AP_MotorsTiltQuad, _servo_limit, 100),
+
     AP_GROUPEND
 };
 
@@ -115,7 +117,7 @@ void AP_MotorsTiltQuad::output_tilt()
             // as we use thrust vectoring, scale servo angles by motor thrust
             float angle = asinf(constrain_float(thrust / constrain_float(mot_thrust, 0.1f, 1.0f), -1.0f, 1.0f));
 
-            s[i] += constrain_int16(angle / M_PI_2 * 1000, -300, 300);
+            s[i] += constrain_int16(angle / M_PI_2 * 1000, -_servo_limit, _servo_limit);
         }
 
         s[i] = 1500 + (s[i] - 1500) * _servo_scale * _servo_factor[i];
