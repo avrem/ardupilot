@@ -42,22 +42,20 @@ const AP_Param::GroupInfo AP_MotorsTiltQuad::var_info[] = {
 
     AP_GROUPINFO("SV_OFFSET", 51, AP_MotorsTiltQuad, _servo_offset, 8),
 
-    AP_GROUPINFO("SV1_TRIM", 52, AP_MotorsTiltQuad, _servo1_trim, 0),
-    AP_GROUPINFO("SV2_TRIM", 53, AP_MotorsTiltQuad, _servo2_trim, 0),
-    AP_GROUPINFO("SV3_TRIM", 54, AP_MotorsTiltQuad, _servo3_trim, 0),
-    AP_GROUPINFO("SV4_TRIM", 55, AP_MotorsTiltQuad, _servo4_trim, 0),
+    AP_GROUPINFO("SV1_TRIM", 52, AP_MotorsTiltQuad, _servo_trim[0], 0),
+    AP_GROUPINFO("SV2_TRIM", 53, AP_MotorsTiltQuad, _servo_trim[1], 0),
+    AP_GROUPINFO("SV3_TRIM", 54, AP_MotorsTiltQuad, _servo_trim[2], 0),
+    AP_GROUPINFO("SV4_TRIM", 55, AP_MotorsTiltQuad, _servo_trim[3], 0),
 
     AP_GROUPINFO("SV_SCALE", 56, AP_MotorsTiltQuad, _servo_scale, 1),
 
     AP_GROUPEND
 };
 
-void AP_MotorsTiltQuad::add_motor_tq(int8_t motor_num, float angle_degrees, float yaw_factor, uint8_t testing_order, float rt_factor, float pt_factor, float yt_factor)
+void AP_MotorsTiltQuad::add_motor_tq(int8_t motor_num, float angle_degrees, float yaw_factor, uint8_t testing_order, float servo_factor)
 {
     add_motor(motor_num, angle_degrees, yaw_factor, testing_order);
-    _roll_tilt_factor[motor_num] = rt_factor;
-    _pitch_tilt_factor[motor_num] = pt_factor;
-    _yaw_tilt_factor[motor_num] = yt_factor;
+    _servo_factor[motor_num] = servo_factor;
 }
 
 // setup_motors - configures the motors for a tiltquad
@@ -69,10 +67,10 @@ void AP_MotorsTiltQuad::setup_motors()
     AP_MotorsMatrix::setup_motors();
 
     // X frame set-up, yaw factors for plane mode
-    add_motor_tq(AP_MOTORS_MOT_1,   45, AP_MOTORS_MATRIX_YAW_FACTOR_CW,  1, -1,  1, 1);
-    add_motor_tq(AP_MOTORS_MOT_2, -135, AP_MOTORS_MATRIX_YAW_FACTOR_CCW, 3, -1,  1, 1);
-    add_motor_tq(AP_MOTORS_MOT_3,  -45, AP_MOTORS_MATRIX_YAW_FACTOR_CCW, 4, -1, -1, 1);
-    add_motor_tq(AP_MOTORS_MOT_4,  135, AP_MOTORS_MATRIX_YAW_FACTOR_CW,  2, -1, -1, 1);
+    add_motor_tq(AP_MOTORS_MOT_1,   45, AP_MOTORS_MATRIX_YAW_FACTOR_CW,  1,  1);
+    add_motor_tq(AP_MOTORS_MOT_2, -135, AP_MOTORS_MATRIX_YAW_FACTOR_CCW, 3, -1);
+    add_motor_tq(AP_MOTORS_MOT_3,  -45, AP_MOTORS_MATRIX_YAW_FACTOR_CCW, 4, -1);
+    add_motor_tq(AP_MOTORS_MOT_4,  135, AP_MOTORS_MATRIX_YAW_FACTOR_CW,  2,  1);
 
     // normalise factors to magnitude 0.5
     normalise_rpy_factors();
@@ -105,26 +103,22 @@ void AP_MotorsTiltQuad::output_tilt()
 {
     uint16_t s[4];
 
-    // base conversion angles
-    s[0] = 1000 + _conv + _servo1_trim;
-    s[1] = 2000 - _conv - _servo2_trim;
-    s[2] = 2000 - _conv - _servo3_trim;
-    s[3] = 1000 + _conv + _servo4_trim;
-
     for (int i = 0; i < 4; i++) {
+        s[i] = 1000 + _conv + _servo_trim[i];
+
         float throttle = ((float)calc_thrust_to_pwm(_thrust_rpyt_out[i]) - get_pwm_output_min()) / (get_pwm_output_max() - get_pwm_output_min());
         float mot_thrust = throttle * (1 - _thrust_curve_expo) + _thrust_curve_expo * throttle * throttle;
         mot_thrust *= _lift_max;
         if (!is_zero(mot_thrust)) {
-            float thrust = _roll_tilt * _roll_tilt_factor[i] + _pitch_tilt * _pitch_tilt_factor[i] + 
-                _yaw_tilt * _yaw_tilt_factor[i];
+            float thrust = _roll_tilt * _roll_factor[i] + _pitch_tilt * _pitch_factor[i] - 
+                _yaw_tilt * _yaw_factor[i];
             // as we use thrust vectoring, scale servo angles by motor thrust
             float angle = asinf(constrain_float(thrust / constrain_float(mot_thrust, 0.1f, 1.0f), -1.0f, 1.0f));
 
             s[i] += constrain_int16(angle / M_PI_2 * 1000, -300, 300);
         }
 
-        s[i] = 1500 + (s[i] - 1500) * _servo_scale;
+        s[i] = 1500 + (s[i] - 1500) * _servo_scale * _servo_factor[i];
 
         hal.rcout->write(_servo_offset + i, s[i]);
     }
