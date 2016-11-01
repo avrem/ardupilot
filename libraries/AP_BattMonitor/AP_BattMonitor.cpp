@@ -3,6 +3,7 @@
 #include "AP_BattMonitor_Analog.h"
 #include "AP_BattMonitor_SMBus.h"
 #include "AP_BattMonitor_Bebop.h"
+#include "AP_BattMonitor_SES.h"
 #include <AP_Vehicle/AP_Vehicle_Type.h>
 
 extern const AP_HAL::HAL& hal;
@@ -149,7 +150,7 @@ AP_BattMonitor::AP_BattMonitor(void) :
 
 // init - instantiate the battery monitors
 void
-AP_BattMonitor::init()
+AP_BattMonitor::init(const AP_SerialManager& serial_manager)
 {
     // check init has not been called before
     if (_num_instances != 0) {
@@ -188,6 +189,10 @@ AP_BattMonitor::init()
                 _num_instances++;
 #endif
                 break;
+            case BattMonitor_TYPE_SES:
+                state[instance].instance = instance;
+                drivers[instance] = new AP_BattMonitor_SES(*this, instance, state[instance], serial_manager);
+                _num_instances++;
         }
 
         // call init function for each backend
@@ -224,7 +229,8 @@ bool AP_BattMonitor::has_current(uint8_t instance) const
     if (instance < _num_instances && drivers[instance] != NULL) {
         return (_monitoring[instance] == BattMonitor_TYPE_ANALOG_VOLTAGE_AND_CURRENT ||
                 _monitoring[instance] == BattMonitor_TYPE_SMBUS ||
-                _monitoring[instance] == BattMonitor_TYPE_BEBOP);
+                _monitoring[instance] == BattMonitor_TYPE_BEBOP ||
+                _monitoring[instance] == BattMonitor_TYPE_SES);
     }
 
     // not monitoring current

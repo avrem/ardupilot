@@ -64,6 +64,10 @@
 #define AP_SERIALMANAGER_SToRM32_BUFSIZE_RX     128
 #define AP_SERIALMANAGER_SToRM32_BUFSIZE_TX     128
 
+#define AP_SERIALMANAGER_SES_BAUD               57600
+#define AP_SERIALMANAGER_SES_BUFSIZE_RX         64
+#define AP_SERIALMANAGER_SES_BUFSIZE_TX         64
+
 
 class AP_SerialManager {
 
@@ -82,6 +86,7 @@ public:
         SerialProtocol_SToRM32 = 8,
         SerialProtocol_Lidar = 9,
         SerialProtocol_FrSky_SPort_Passthrough = 10, // FrSky SPort Passthrough (OpenTX) protocol (X-receivers)
+        SerialProtocol_SES = 11,
     };
 
     // Constructor

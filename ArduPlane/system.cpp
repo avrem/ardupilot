@@ -145,7 +145,7 @@ void Plane::init_ardupilot()
     init_rangefinder();
 
     // initialise battery monitoring
-    battery.init();
+    battery.init(serial_manager);
 
     rpm_sensor.init();
 
