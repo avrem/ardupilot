@@ -271,6 +271,13 @@ void AP_SerialManager::init()
                     state[i].uart->begin(map_baudrate(state[i].baud), 30, 30);
                     state[i].uart->set_flow_control(AP_HAL::UARTDriver::FLOW_CONTROL_DISABLE);
                     break;
+                case SerialProtocol_PMU:
+                    // Note baudrate is hardcoded to 57600
+                    state[i].baud = AP_SERIALMANAGER_PMU_BAUD / 1000;   // update baud param in case user looks at it
+                    state[i].uart->begin(map_baudrate(state[i].baud),
+                                         AP_SERIALMANAGER_PMU_BUFSIZE_RX,
+                                         AP_SERIALMANAGER_PMU_BUFSIZE_TX);
+                    break;
             }
         }
     }
