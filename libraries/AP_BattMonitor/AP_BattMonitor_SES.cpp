@@ -30,6 +30,14 @@ void AP_BattMonitor_SES::init(void)
 /// Read the battery voltage and current.  Should be called at 10hz
 void AP_BattMonitor_SES::read()
 {
+    // timeout after 5 seconds
+    if ((AP_HAL::micros() - _state.last_time_micros) > AP_BATTMONITOR_SES_TIMEOUT_MICROS) {
+        _state.healthy = false;
+    }
+
+    if (_port == nullptr)
+        return;
+
     if (_port->txspace() >= 3) { // request data from SES board
         uint8_t telem_req[] = {0x41, 0x80, 0xC1};
         _port->write(telem_req, sizeof(telem_req));
@@ -51,10 +59,6 @@ void AP_BattMonitor_SES::read()
         }
     }
 
-    // timeout after 5 seconds
-    if ((AP_HAL::micros() - _state.last_time_micros) > AP_BATTMONITOR_SES_TIMEOUT_MICROS) {
-        _state.healthy = false;
-    }
 }
 
 uint16_t read_14(const uint8_t *p)
