@@ -125,7 +125,7 @@ void Copter::init_ardupilot()
     notify.init(true);
 
     // initialise battery monitor
-    battery.init();
+    battery.init(serial_manager);
 
     // Init RSSI
     rssi.init();
