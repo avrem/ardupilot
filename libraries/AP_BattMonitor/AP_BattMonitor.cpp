@@ -6,6 +6,7 @@
 #if HAL_WITH_UAVCAN
 #include "AP_BattMonitor_UAVCAN.h"
 #endif
+#include "AP_BattMonitor_PMU.h"
 #include <AP_Vehicle/AP_Vehicle_Type.h>
 #include <DataFlash/DataFlash.h>
 #include <GCS_MAVLink/GCS.h>
@@ -104,6 +105,10 @@ AP_BattMonitor::init()
                 drivers[instance] = new AP_BattMonitor_BLHeliESC(*this, state[instance], _params[instance]);
                 _num_instances++;
 #endif
+                break;
+            case AP_BattMonitor_Params::BattMonitor_TYPE_PMU:
+                drivers[instance] = new AP_BattMonitor_PMU(*this, state[instance], _params[instance]);
+                _num_instances++;
                 break;
             case AP_BattMonitor_Params::BattMonitor_TYPE_NONE:
             default:

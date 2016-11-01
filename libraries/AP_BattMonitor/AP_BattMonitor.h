@@ -26,6 +26,7 @@ class AP_BattMonitor_SMBus;
 class AP_BattMonitor_SMBus_Solo;
 class AP_BattMonitor_SMBus_Maxell;
 class AP_BattMonitor_UAVCAN;
+class AP_BattMonitor_PMU;
 
 class AP_BattMonitor
 {
@@ -35,6 +36,7 @@ class AP_BattMonitor
     friend class AP_BattMonitor_SMBus_Solo;
     friend class AP_BattMonitor_SMBus_Maxell;
     friend class AP_BattMonitor_UAVCAN;
+    friend class AP_BattMonitor_PMU;
 
 public:
 
