@@ -239,7 +239,7 @@ bool Copter::autotune_start(bool ignore_checks)
     }
 
     // ensure we are flying
-    if (!motors.armed() || !ap.auto_armed || ap.land_complete) {
+    if (!motors.armed() || !ap.auto_armed/* || ap.land_complete*/) {
         return false;
     }
 
@@ -250,6 +250,8 @@ bool Copter::autotune_start(bool ignore_checks)
     // initialise position and desired velocity
     pos_control.set_alt_target(inertial_nav.get_altitude());
     pos_control.set_desired_velocity_z(inertial_nav.get_velocity_z());
+
+    printf("autotune set\n");
 
     return true;
 }
@@ -287,8 +289,10 @@ void Copter::autotune_run()
     // get pilot desired climb rate
     target_climb_rate = get_pilot_desired_climb_rate(channel_throttle->get_control_in());
 
+    target_climb_rate = 0;
+
     // check for pilot requested take-off - this should not actually be possible because of autotune_init() checks
-    if (ap.land_complete && target_climb_rate > 0) {
+    if (ap.land_complete/* && target_climb_rate > 0*/) {
         // indicate we are taking off
         set_land_complete(false);
         // clear i term when we're taking off
@@ -297,6 +301,7 @@ void Copter::autotune_run()
 
     // reset target lean angles and heading while landed
     if (ap.land_complete) {
+        printf("AT land\n");
         if (ap.throttle_zero) {
             motors.set_desired_spool_state(AP_Motors::DESIRED_SPIN_WHEN_ARMED);
         }else{
@@ -314,6 +319,7 @@ void Copter::autotune_run()
                 autotune_load_orig_gains();
                 attitude_control.limit_angle_to_rate_request(true);
             }
+                        printf("AT pilot override %f %f %f %d\n", target_roll, target_pitch, target_yaw_rate, target_climb_rate);
             // reset pilot override time
             autotune_override_time = millis();
         }else if (autotune_state.pilot_override) {
@@ -336,11 +342,20 @@ void Copter::autotune_run()
         }else{
             // somehow get attitude requests from autotuning
             autotune_attitude_control();
+            static int cnt = 0;
+            if ((++cnt % 400) == 0)
+                printf("AT tick\n");
         }
 
-        // call position controller
+		// get pilot's desired throttle
+		float pilot_throttle_scaled = get_pilot_desired_throttle(channel_throttle->get_control_in());
+
+		// output pilot's throttle
+		attitude_control.set_throttle_out(pilot_throttle_scaled, true, g.throttle_filt);
+
+/*        // call position controller
         pos_control.set_alt_target_from_climb_rate_ff(target_climb_rate, G_Dt, false);
-        pos_control.update_z_controller();
+        pos_control.update_z_controller();*/
     }
 }
 
@@ -633,8 +648,15 @@ void Copter::autotune_attitude_control()
             break;
         }
 
+        static int old_ac;
+        if (old_ac != autotune_counter) {
+            printf("autotune counter updated %d\n", autotune_counter);
+        }
+        old_ac = autotune_counter;
+
         // we've complete this step, finalize pids and move to next step
         if (autotune_counter >= AUTOTUNE_SUCCESS_COUNT) {
+            printf("autotune success type %d(%d)\n", autotune_state.tune_type, autotune_counter);
 
             // reset counter
             autotune_counter = 0;
@@ -1075,16 +1097,19 @@ void Copter::autotune_twitching_test(float measurement, float target, float &mea
     }
 
     if (measurement_max > target) {
+        printf("twitch result 1\n");
         // the measurement has passed the target
         autotune_state.step = AUTOTUNE_STEP_UPDATE_GAINS;
     }
 
     if (measurement_max-measurement_min > measurement_max*g.autotune_aggressiveness) {
+        printf("twitch result 2\n");
         // the measurement has passed 50% of the target and bounce back is larger than the threshold
         autotune_state.step = AUTOTUNE_STEP_UPDATE_GAINS;
     }
 
     if (millis() >= autotune_step_stop_time) {
+        printf("twitch result 3\n");
         // we have passed the maximum stop time
         autotune_state.step = AUTOTUNE_STEP_UPDATE_GAINS;
     }
