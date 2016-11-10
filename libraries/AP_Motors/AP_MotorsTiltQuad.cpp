@@ -111,7 +111,7 @@ void AP_MotorsTiltQuad::output_tilt()
         float throttle = ((float)calc_thrust_to_pwm(_thrust_rpyt_out[i]) - get_pwm_output_min()) / (get_pwm_output_max() - get_pwm_output_min());
         float mot_thrust = throttle * (1 - _thrust_curve_expo) + _thrust_curve_expo * throttle * throttle;
         mot_thrust *= _lift_max;
-        if (!is_zero(mot_thrust)) {
+        if (_flags.armed && !is_zero(mot_thrust)) {
             float thrust = _roll_tilt * _roll_factor[i] + _pitch_tilt * _pitch_factor[i] - 
                 _yaw_tilt * _yaw_factor[i];
             // as we use thrust vectoring, scale servo angles by motor thrust
