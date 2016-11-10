@@ -60,7 +60,7 @@ float AC_AttitudeControl_TiltQuad::aeroxo_rate_bf_to_motor_roll(float rate_targe
     float output_tilt = process_rate_pid(_pid_rate_roll_tilt, rate_error_rads, rate_target_rads, false);
     _motors_tq.set_roll_tilt(control_mix(0, output_tilt));
 
-    float output = process_rate_pid(get_rate_roll_pid(), rate_error_rads, rate_target_rads, _motors.limit.roll_pitch);
+    float output = process_rate_pid(_pid_rate_roll, rate_error_rads, rate_target_rads, _motors.limit.roll_pitch);
     return control_mix(output, 0);
 }
 
@@ -72,7 +72,7 @@ float AC_AttitudeControl_TiltQuad::aeroxo_rate_bf_to_motor_pitch(float rate_targ
     float output_tilt = process_rate_pid(_pid_rate_pitch_tilt, rate_error_rads, rate_target_rads, false);
     _motors_tq.set_pitch_tilt(control_mix(0, output_tilt));
 
-    float output = process_rate_pid(get_rate_pitch_pid(), rate_error_rads, rate_target_rads, _motors.limit.roll_pitch);
+    float output = process_rate_pid(_pid_rate_pitch, rate_error_rads, rate_target_rads, _motors.limit.roll_pitch);
     return control_mix(output, 0);
 }
 

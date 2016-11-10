@@ -38,6 +38,12 @@ public:
     // user settable parameters
     static const struct AP_Param::GroupInfo var_info[];
 
+        // pid accessors for autotune hack
+    AC_PID& get_rate_roll_pid() { return _pid_rate_roll_tilt; }
+    AC_PID& get_rate_pitch_pid() { return _pid_rate_pitch_tilt; }
+    AC_PID& get_rate_yaw_pid() { return _pid_rate_yaw_tilt; }
+
+
 protected:
 
     AC_PID _pid_rate_roll_tilt;
