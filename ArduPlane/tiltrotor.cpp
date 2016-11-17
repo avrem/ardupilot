@@ -70,7 +70,7 @@ void QuadPlane::tiltrotor_update(void)
                 desired_yaw_rate += get_pilot_input_yaw_rate_cds();
             attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw_smooth(
                 plane.nav_roll_cd, 
-                plane.nav_pitch_cd, 
+                plane.nav_pitch_cd + plane.g.pitch_trim_cd, 
                 desired_yaw_rate, 
                 smoothing_gain);
             attitude_control->set_throttle_out(tilt.current_throttle, true, 0);
