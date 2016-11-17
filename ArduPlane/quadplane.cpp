@@ -631,7 +631,7 @@ void QuadPlane::hold_hover(float target_climb_rate)
 
     // call attitude controller
     attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(plane.nav_roll_cd,
-                                                                         plane.nav_pitch_cd,
+                                                                         plane.nav_pitch_cd + (in_vtol_mode() ? 0 : plane.g.pitch_trim_cd),
                                                                          get_desired_yaw_rate_cds(),
                                                                          smoothing_gain);
 
