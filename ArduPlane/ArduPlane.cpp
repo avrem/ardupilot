@@ -924,7 +924,7 @@ void Plane::update_alt()
 
     update_flight_stage();
 
-    if (auto_throttle_mode && !throttle_suppressed) {        
+    if (auto_throttle_mode && !throttle_suppressed && !quadplane.in_vtol_auto()) {        
 
         float distance_beyond_land_wp = 0;
         if (auto_state.land_in_progress && location_passed_point(current_loc, prev_WP_loc, next_WP_loc)) {
