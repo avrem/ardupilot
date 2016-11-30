@@ -233,6 +233,8 @@ private:
 
     // control if a VTOL GUIDED will be used
     AP_Int8 guided_mode;
+  
+    AP_Int8 fast_transition;
 
     // control ESC throttle calibration
     AP_Int8 esc_calibration;

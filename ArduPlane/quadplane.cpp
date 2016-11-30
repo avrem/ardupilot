@@ -327,6 +327,8 @@ const AP_Param::GroupInfo QuadPlane::var_info[] = {
     // @Increment: 0.25
     // @User: Standard
     AP_GROUPINFO("VFWD_ALT", 43, QuadPlane, vel_forward_alt_cutoff,  0),
+
+    AP_GROUPINFO("TRAN_FAST", 44, QuadPlane, fast_transition, 0),
     
     AP_GROUPEND
 };
@@ -977,8 +979,11 @@ void QuadPlane::update_transition(void)
         }
         assisted_flight = true;
         hold_hover(assist_climb_rate_cms());
+        if (fast_transition)
+            attitude_control->set_throttle_out(plane.channel_throttle->get_servo_out()*0.01f, true, 0);
         attitude_control->rate_controller_run();
         motors_output();
+
         last_throttle = motors->get_throttle();
         break;
     }
