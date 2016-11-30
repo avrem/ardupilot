@@ -313,6 +313,8 @@ const AP_Param::GroupInfo QuadPlane::var_info[] = {
     // @Increment: 0.25
     // @User: Standard
     AP_GROUPINFO("VFWD_ALT", 43, QuadPlane, vel_forward_alt_cutoff,  0),
+
+    AP_GROUPINFO("TRAN_FAST", 44, QuadPlane, fast_transition_ms, 0),
     
     AP_GROUPEND
 };
@@ -967,8 +969,16 @@ void QuadPlane::update_transition(void)
         }
         assisted_flight = true;
         hold_hover(assist_climb_rate_cms());
+        if (fast_transition_ms > 0) {
+            float thr_diff = fabsf(plane.aparm.throttle_max * 0.01f - motors->get_throttle_hover());
+            float slew_step = constrain_float(thr_diff / (fast_transition_ms * 0.001f), 0.05f, 1.0f) * plane.G_Dt;
+            float throttle = plane.channel_throttle->get_servo_out() * 0.01f;
+            throttle = constrain_float(throttle, last_throttle - slew_step, last_throttle + slew_step);
+            attitude_control->set_throttle_out(throttle, true, 0);
+        }
         run_rate_controller();
         motors_output();
+
         last_throttle = motors->get_throttle();
         break;
     }
