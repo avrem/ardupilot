@@ -25,15 +25,15 @@ public:
 
     // rate_controller_run - run lowest level body-frame rate controller and send outputs to the motors
     // should be called at 100hz or more
-    virtual void rate_controller_run();
+    virtual void rate_controller_run(float kA = 0);
 
     void set_conversion(int16_t conv) {_conv = constrain_float(conv * 0.001f, 0.f, 1.f);}
 
     float aeroxo_rate_bf_to_motor_roll(float rate_target_rads);
     float aeroxo_rate_bf_to_motor_pitch(float rate_target_rads);
-    float aeroxo_rate_bf_to_motor_yaw(float rate_target_rads);
+    float aeroxo_rate_bf_to_motor_yaw(float rate_target_rads, float kA);
 
-    float process_yaw_pid(AC_PID &pid, float rate_error_rads, float rate_target_rads, bool saturated);
+    float process_yaw_pid(AC_PID &pid, float rate_error_rads, float rate_target_rads, bool saturated, float kA);
     static float process_rate_pid(AC_PID &pid, float rate_error_rads, float rate_target_rads, bool saturated);
 
     // relax_bf_rate_controller - ensure body-frame rate controller has zero errors to relax rate controller output

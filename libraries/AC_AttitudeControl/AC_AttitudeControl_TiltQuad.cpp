@@ -20,11 +20,11 @@ const AP_Param::GroupInfo AC_AttitudeControl_TiltQuad::var_info[] = {
 
 // rate_controller_run - run lowest level rate controller and send outputs to the motors
 // should be called at 100hz or more
-void AC_AttitudeControl_TiltQuad::rate_controller_run()
+void AC_AttitudeControl_TiltQuad::rate_controller_run(float kA)
 {
     _motors.set_roll(aeroxo_rate_bf_to_motor_roll(_ang_vel_target_rads.x));
     _motors.set_pitch(aeroxo_rate_bf_to_motor_pitch(_ang_vel_target_rads.y));
-    _motors.set_yaw(aeroxo_rate_bf_to_motor_yaw(_ang_vel_target_rads.z));
+    _motors.set_yaw(aeroxo_rate_bf_to_motor_yaw(_ang_vel_target_rads.z, kA));
 }
 
 float AC_AttitudeControl_TiltQuad::control_mix(float k_copter, float k_plane)
@@ -76,7 +76,7 @@ float AC_AttitudeControl_TiltQuad::aeroxo_rate_bf_to_motor_pitch(float rate_targ
     return control_mix(output, 0);
 }
 
-float AC_AttitudeControl_TiltQuad::process_yaw_pid(AC_PID &pid, float rate_error_rads, float rate_target_rads, bool saturated)
+float AC_AttitudeControl_TiltQuad::process_yaw_pid(AC_PID &pid, float rate_error_rads, float rate_target_rads, bool saturated, float kA)
 {
     // Pass error to PID controller
     pid.set_input_filter_all(rate_error_rads);
@@ -87,6 +87,13 @@ float AC_AttitudeControl_TiltQuad::process_yaw_pid(AC_PID &pid, float rate_error
     // Ensure that integrator can only be reduced if the output is saturated
     if (!saturated || ((integrator > 0 && rate_error_rads < 0) || (integrator < 0 && rate_error_rads > 0))) {
         integrator = pid.get_i();
+        if (!is_zero(kA)) {
+            // Get the accln vector (m/s^2)
+            float accel_y = _ahrs.get_ins().get_accel().y;
+            float ss = - pid.kI() * kA * accel_y * _dt;
+            integrator = constrain_float(integrator + ss, -pid.imax(), pid.imax());
+            pid.set_integrator(integrator);
+        }
     }
 
     // Compute output in range -1 ~ +1
@@ -96,15 +103,15 @@ float AC_AttitudeControl_TiltQuad::process_yaw_pid(AC_PID &pid, float rate_error
     return constrain_float(output, -1.0f, 1.0f);
 }
 
-float AC_AttitudeControl_TiltQuad::aeroxo_rate_bf_to_motor_yaw(float rate_target_rads)
+float AC_AttitudeControl_TiltQuad::aeroxo_rate_bf_to_motor_yaw(float rate_target_rads, float kA)
 {
     float current_rate_rads = _ahrs.get_gyro().z;
     float rate_error_rads = rate_target_rads - current_rate_rads;
 
-    float output = process_yaw_pid(_pid_rate_yaw, rate_error_rads, rate_target_rads, false);
+    float output = process_yaw_pid(_pid_rate_yaw, rate_error_rads, rate_target_rads, false, kA);
     _motors_tq.set_yaw_tilt(control_mix(output, 0));
 
-    float output_tilt = process_yaw_pid(_pid_rate_yaw_tilt, rate_error_rads, rate_target_rads, false);
+    float output_tilt = process_yaw_pid(_pid_rate_yaw_tilt, rate_error_rads, rate_target_rads, false, kA);
     return control_mix(0, output_tilt);
 }
 

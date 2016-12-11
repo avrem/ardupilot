@@ -329,6 +329,8 @@ const AP_Param::GroupInfo QuadPlane::var_info[] = {
     AP_GROUPINFO("VFWD_ALT", 43, QuadPlane, vel_forward_alt_cutoff,  0),
 
     AP_GROUPINFO("TRAN_FAST", 44, QuadPlane, fast_transition, 0),
+
+    AP_GROUPINFO("YAW_ACTIVE", 45, QuadPlane, yaw_accel_k, 0),
     
     AP_GROUPEND
 };

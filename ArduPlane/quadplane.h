@@ -236,6 +236,8 @@ private:
   
     AP_Int8 fast_transition;
 
+    AP_Float yaw_accel_k;
+
     // control ESC throttle calibration
     AP_Int8 esc_calibration;
     void run_esc_calibration(void);
