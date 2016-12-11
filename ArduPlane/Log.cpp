@@ -171,10 +171,16 @@ void Plane::Log_Write_Attitude(void)
         DataFlash.Log_Write_PID(LOG_PIDY_MSG, quadplane.attitude_control->get_rate_yaw_pid().get_pid_info());
         DataFlash.Log_Write_PID(LOG_PIDA_MSG, quadplane.pid_accel_z.get_pid_info() );
     } else {
+#if FRAME_CONFIG == TILT_QUAD_FRAME
+        DataFlash.Log_Write_PID(LOG_PIDR_MSG, quadplane.attitude_control->get_rate_roll_tilt_pid().get_pid_info());
+        DataFlash.Log_Write_PID(LOG_PIDP_MSG, quadplane.attitude_control->get_rate_pitch_tilt_pid().get_pid_info());
+        DataFlash.Log_Write_PID(LOG_PIDY_MSG, quadplane.attitude_control->get_rate_yaw_tilt_pid().get_pid_info());
+#else
         DataFlash.Log_Write_PID(LOG_PIDR_MSG, rollController.get_pid_info());
         DataFlash.Log_Write_PID(LOG_PIDP_MSG, pitchController.get_pid_info());
         DataFlash.Log_Write_PID(LOG_PIDY_MSG, yawController.get_pid_info());
         DataFlash.Log_Write_PID(LOG_PIDS_MSG, steerController.get_pid_info());
+#endif
     }
 
 #if AP_AHRS_NAVEKF_AVAILABLE

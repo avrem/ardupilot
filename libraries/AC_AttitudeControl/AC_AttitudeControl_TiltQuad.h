@@ -18,6 +18,11 @@ public:
 	// empty destructor to suppress compiler warning
 	virtual ~AC_AttitudeControl_TiltQuad() {}
 
+    // pid accessors
+    AC_PID& get_rate_roll_tilt_pid() { return _pid_rate_roll_tilt; }
+    AC_PID& get_rate_pitch_tilt_pid() { return _pid_rate_pitch_tilt; }
+    AC_PID& get_rate_yaw_tilt_pid() { return _pid_rate_yaw_tilt; }
+
     // rate_controller_run - run lowest level body-frame rate controller and send outputs to the motors
     // should be called at 100hz or more
     virtual void rate_controller_run();
@@ -28,6 +33,7 @@ public:
     float aeroxo_rate_bf_to_motor_pitch(float rate_target_rads);
     float aeroxo_rate_bf_to_motor_yaw(float rate_target_rads);
 
+    float process_yaw_pid(AC_PID &pid, float rate_error_rads, float rate_target_rads, bool saturated);
     static float process_rate_pid(AC_PID &pid, float rate_error_rads, float rate_target_rads, bool saturated);
 
     // relax_bf_rate_controller - ensure body-frame rate controller has zero errors to relax rate controller output
