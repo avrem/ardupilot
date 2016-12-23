@@ -18,6 +18,11 @@ public:
 	// empty destructor to suppress compiler warning
 	virtual ~AC_AttitudeControl_TiltQuad() {}
 
+    // tilt pid accessors
+    AC_PID& get_rate_roll_tilt_pid() { return _pid_rate_roll_tilt; }
+    AC_PID& get_rate_pitch_tilt_pid() { return _pid_rate_pitch_tilt; }
+    AC_PID& get_rate_yaw_tilt_pid() { return _pid_rate_yaw_tilt; }
+
     void set_tilt(float tilt) {_tilt = constrain_float(tilt, 0.0f, 1.0f);}
 
     virtual float rate_target_to_motor_roll(float rate_target_rads) override;
