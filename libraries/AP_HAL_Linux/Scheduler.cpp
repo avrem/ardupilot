@@ -310,7 +310,7 @@ void Scheduler::system_initialized()
 
 void Scheduler::reboot(bool hold_in_bootloader)
 {
-    exit(1);
+    system("reboot");
 }
 
 void Scheduler::stop_clock(uint64_t time_usec)
