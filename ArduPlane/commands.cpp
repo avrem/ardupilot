@@ -121,6 +121,10 @@ void Plane::init_home()
     // Save prev loc
     // -------------
     next_WP_loc = prev_WP_loc = home;
+
+    // Recalculate waypoints
+    if (control_mode == AUTO && mission.state() == AP_Mission::MISSION_RUNNING)
+        mission.resume();
 }
 
 /*
