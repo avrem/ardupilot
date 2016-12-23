@@ -369,6 +369,10 @@ void Plane::update_GPS_10Hz(void)
 
                 next_WP_loc = prev_WP_loc = home;
 
+                // Recalculate waypoints
+                if (control_mode == &mode_auto && mission.state() == AP_Mission::MISSION_RUNNING)
+                    mission.resume();
+
                 ground_start_count = 0;
             }
         }
