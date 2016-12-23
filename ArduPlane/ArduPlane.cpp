@@ -384,6 +384,10 @@ void Plane::update_GPS_10Hz(void)
 
                 next_WP_loc = prev_WP_loc = home;
 
+                // Recalculate waypoints
+                if (control_mode == AUTO && mission.state() == AP_Mission::MISSION_RUNNING)
+                    mission.resume();
+
                 if (g.compass_enabled) {
                     // Set compass declination automatically
                     const Location &loc = gps.location();
