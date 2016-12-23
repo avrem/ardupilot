@@ -18,6 +18,11 @@ public:
 	// empty destructor to suppress compiler warning
 	virtual ~AC_AttitudeControl_TiltQuad() {}
 
+    // tilt pid accessors
+    AC_PID& get_rate_roll_tilt_pid() { return _pid_rate_roll_tilt; }
+    AC_PID& get_rate_pitch_tilt_pid() { return _pid_rate_pitch_tilt; }
+    AC_PID& get_rate_yaw_tilt_pid() { return _pid_rate_yaw_tilt; }
+
     // rate_controller_run - run lowest level body-frame rate controller and send outputs to the motors
     // should be called at 100hz or more
     virtual void rate_controller_run();
