@@ -1960,13 +1960,11 @@ void QuadPlane::motors_output(bool run_rate_controller)
     if (motors->armed() && motors->get_spool_state() != AP_Motors::SpoolState::SHUT_DOWN) {
         const uint32_t now = AP_HAL::millis();
 
-        // log RATE at main loop rate
-        plane.logger.Write_Rate(ahrs_view, *motors, *attitude_control, *pos_control);
-
-        // log QTUN at 25 Hz
+        // log RATE and QTUN at 25 Hz
         if (now - last_qtun_log_ms > 40) {
             last_qtun_log_ms = now;
             Log_Write_QControl_Tuning();
+            plane.logger.Write_Rate(ahrs_view, *motors, *attitude_control, *pos_control);
         }
 
         // log CTRL at 10 Hz
@@ -2811,6 +2809,7 @@ void QuadPlane::Log_Write_QControl_Tuning()
         target_climb_rate   : target_climb_rate_cms,
         climb_rate          : int16_t(inertial_nav.get_velocity_z()),
         throttle_mix        : attitude_control->get_throttle_mix(),
+        tilt_angle          : tilt.current_tilt * 90.0f,
     };
     plane.logger.WriteBlock(&pkt, sizeof(pkt));
 
