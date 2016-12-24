@@ -74,7 +74,7 @@ void QuadPlane::tiltrotor_update(void)
                 desired_yaw_rate, 
                 smoothing_gain);
             attitude_control->set_throttle_out(tilt.current_throttle, true, 0);
-            attitude_control->rate_controller_run();
+            run_rate_controller();
 
             motors->set_desired_spool_state(AP_Motors::DESIRED_THROTTLE_UNLIMITED);
             motors_output();

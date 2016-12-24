@@ -15,17 +15,11 @@ const AP_Param::GroupInfo AC_AttitudeControl_TiltQuad::var_info[] = {
     AP_SUBGROUPINFO(_pid_rate_pitch_tilt, "RAT_PI2_", 5, AC_AttitudeControl_TiltQuad, AC_PID),
     AP_SUBGROUPINFO(_pid_rate_yaw_tilt, "RAT_YA2_", 6, AC_AttitudeControl_TiltQuad, AC_PID),
 
+    AP_GROUPINFO("THR_MIX_MIN", 7, AC_AttitudeControl_TiltQuad, _thr_mix_min, AC_ATTITUDE_CONTROL_MIN_DEFAULT),
+    AP_GROUPINFO("THR_MIX_MAX", 8, AC_AttitudeControl_TiltQuad, _thr_mix_max, AC_ATTITUDE_CONTROL_MAX_DEFAULT),
+
     AP_GROUPEND
 };
-
-// rate_controller_run - run lowest level rate controller and send outputs to the motors
-// should be called at 100hz or more
-void AC_AttitudeControl_TiltQuad::rate_controller_run()
-{
-    _motors.set_roll(aeroxo_rate_bf_to_motor_roll(_ang_vel_target_rads.x));
-    _motors.set_pitch(aeroxo_rate_bf_to_motor_pitch(_ang_vel_target_rads.y));
-    _motors.set_yaw(aeroxo_rate_bf_to_motor_yaw(_ang_vel_target_rads.z));
-}
 
 float AC_AttitudeControl_TiltQuad::control_mix(float k_copter, float k_plane)
 {
@@ -52,7 +46,7 @@ float AC_AttitudeControl_TiltQuad::process_rate_pid(AC_PID &pid, float rate_erro
     return constrain_float(output, -1.0f, 1.0f);
 }
 
-float AC_AttitudeControl_TiltQuad::aeroxo_rate_bf_to_motor_roll(float rate_target_rads)
+float AC_AttitudeControl_TiltQuad::rate_bf_to_motor_roll(float rate_target_rads)
 {
     float current_rate_rads = _ahrs.get_gyro().x;
     float rate_error_rads = rate_target_rads - current_rate_rads;  
@@ -64,7 +58,7 @@ float AC_AttitudeControl_TiltQuad::aeroxo_rate_bf_to_motor_roll(float rate_targe
     return control_mix(output, 0);
 }
 
-float AC_AttitudeControl_TiltQuad::aeroxo_rate_bf_to_motor_pitch(float rate_target_rads)
+float AC_AttitudeControl_TiltQuad::rate_bf_to_motor_pitch(float rate_target_rads)
 {
     float current_rate_rads = _ahrs.get_gyro().y;
     float rate_error_rads = rate_target_rads - current_rate_rads;
@@ -76,7 +70,7 @@ float AC_AttitudeControl_TiltQuad::aeroxo_rate_bf_to_motor_pitch(float rate_targ
     return control_mix(output, 0);
 }
 
-float AC_AttitudeControl_TiltQuad::aeroxo_rate_bf_to_motor_yaw(float rate_target_rads)
+float AC_AttitudeControl_TiltQuad::rate_bf_to_motor_yaw(float rate_target_rads)
 {
     float current_rate_rads = _ahrs.get_gyro().z;
     float rate_error_rads = rate_target_rads - current_rate_rads;

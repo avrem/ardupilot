@@ -263,10 +263,10 @@ protected:
     void update_ang_vel_target_from_att_error();
 
     // Run the roll angular velocity PID controller and return the output
-    float rate_bf_to_motor_roll(float rate_target_rads);
+    virtual float rate_bf_to_motor_roll(float rate_target_rads);
 
     // Run the pitch angular velocity PID controller and return the output
-    float rate_bf_to_motor_pitch(float rate_target_rads);
+    virtual float rate_bf_to_motor_pitch(float rate_target_rads);
 
     // Run the yaw angular velocity PID controller and return the output
     virtual float rate_bf_to_motor_yaw(float rate_target_rads);
