@@ -33,10 +33,22 @@ void Plane::Log_Write_Attitude(void)
         DataFlash.Log_Write_PID(LOG_PIQA_MSG, quadplane.pos_control->get_accel_z_pid().get_pid_info() );
     }
 
+#if FRAME_CONFIG == TILT_QUAD_FRAME
+    if (quadplane.available()) {
+        DataFlash.Log_Write_PID(LOG_PIDR_MSG, quadplane.attitude_control->get_rate_roll_tilt_pid().get_pid_info());
+        DataFlash.Log_Write_PID(LOG_PIDP_MSG, quadplane.attitude_control->get_rate_pitch_tilt_pid().get_pid_info());
+        DataFlash.Log_Write_PID(LOG_PIDY_MSG, quadplane.attitude_control->get_rate_yaw_tilt_pid().get_pid_info());
+    }
+#else
     DataFlash.Log_Write_PID(LOG_PIDR_MSG, rollController.get_pid_info());
     DataFlash.Log_Write_PID(LOG_PIDP_MSG, pitchController.get_pid_info());
     DataFlash.Log_Write_PID(LOG_PIDY_MSG, yawController.get_pid_info());
     DataFlash.Log_Write_PID(LOG_PIDS_MSG, steerController.get_pid_info());
+#endif
+
+    if (quadplane.available()) {
+        DataFlash.Log_Write_Rate(ahrs, *quadplane.motors, *quadplane.attitude_control, *quadplane.pos_control);
+    }
 
 #if AP_AHRS_NAVEKF_AVAILABLE
     DataFlash.Log_Write_EKF(ahrs);
@@ -53,6 +65,11 @@ void Plane::Log_Write_Fast(void)
 {
     if (should_log(MASK_LOG_ATTITUDE_FAST)) {
         Log_Write_Attitude();
+    }
+
+    // log IMU data if we're not already logging at the higher rate
+    if (should_log(MASK_LOG_IMU) && !should_log(MASK_LOG_IMU_RAW)) {
+        DataFlash.Log_Write_IMU();
     }
 }
 

@@ -143,10 +143,6 @@ void Plane::ahrs_update()
 
     ahrs.update();
 
-    if (should_log(MASK_LOG_IMU)) {
-        DataFlash.Log_Write_IMU();
-    }
-
     // calculate a scaled roll limit based on current pitch
     roll_limit_cd = aparm.roll_limit_cd;
     pitch_limit_min_cd = aparm.pitch_limit_min_cd;
@@ -230,8 +226,11 @@ void Plane::update_logging2(void)
     if (should_log(MASK_LOG_CTUN))
         Log_Write_Control_Tuning();
     
-    if (should_log(MASK_LOG_NTUN))
+    if (should_log(MASK_LOG_NTUN)) {
         Log_Write_Nav_Tuning();
+        if (quadplane.available())
+            quadplane.Log_Write_QControl_Tuning();
+    }
 
     if (should_log(MASK_LOG_RC))
         Log_Write_RC();
