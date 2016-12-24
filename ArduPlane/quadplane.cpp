@@ -552,8 +552,7 @@ float QuadPlane::get_pilot_desired_throttle(int16_t throttle_control)
     // ensure reasonable throttle values
     throttle_control = constrain_int16(throttle_control,0,1000);
     // ensure mid throttle is set within a reasonable range
-    throttle_mid = constrain_int16(throttle_mid,throttle_min+50,700);
-    float thr_mid = MAX(0,throttle_mid-throttle_min) / (float)(1000-throttle_min);
+    float thr_mid = constrain_float(motors->get_throttle_hover(), 0.1f, 0.9f);
 
     // check throttle is above, below or in the deadband
     if (throttle_control < mid_stick) {

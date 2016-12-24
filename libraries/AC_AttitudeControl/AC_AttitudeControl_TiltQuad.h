@@ -23,15 +23,11 @@ public:
     AC_PID& get_rate_pitch_tilt_pid() { return _pid_rate_pitch_tilt; }
     AC_PID& get_rate_yaw_tilt_pid() { return _pid_rate_yaw_tilt; }
 
-    // rate_controller_run - run lowest level body-frame rate controller and send outputs to the motors
-    // should be called at 100hz or more
-    virtual void rate_controller_run();
-
     void set_conversion(int16_t conv) {_conv = constrain_float(conv * 0.001f, 0.f, 1.f);}
 
-    float aeroxo_rate_bf_to_motor_roll(float rate_target_rads);
-    float aeroxo_rate_bf_to_motor_pitch(float rate_target_rads);
-    float aeroxo_rate_bf_to_motor_yaw(float rate_target_rads);
+    virtual float rate_bf_to_motor_roll(float rate_target_rads);
+    virtual float rate_bf_to_motor_pitch(float rate_target_rads);
+    virtual float rate_bf_to_motor_yaw(float rate_target_rads);
 
     static float process_rate_pid(AC_PID &pid, float rate_error_rads, float rate_target_rads, bool saturated);
 
