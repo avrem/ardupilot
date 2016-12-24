@@ -202,8 +202,17 @@ void Plane::Log_Write_Attitude(void)
 // do logging at loop rate
 void Plane::Log_Write_Fast(void)
 {
+    if (quadplane.available()) {
+        DataFlash.Log_Write_Rate(ahrs, *quadplane.motors, *quadplane.attitude_control, *quadplane.pos_control);
+    }
+
     if (should_log(MASK_LOG_ATTITUDE_FAST)) {
         Log_Write_Attitude();
+    }
+
+    // log IMU data if we're not already logging at the higher rate
+    if (should_log(MASK_LOG_IMU) && !should_log(MASK_LOG_IMU_RAW)) {
+        Log_Write_IMU();
     }
 }
 
