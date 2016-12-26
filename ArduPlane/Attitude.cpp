@@ -998,6 +998,11 @@ void Plane::set_servos(void)
             min_throttle = constrain_int16(min_throttle, min_throttle + throttle_watt_limit_min, 0);
         }
 
+#if FRAME_CONFIG == TILT_QUAD_FRAME
+        if (quadplane.available())
+            quadplane.motors->set_thr_max(max_throttle * 0.01f);
+#endif
+
         channel_throttle->set_servo_out(constrain_int16(channel_throttle->get_servo_out(), 
                                                       min_throttle,
                                                       max_throttle));
