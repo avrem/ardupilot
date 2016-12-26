@@ -125,3 +125,10 @@ void AP_MotorsTiltQuad::output_tilt()
 
     hal.rcout->write(7, _conv); // telemetry feedback
 }
+
+// return current_limit as a number from 0 ~ 1 in the range throttle_min to throttle_max
+float AP_MotorsTiltQuad::get_current_limit_max_throttle()
+{
+    return AP_MotorsMulticopter::get_current_limit_max_throttle() * _thr_max;
+}
+
