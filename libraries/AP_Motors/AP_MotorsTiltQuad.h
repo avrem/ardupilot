@@ -16,7 +16,8 @@ public:
 
     /// Constructor
     AP_MotorsTiltQuad(uint16_t loop_rate, uint16_t speed_hz = AP_MOTORS_SPEED_DEFAULT) :
-        AP_MotorsMatrix(loop_rate, speed_hz)
+        AP_MotorsMatrix(loop_rate, speed_hz),
+        _thr_max(1.0f)
     {
         AP_Param::setup_object_defaults(this, var_info);
     };
@@ -34,6 +35,12 @@ public:
     void                set_roll_tilt(float roll_tilt) { _roll_tilt = roll_tilt; }
     void                set_pitch_tilt(float pitch_tilt) { _pitch_tilt = pitch_tilt; }
     void                set_yaw_tilt(float yaw_tilt) { _yaw_tilt = yaw_tilt; }
+
+    // set absolute throttle cap 
+    void                set_thr_max(float thr_max) { _thr_max = thr_max; }
+
+    // return current_limit as a number from 0 ~ 1 in the range throttle_min to throttle_max
+    virtual float       get_current_limit_max_throttle();
 
     // var_info for holding Parameter information
     static const struct AP_Param::GroupInfo var_info[];
@@ -53,5 +60,7 @@ protected:
     float              _yaw_tilt;
 
     float              _servo_factor[4];
+
+    float              _thr_max; // the maximum allowed throttle
 };
 #endif  // AP_MOTORS_TILT_QUAD
