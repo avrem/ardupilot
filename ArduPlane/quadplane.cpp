@@ -1386,6 +1386,7 @@ void QuadPlane::vtol_position_controller(void)
         plane.nav_roll_cd = pos_control->get_roll();
         plane.nav_pitch_cd = pos_control->get_pitch();
 
+#if FRAME_CONFIG != TILT_QUAD_FRAME
         /*
           limit the pitch down with an expanding envelope. This
           prevents the velocity controller demanding nose down during
@@ -1403,6 +1404,7 @@ void QuadPlane::vtol_position_controller(void)
             // stop integrator buildup
             pos_control->set_limit_accel_xy();
         }
+#endif
         
         // call attitude controller
         attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw_smooth(plane.nav_roll_cd,
