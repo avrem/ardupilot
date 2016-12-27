@@ -2241,28 +2241,47 @@ void QuadPlane::vtol_position_controller(void)
         plane.nav_roll_cd = pos_control->get_roll();
         plane.nav_pitch_cd = pos_control->get_pitch();
 
-        /*
-          limit the pitch down with an expanding envelope. This
-          prevents the velocity controller demanding nose down during
-          the initial slowdown if the target velocity curve is higher
-          than the actual velocity curve (for a high drag
-          aircraft). Nose down will cause a lot of downforce on the
-          wings which will draw a lot of current and also cause the
-          aircraft to lose altitude rapidly.pitch limit varies also with speed
-          to prevent inability to progress to position if moving from a loiter
-          to landing
-         */
-        float minlimit = linear_interpolate(-aparm.angle_max, -300,
-                                            speed_towards_target, 
-                                            wp_nav->get_default_speed_xy() * 0.01, 
-                                            wp_nav->get_default_speed_xy() * 0.015);
-        float pitch_limit_cd = linear_interpolate(minlimit, plane.aparm.pitch_limit_min_cd,
-                                                  plane.auto_state.wp_proportion, 0, 1);
-        if (plane.nav_pitch_cd < pitch_limit_cd) {
-            plane.nav_pitch_cd = pitch_limit_cd;
-            // tell the pos controller we have limited the pitch to
-            // stop integrator buildup
-            pos_control->set_limit_accel_xy();
+        if (!is_tiltquad()) {
+            /*
+            limit the pitch down with an expanding envelope. This
+            prevents the velocity controller demanding nose down during
+            the initial slowdown if the target velocity curve is higher
+            than the actual velocity curve (for a high drag
+            aircraft). Nose down will cause a lot of downforce on the
+            wings which will draw a lot of current and also cause the
+            aircraft to lose altitude rapidly.pitch limit varies also with speed
+            to prevent inability to progress to position if moving from a loiter
+            to landing
+            */
+            float minlimit = linear_interpolate(-aparm.angle_max, -300,
+                speed_towards_target, 
+                wp_nav->get_default_speed_xy() * 0.01, 
+                wp_nav->get_default_speed_xy() * 0.015);
+            float pitch_limit_cd = linear_interpolate(minlimit, plane.aparm.pitch_limit_min_cd,
+                plane.auto_state.wp_proportion, 0, 1);
+            if (plane.nav_pitch_cd < pitch_limit_cd) {
+                plane.nav_pitch_cd = pitch_limit_cd;
+                // tell the pos controller we have limited the pitch to
+                // stop integrator buildup
+                pos_control->set_limit_accel_xy();
+            }
+        }
+        else {
+            uint32_t now = AP_HAL::millis();
+            if (now - last_pidz_init_ms < (uint32_t)transition_time_ms*4) {
+                // we limit pitch during initial transition
+                float pitch_limit_cd = linear_interpolate(0, aparm.angle_max,
+                                                  now,
+                                                  last_pidz_init_ms, last_pidz_init_ms+transition_time_ms*4);
+                if (plane.nav_pitch_cd > pitch_limit_cd) {
+                    plane.nav_pitch_cd = pitch_limit_cd;
+                    pos_control->set_limit_accel_xy();
+                }
+                else if (plane.nav_pitch_cd < -pitch_limit_cd) {
+                    plane.nav_pitch_cd = -pitch_limit_cd;
+                    pos_control->set_limit_accel_xy();
+                }
+            }
         }
         
         // call attitude controller
