@@ -1885,22 +1885,24 @@ void QuadPlane::vtol_position_controller(void)
         plane.nav_roll_cd = pos_control->get_roll();
         plane.nav_pitch_cd = pos_control->get_pitch();
 
-        /*
-          limit the pitch down with an expanding envelope. This
-          prevents the velocity controller demanding nose down during
-          the initial slowdown if the target velocity curve is higher
-          than the actual velocity curve (for a high drag
-          aircraft). Nose down will cause a lot of downforce on the
-          wings which will draw a lot of current and also cause the
-          aircraft to lose altitude rapidly.
-         */
-        float pitch_limit_cd = linear_interpolate(-300, plane.aparm.pitch_limit_min_cd,
-                                                  plane.auto_state.wp_proportion, 0, 1);
-        if (plane.nav_pitch_cd < pitch_limit_cd) {
-            plane.nav_pitch_cd = pitch_limit_cd;
-            // tell the pos controller we have limited the pitch to
-            // stop integrator buildup
-            pos_control->set_limit_accel_xy();
+        if (!is_tiltquad()) {
+            /*
+            limit the pitch down with an expanding envelope. This
+            prevents the velocity controller demanding nose down during
+            the initial slowdown if the target velocity curve is higher
+            than the actual velocity curve (for a high drag
+            aircraft). Nose down will cause a lot of downforce on the
+            wings which will draw a lot of current and also cause the
+            aircraft to lose altitude rapidly.
+            */
+            float pitch_limit_cd = linear_interpolate(-300, plane.aparm.pitch_limit_min_cd,
+                plane.auto_state.wp_proportion, 0, 1);
+            if (plane.nav_pitch_cd < pitch_limit_cd) {
+                plane.nav_pitch_cd = pitch_limit_cd;
+                // tell the pos controller we have limited the pitch to
+                // stop integrator buildup
+                pos_control->set_limit_accel_xy();
+            }
         }
         
         // call attitude controller
