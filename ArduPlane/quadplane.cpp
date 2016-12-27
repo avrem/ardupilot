@@ -1901,7 +1901,7 @@ bool QuadPlane::verify_vtol_land(void)
     float height_above_ground = plane.relative_ground_altitude(plane.g.rangefinder_landing);
     if (poscontrol.state == QPOS_LAND_DESCEND && height_above_ground < land_final_alt) {
         poscontrol.state = QPOS_LAND_FINAL;
-        pos_control->set_alt_target(inertial_nav.get_altitude());
+        pos_control->set_alt_target_from_climb_rate(-land_speed_cms, plane.G_Dt, true);
 
         // cut IC engine if enabled
         if (land_icengine_cut != 0) {
