@@ -315,6 +315,8 @@ const AP_Param::GroupInfo QuadPlane::var_info[] = {
     AP_GROUPINFO("VFWD_ALT", 43, QuadPlane, vel_forward_alt_cutoff,  0),
 
     AP_GROUPINFO("TRAN_FAST", 44, QuadPlane, fast_transition_ms, 0),
+
+    AP_GROUPINFO("TAKEOFF_MS", 46, QuadPlane, takeoff_spinup_ms, 0),
     
     AP_GROUPEND
 };
@@ -1567,6 +1569,13 @@ void QuadPlane::takeoff_controller(void)
     
     pos_control->set_alt_target_from_climb_rate(wp_nav->get_speed_up(), plane.G_Dt, true);
     pos_control->update_z_controller();
+
+#if FRAME_CONFIG == TILT_QUAD_FRAME
+    if (takeoff_spinup_ms > 0) {
+        float spin_limit = constrain_float((float)(millis() - takeoff_start_ms) / takeoff_spinup_ms, 0.0f, 1.0f);
+        motors->set_spin_limit(spin_limit);
+    }
+#endif
 }
 
 /*
@@ -1677,6 +1686,9 @@ bool QuadPlane::do_vtol_takeoff(const AP_Mission::Mission_Command& cmd)
     
     // also update nav_controller for status output
     plane.nav_controller->update_waypoint(plane.prev_WP_loc, plane.next_WP_loc);
+
+    takeoff_start_ms = millis();
+
     return true;
 }
 
