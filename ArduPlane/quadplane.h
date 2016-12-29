@@ -235,6 +235,8 @@ private:
   
     AP_Int16 fast_transition_ms;
 
+    AP_Int16 takeoff_spinup_ms;
+
     // control ESC throttle calibration
     AP_Int8 esc_calibration;
     void run_esc_calibration(void);
@@ -341,6 +343,9 @@ private:
     void tiltrotor_slew(float tilt);
     void tiltrotor_update(void);
     void tilt_compensate(float *thrust, uint8_t num_motors);
+
+    // time since VTOL takeoff start
+    uint32_t takeoff_start_ms;
 
 public:
     void motor_test_output();
