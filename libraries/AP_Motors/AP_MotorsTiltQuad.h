@@ -18,7 +18,8 @@ public:
     AP_MotorsTiltQuad(uint16_t loop_rate, uint16_t speed_hz = AP_MOTORS_SPEED_DEFAULT) :
         AP_MotorsMatrix(loop_rate, speed_hz),
         _conv(1000),
-        _thr_max(1.0f)
+        _thr_max(1.0f),
+        _spin_limit(1.0f)
     {
         limit_tilt = true;
 
@@ -43,9 +44,14 @@ public:
 
     // set absolute throttle cap 
     void                set_thr_max(float thr_max) { _thr_max = thr_max; }
+    // set temporary spin limit
+    void set_spin_limit(float spin_limit) { _spin_limit = constrain_float(spin_limit, 0.0f, 1.0f); }
 
     // return current_limit as a number from 0 ~ 1 in the range throttle_min to throttle_max
     virtual float       get_current_limit_max_throttle();
+
+    // output_to_motors - sends minimum values out to the motors
+    virtual void        output_to_motors();
 
     // var_info for holding Parameter information
     static const struct AP_Param::GroupInfo var_info[];
@@ -67,5 +73,6 @@ protected:
     float              _servo_factor[4];
 
     float              _thr_max; // the maximum allowed throttle
+    float              _spin_limit; // temporary spin limit, cleared on each loop
 };
 #endif  // AP_MOTORS_TILT_QUAD

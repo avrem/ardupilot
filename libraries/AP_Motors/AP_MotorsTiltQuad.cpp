@@ -138,3 +138,17 @@ float AP_MotorsTiltQuad::get_current_limit_max_throttle()
     return AP_MotorsMulticopter::get_current_limit_max_throttle() * _thr_max;
 }
 
+void AP_MotorsTiltQuad::output_to_motors()
+{
+    float spin_max_temp = _spin_max;
+
+    // apply temporary spin limit and clear
+    if (_spin_limit < 1.0f) {
+        _spin_max = _spin_min + (_spin_max - _spin_min) * _spin_limit;
+        _spin_limit = 1.0f;
+    }
+
+    AP_MotorsMatrix::output_to_motors();
+
+    _spin_max = spin_max_temp;
+}

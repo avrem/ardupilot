@@ -320,7 +320,7 @@ const AP_Param::GroupInfo QuadPlane::var_info[] = {
     // @Values: 0:Disabled,1:Enabled
     // @User: Standard
     AP_GROUPINFO("LAND_ICE_CUT", 44, QuadPlane, land_icengine_cut,  1),
-    
+   
     // @Param: ASSIST_ANGLE
     // @DisplayName: Quadplane assistance angle
     // @Description: This is the angular error in attitude beyond which the quadplane VTOL motors will provide stability assistance. This will only be used if Q_ASSIST_SPEED is also non-zero. Assistance will be given if the attitude is outside the normal attitude limits by at least 5 degrees and the angular error in roll or pitch is greater than this angle for at least 1 second. Set to zero to disable angle assistance.
@@ -329,6 +329,8 @@ const AP_Param::GroupInfo QuadPlane::var_info[] = {
     // @Increment: 1
     // @User: Standard
     AP_GROUPINFO("ASSIST_ANGLE", 45, QuadPlane, assist_angle, 30),
+
+    AP_GROUPINFO("TAKEOFF_MS", 54, QuadPlane, takeoff_spinup_ms, 0),
 
     AP_GROUPEND
 };
@@ -1645,6 +1647,7 @@ void QuadPlane::takeoff_controller(void)
         attitude_control->set_throttle_out_unstabilized(0, true, 0);
         pos_control->init_takeoff();
         wp_nav->init_loiter_target();
+        takeoff_start_ms = millis();
         return;
     }
 
@@ -1671,6 +1674,11 @@ void QuadPlane::takeoff_controller(void)
     
     pos_control->set_alt_target_from_climb_rate(wp_nav->get_speed_up(), plane.G_Dt, true);
     pos_control->update_z_controller();
+
+    if (takeoff_spinup_ms > 0) {
+        float spin_limit = constrain_float((float)(millis() - takeoff_start_ms) / takeoff_spinup_ms, 0.0f, 1.0f);
+        motors->set_spin_limit(spin_limit);
+    }
 }
 
 /*
@@ -1781,6 +1789,7 @@ bool QuadPlane::do_vtol_takeoff(const AP_Mission::Mission_Command& cmd)
     
     // also update nav_controller for status output
     plane.nav_controller->update_waypoint(plane.prev_WP_loc, plane.next_WP_loc);
+
     return true;
 }
 

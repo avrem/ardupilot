@@ -244,6 +244,8 @@ private:
     // control if a VTOL GUIDED will be used
     AP_Int8 guided_mode;
 
+    AP_Int16 takeoff_spinup_ms;
+
     // control ESC throttle calibration
     AP_Int8 esc_calibration;
     void run_esc_calibration(void);
@@ -360,6 +362,9 @@ private:
     void afs_terminate(void);
     bool guided_mode_enabled(void);
     
+    // time since VTOL takeoff start
+    uint32_t takeoff_start_ms;
+
 public:
     void motor_test_output();
     uint8_t mavlink_motor_test_start(mavlink_channel_t chan, uint8_t motor_seq, uint8_t throttle_type,
