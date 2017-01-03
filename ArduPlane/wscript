@@ -45,3 +45,10 @@ def build(bld):
         use=vehicle + '_libs',
         defines=['FRAME_CONFIG=TRI_FRAME'],
     )
+
+    bld.ap_program(
+        program_name='arduplane-tilt-quad',
+        program_groups=['bin', 'plane'],
+        use=vehicle + '_libs',
+        defines=['FRAME_CONFIG=TILT_QUAD_FRAME']
+    )
