@@ -16,11 +16,17 @@ void QuadPlane::tiltrotor_slew(float newtilt)
     float max_change = (tilt.max_rate_dps.get() * plane.G_Dt) / 90.0f;
     tilt.current_tilt = constrain_float(newtilt, tilt.current_tilt-max_change, tilt.current_tilt+max_change);
 
-    // translate to 0..1000 range and output
+#if FRAME_CONFIG == TILT_QUAD_FRAME
+    attitude_control->set_tilt(tilt.current_tilt);
+    motors->set_tilt(tilt.current_tilt);
+#else
     RC_Channel_aux::set_servo_out_for(RC_Channel_aux::k_motor_tilt, 1000 * tilt.current_tilt);
+#endif
 
+#if FRAME_CONFIG != TILT_QUAD_FRAME
     // setup tilt compensation
     motors->set_thrust_compensation_callback(FUNCTOR_BIND_MEMBER(&QuadPlane::tilt_compensate, void, float *, uint8_t));
+#endif
 }
 
 /*
@@ -55,7 +61,20 @@ void QuadPlane::tiltrotor_update(void)
         if (!hal.util->get_soft_armed()) {
             tilt.current_throttle = 0;
         } else {
+#if FRAME_CONFIG == TILT_QUAD_FRAME
+            attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(
+                plane.nav_roll_cd, 
+                plane.nav_pitch_cd, 
+                desired_auto_yaw_rate_cds(), 
+                smoothing_gain);
+            attitude_control->set_throttle_out(tilt.current_throttle, true, 0);
+            run_rate_controller();
+
+            motors->set_desired_spool_state(AP_Motors::DESIRED_THROTTLE_UNLIMITED);
+            motors_output();
+#else
             motors->output_motor_mask(tilt.current_throttle, (uint8_t)tilt.tilt_mask.get());
+#endif
             // prevent motor shutdown
             tilt.motors_active = true;
         }
@@ -84,7 +103,13 @@ void QuadPlane::tiltrotor_update(void)
     */
     if (plane.control_mode == QSTABILIZE ||
         plane.control_mode == QHOVER) {
+#if FRAME_CONFIG == TILT_QUAD_FRAME
+        // use manual copter modes for tilt test flights
+        float manual_tilt = constrain_float(1.0f - plane.g.rc_6.percent_input() * 0.01f, 0, 1);
+        tiltrotor_slew(manual_tilt);
+#else
         tiltrotor_slew(0);
+#endif
         return;
     }
 

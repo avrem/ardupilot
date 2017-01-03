@@ -84,6 +84,9 @@ const AP_Scheduler::Task Plane::scheduler_tasks[] = {
     SCHED_TASK(dataflash_periodic,     50,    400),
     SCHED_TASK(avoidance_adsb_update,  10,    100),
     SCHED_TASK(button_update,           5,    100),
+#if FRAME_CONFIG == TILT_QUAD_FRAME
+    SCHED_TASK_CLASS(QuadPlane, &plane.quadplane, tilt_output, 50, 75),
+#endif
 };
 
 void Plane::setup() 
