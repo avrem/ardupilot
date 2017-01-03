@@ -748,6 +748,10 @@ const AP_Param::Info Copter::var_info[] = {
 
 #if FRAME_CONFIG == HELI_FRAME
     GOBJECT(attitude_control, "ATC_", AC_AttitudeControl_Heli),
+#elif FRAME_CONFIG == TILT_QUAD_FRAME
+    // @Group: ATC_
+    // @Path: ../libraries/AC_AttitudeControl/AC_AttitudeControl_TiltQuad.cpp
+    GOBJECT(attitude_control, "ATC_", AC_AttitudeControl_TiltQuad),    
 #else
     // @Group: ATC_
     // @Path: ../libraries/AC_AttitudeControl/AC_AttitudeControl.cpp,../libraries/AC_AttitudeControl/AC_AttitudeControl_Multi.cpp
@@ -848,6 +852,11 @@ const AP_Param::Info Copter::var_info[] = {
 
 #elif FRAME_CONFIG == TRI_FRAME
     GOBJECT(motors, "MOT_",           AP_MotorsTri),
+
+#elif FRAME_CONFIG == TILT_QUAD_FRAME
+    // @Group: MOT_
+    // @Path: ../libraries/AP_Motors/AP_MotorsTri.cpp
+    GOBJECT(motors, "MOT_",           AP_MotorsTiltQuad),
 
 #else
     // @Group: MOT_

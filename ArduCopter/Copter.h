@@ -56,6 +56,7 @@
 #include <AC_PID/AC_P.h>               // P library
 #include <AC_AttitudeControl/AC_AttitudeControl_Multi.h> // Attitude control library
 #include <AC_AttitudeControl/AC_AttitudeControl_Heli.h> // Attitude control library for traditional helicopter
+#include <AC_AttitudeControl/AC_AttitudeControl_TiltQuad.h> // Attitude control library for aeroxo tiltquad
 #include <AC_AttitudeControl/AC_PosControl.h>      // Position control library
 #include <RC_Channel/RC_Channel.h>         // RC Channel Library
 #include <AP_Motors/AP_Motors.h>          // AP Motors library
@@ -334,7 +335,7 @@ private:
  #define FRAME_MAV_TYPE MAV_TYPE_OCTOROTOR
 #elif (FRAME_CONFIG == HELI_FRAME)
  #define FRAME_MAV_TYPE MAV_TYPE_HELICOPTER
-#elif (FRAME_CONFIG == SINGLE_FRAME || FRAME_CONFIG == COAX_FRAME)  //because mavlink did not define a singlecopter, we use a quad
+#elif (FRAME_CONFIG == SINGLE_FRAME || FRAME_CONFIG == COAX_FRAME || FRAME_CONFIG == TILT_QUAD_FRAME)  //because mavlink did not define a singlecopter, we use a quad
  #define FRAME_MAV_TYPE MAV_TYPE_QUADROTOR
 #else
  #error Unrecognised frame type
@@ -359,6 +360,8 @@ private:
  #define MOTOR_CLASS AP_MotorsSingle
 #elif FRAME_CONFIG == COAX_FRAME
  #define MOTOR_CLASS AP_MotorsCoax
+#elif FRAME_CONFIG == TILT_QUAD_FRAME
+ #define MOTOR_CLASS AP_MotorsTiltQuad
 #else
  #error Unrecognised frame type
 #endif
@@ -500,6 +503,8 @@ private:
     // To-Do: move inertial nav up or other navigation variables down here
 #if FRAME_CONFIG == HELI_FRAME
     AC_AttitudeControl_Heli attitude_control;
+#elif FRAME_CONFIG == TILT_QUAD_FRAME
+    AC_AttitudeControl_TiltQuad attitude_control;
 #else
     AC_AttitudeControl_Multi attitude_control;
 #endif
@@ -621,6 +626,11 @@ private:
     } heli_flags;
 
     int16_t hover_roll_trim_scalar_slew;
+#endif
+
+#if FRAME_CONFIG == TILT_QUAD_FRAME
+    float _tilt = 0.0f;
+    void update_tiltquad_tilt();
 #endif
 
     // ground effect detector
