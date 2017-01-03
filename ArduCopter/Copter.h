@@ -631,6 +631,9 @@ private:
 #if FRAME_CONFIG == TILT_QUAD_FRAME
     float _tilt = 0.0f;
     void update_tiltquad_tilt();
+
+    float _tilt_manual_throttle = 0.0f;
+    void update_tiltquad_manual_throttle();
 #endif
 
     // ground effect detector
