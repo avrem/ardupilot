@@ -14,7 +14,7 @@ void Copter::update_tiltquad_manual_throttle()
             _tilt_manual_throttle = constrain_float(_tilt_manual_throttle + 0.02f * 0.01f * t_off / 500, 0, 1);
     }
     else if (motors.armed()) // reset manual throttle to hover if we're flying in any autopilot mode
-        _tilt_manual_throttle = g.throttle_mid * 0.001f;
+        _tilt_manual_throttle = motors.get_throttle_hover();
 }
 
 void Copter::update_tiltquad_conversion()
