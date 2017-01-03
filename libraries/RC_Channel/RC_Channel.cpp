@@ -479,12 +479,16 @@ RC_Channel::norm_output()
 
 void RC_Channel::output() const
 {
+#if FRAME_CONFIG != TILT_QUAD_FRAME
     hal.rcout->write(_ch_out, _radio_out);
+#endif
 }
 
 void RC_Channel::output_trim() const
 {
+#if FRAME_CONFIG != TILT_QUAD_FRAME
     hal.rcout->write(_ch_out, _radio_trim);
+#endif
 }
 
 void RC_Channel::output_trim_all()

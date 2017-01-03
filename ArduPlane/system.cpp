@@ -754,6 +754,9 @@ void Plane::print_comma(void)
  */
 void Plane::servo_write(uint8_t ch, uint16_t pwm)
 {
+#if FRAME_CONFIG == TILT_QUAD_FRAME
+    return;
+#endif
 #if HIL_SUPPORT
     if (g.hil_mode==1 && !g.hil_servos) {
         if (ch < 8) {
