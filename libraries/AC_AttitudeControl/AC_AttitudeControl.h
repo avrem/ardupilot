@@ -109,10 +109,10 @@ public:
     void set_input_tc(float input_tc) { _input_tc = constrain_float(input_tc, 0.0f, 1.0f); }
 
     // Ensure attitude controller have zero errors to relax rate controller output
-    void relax_attitude_controllers();
+    virtual void relax_attitude_controllers();
 
     // reset rate controller I terms
-    void reset_rate_controller_I_terms();
+    virtual void reset_rate_controller_I_terms();
 
     // Sets attitude target to vehicle attitude
     void set_attitude_target_to_current_attitude() { _ahrs.get_quat_body_to_ned(_attitude_target_quat); }
