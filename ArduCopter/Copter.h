@@ -573,10 +573,12 @@ private:
 #endif
 
 #if FRAME_CONFIG == TILT_QUAD_FRAME
-    float p_conversion = 1500.0f; // raw conversion input
     int16_t _conv; // effective conversion state
     void update_tiltquad_conversion();
-    void update_tiltquad_tilt(void);
+    void update_tiltquad_tilt();
+
+    float _tilt_manual_throttle = 0.f;
+    void update_tiltquad_manual_throttle();
 #endif
 
 #if GNDEFFECT_COMPENSATION == ENABLED

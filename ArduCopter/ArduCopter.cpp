@@ -109,6 +109,7 @@ const AP_Scheduler::Task Copter::scheduler_tasks[] = {
 #endif
 #if FRAME_CONFIG == TILT_QUAD_FRAME
     SCHED_TASK_CLASS(AP_MotorsTiltQuad, &copter.motors, output_tilt, 10, 75),
+    SCHED_TASK(update_tiltquad_manual_throttle, 100, 10),
 #endif
     SCHED_TASK(update_notify,         50,     90),
     SCHED_TASK(one_hz_loop,            1,    100),
