@@ -102,7 +102,7 @@ public:
     void save_accel_yaw_max(float accel_yaw_max) { _accel_yaw_max = accel_yaw_max; _accel_yaw_max.save(); }
 
     // Ensure attitude controller have zero errors to relax rate controller output
-    void relax_attitude_controllers();
+    virtual void relax_attitude_controllers();
 
     // reset rate controller I terms
     void reset_rate_controller_I_terms();
@@ -246,10 +246,10 @@ protected:
     Vector3f update_ang_vel_target_from_att_error(Vector3f attitude_error_rot_vec_rad);
 
     // Run the roll angular velocity PID controller and return the output
-    float rate_target_to_motor_roll(float rate_target_rads);
+    virtual float rate_target_to_motor_roll(float rate_target_rads);
 
     // Run the pitch angular velocity PID controller and return the output
-    float rate_target_to_motor_pitch(float rate_target_rads);
+    virtual float rate_target_to_motor_pitch(float rate_target_rads);
 
     // Run the yaw angular velocity PID controller and return the output
     virtual float rate_target_to_motor_yaw(float rate_target_rads);
