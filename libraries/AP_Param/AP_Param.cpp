@@ -1264,6 +1264,15 @@ void AP_Param::load_object_from_eeprom(const void *object_pointer, const struct 
         hal.console->printf("ERROR: Unable to find param pointer\n");
         return;
     }
+
+#if HAL_OS_POSIX_IO == 1
+    /*
+      if the HAL specifies a defaults parameter file then override
+      defaults using that file
+     */
+    load_defaults_file(hal.util->get_custom_defaults_file());
+#endif
+
     
     for (uint8_t i=0; group_info[i].type != AP_PARAM_NONE; i++) {
         if (group_info[i].type == AP_PARAM_GROUP) {
@@ -1715,10 +1724,7 @@ bool AP_Param::load_defaults_file(const char *filename)
             continue;
         }
         if (!find_def_value_ptr(pname)) {
-            fclose(f);
-            ::printf("invalid param %s in defaults file\n", pname);
-            AP_HAL::panic("AP_Param: Invalid param in defaults file");
-            return false;
+            continue;
         }
         num_defaults++;
     }
@@ -1753,9 +1759,8 @@ bool AP_Param::load_defaults_file(const char *filename)
         }
         const float *def_value_ptr = find_def_value_ptr(pname);
         if (!def_value_ptr) {
-            fclose(f);
-            AP_HAL::panic("AP_Param: Invalid param in defaults file");
-            return false;
+            ::printf("unknown param %s in defaults file\n", pname);
+            continue;
         }
         param_overrides[idx].def_value_ptr = def_value_ptr;
         param_overrides[idx].value = value;

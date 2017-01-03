@@ -476,7 +476,9 @@ bool QuadPlane::setup(void)
     
     transition_state = TRANSITION_DONE;
 
+#if FRAME_CONFIG != TILT_QUAD_FRAME
     setup_defaults();
+#endif
     
     GCS_MAVLINK::send_statustext_all(MAV_SEVERITY_INFO, "QuadPlane initialised");
     initialised = true;
