@@ -63,8 +63,6 @@ void AP_MotorsTiltQuad::add_motor_tq(int8_t motor_num, float angle_degrees, floa
 // setup_motors - configures the motors for a tiltquad
 void AP_MotorsTiltQuad::setup_motors()
 {
-    _conv = 1000;
-
     // call parent
     AP_MotorsMatrix::setup_motors();
 
@@ -124,6 +122,8 @@ void AP_MotorsTiltQuad::output_tilt()
 
         hal.rcout->write(_servo_offset + i, s[i]);
     }
+
+    hal.rcout->write(7, _conv); // telemetry feedback
 }
 
 // return current_limit as a number from 0 ~ 1 in the range throttle_min to throttle_max

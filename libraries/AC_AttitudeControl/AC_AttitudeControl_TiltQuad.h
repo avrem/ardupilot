@@ -23,7 +23,7 @@ public:
     AC_PID& get_rate_pitch_tilt_pid() { return _pid_rate_pitch_tilt; }
     AC_PID& get_rate_yaw_tilt_pid() { return _pid_rate_yaw_tilt; }
 
-    void set_conversion(int16_t conv) {_conv = constrain_float(conv * 0.001f, 0.f, 1.f);}
+    void set_tilt(float tilt) {_tilt = constrain_float(tilt, 0.0f, 1.0f);}
 
     virtual float rate_bf_to_motor_roll(float rate_target_rads);
     virtual float rate_bf_to_motor_pitch(float rate_target_rads);
@@ -47,7 +47,7 @@ protected:
 
     AP_MotorsTiltQuad& _motors_tq;
 
-    float _conv; // conversion state, 0..1
+    float _tilt;
 
 };
 

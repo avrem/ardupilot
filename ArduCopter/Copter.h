@@ -572,8 +572,7 @@ private:
 #endif
 
 #if FRAME_CONFIG == TILT_QUAD_FRAME
-    int16_t _conv; // effective conversion state
-    void update_tiltquad_conversion();
+    float _tilt = 0.0f;
     void update_tiltquad_tilt();
 
     float _tilt_manual_throttle = 0.f;

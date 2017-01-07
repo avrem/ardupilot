@@ -374,7 +374,6 @@ bool QuadPlane::setup(void)
     motors = new AP_MOTORS_CLASS(plane.scheduler.get_loop_rate_hz());
 #elif FRAME_CONFIG == TILT_QUAD_FRAME
     motors = new AP_MotorsTiltQuad(plane.scheduler.get_loop_rate_hz());
-    motors->set_conversion(1000);
 #else
     /*
       dynamically allocate the key objects for quadplane. This ensures
@@ -415,7 +414,6 @@ bool QuadPlane::setup(void)
     AP_Param::load_object_from_eeprom(motors, motors->var_info);
 #if FRAME_CONFIG == TILT_QUAD_FRAME
     attitude_control = new AC_AttitudeControl_TiltQuad(ahrs, aparm, *motors, loop_delta_t);
-    attitude_control->set_conversion(1000);
 #else
     attitude_control = new AC_AttitudeControl_Multi(ahrs, aparm, *motors, loop_delta_t);
 #endif

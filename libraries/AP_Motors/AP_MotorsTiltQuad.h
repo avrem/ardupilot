@@ -17,6 +17,7 @@ public:
     /// Constructor
     AP_MotorsTiltQuad(uint16_t loop_rate, uint16_t speed_hz = AP_MOTORS_SPEED_DEFAULT) :
         AP_MotorsMatrix(loop_rate, speed_hz),
+        _conv(1000),
         _thr_max(1.0f),
         _spin_limit(1.0f)
     {
@@ -28,7 +29,7 @@ public:
     void                add_motor_tq(int8_t motor_num, float angle_degrees, float yaw_factor, uint8_t testing_order, float servo_factor);
     virtual void        set_update_rate( uint16_t speed_hz );
 
-    void                set_conversion(int16_t conv) {_conv = conv;}
+    void                set_tilt(float tilt) {_conv = constrain_int16(1000 * (1.0f - tilt), 0, 1000);}
 
     // sets motor tilt based on desired r/p/y and current conversion
     void                output_tilt();

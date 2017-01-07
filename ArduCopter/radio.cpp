@@ -116,7 +116,7 @@ void Copter::read_radio()
         RC_Channel_aux::output_ch_all();
 
 #if FRAME_CONFIG == TILT_QUAD_FRAME
-        update_tiltquad_conversion();
+        update_tiltquad_tilt();
 #endif
 
         // pass pilot input through to motors (used to allow wiggling servos while disarmed on heli, single, coax copters)

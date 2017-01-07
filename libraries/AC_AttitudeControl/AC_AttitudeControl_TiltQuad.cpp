@@ -23,7 +23,7 @@ const AP_Param::GroupInfo AC_AttitudeControl_TiltQuad::var_info[] = {
 
 float AC_AttitudeControl_TiltQuad::control_mix(float k_copter, float k_plane)
 {
-    return k_copter * _conv + k_plane * (1 - _conv);
+    return k_copter * (1.0f - _tilt) + k_plane * _tilt;
 }
 
 float AC_AttitudeControl_TiltQuad::process_rate_pid(AC_PID &pid, float rate_error_rads, float rate_target_rads, bool saturated)
@@ -95,6 +95,7 @@ void AC_AttitudeControl_TiltQuad::relax_bf_rate_controller()
 AC_AttitudeControl_TiltQuad::AC_AttitudeControl_TiltQuad(AP_AHRS &ahrs, const AP_Vehicle::MultiCopter &aparm, AP_MotorsTiltQuad& motors, float dt) :
     AC_AttitudeControl_Multi(ahrs, aparm, motors, dt),
     _motors_tq(motors),
+    _tilt(0.0f),
     _pid_rate_roll_tilt(0.045f, 0.0135f, 0.00165f, 0.06f, 10, _dt),
     _pid_rate_pitch_tilt(0.05f, 0.015f, 0.002f, 0.1f, 10, _dt),
     _pid_rate_yaw_tilt(0.075f, 0.0125f, 0.025f, 0.266f, 5, _dt)

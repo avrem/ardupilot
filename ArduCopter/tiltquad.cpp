@@ -17,22 +17,21 @@ void Copter::update_tiltquad_manual_throttle()
         _tilt_manual_throttle = motors.get_throttle_hover();
 }
 
-void Copter::update_tiltquad_conversion()
+void Copter::update_tiltquad_tilt()
 {    
-    float rc_conv = g.rc_6.norm_input_dz();
     if (failsafe.rc_override_active) {
+        float rc_conv = g.rc_6.norm_input_dz();
         if (rc_conv > 0.1)
-            _conv += 10;
+            _tilt -= 0.01f;
         else if (rc_conv < -0.1)
-            _conv -= 10;
-        _conv = constrain_int16(_conv, 0, 1000);
+            _tilt += 0.01f;
+        _tilt = constrain_float(_tilt, 0.0f, 1.0f);
     }
-    else 
-        _conv = constrain_int16((rc_conv + 1.f) * 500, 0, 1000);
+    else
+        _tilt = constrain_float(1.0f - g.rc_6.percent_input() * 0.01f, 0.0f, 1.0f);
 
-    attitude_control.set_conversion(_conv);
-    motors.set_conversion(_conv);
-    hal.rcout->write(7, _conv);
+    attitude_control.set_tilt(_tilt);
+    motors.set_tilt(_tilt);
 }
 
 #endif // FRAME_CONFIG == TILT_QUAD_FRAME

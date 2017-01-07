@@ -16,12 +16,9 @@ void QuadPlane::tiltrotor_slew(float newtilt)
     float max_change = (tilt.max_rate_dps.get() * plane.G_Dt) / 90.0f;
     tilt.current_tilt = constrain_float(newtilt, tilt.current_tilt-max_change, tilt.current_tilt+max_change);
 
-    // translate to 0..1000 range and output
 #if FRAME_CONFIG == TILT_QUAD_FRAME
-    int16_t conv = constrain_int16(1000 * (1 - tilt.current_tilt), 0, 1000);
-    motors->set_conversion(conv);
-    attitude_control->set_conversion(conv);
-    hal.rcout->write(7, conv); // telemetry feedback
+    attitude_control->set_tilt(tilt.current_tilt);
+    motors->set_tilt(tilt.current_tilt);
 #else
     RC_Channel_aux::set_servo_out_for(RC_Channel_aux::k_motor_tilt, 1000 * tilt.current_tilt);
 #endif
