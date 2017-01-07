@@ -314,8 +314,6 @@ const AP_Param::GroupInfo QuadPlane::var_info[] = {
     // @User: Standard
     AP_GROUPINFO("VFWD_ALT", 43, QuadPlane, vel_forward_alt_cutoff,  0),
 
-    AP_GROUPINFO("TRAN_FAST", 44, QuadPlane, fast_transition_ms, 0),
-
     AP_GROUPINFO("TAKEOFF_MS", 46, QuadPlane, takeoff_spinup_ms, 0),
     
     AP_GROUPEND
@@ -963,19 +961,25 @@ void QuadPlane::update_transition(void)
         }
 
         if (have_airspeed && aspeed > plane.aparm.airspeed_min && !assisted_flight) {
+            GCS_MAVLINK::send_statustext_all(MAV_SEVERITY_INFO, "Transition airspeed reached %.1f", (double)aspeed);
+#if FRAME_CONFIG == TILT_QUAD_FRAME
+            transition_state = TRANSITION_DONE;
+            break; // NOTE: this prevents 1-tick motor shutdown
+#endif
             transition_start_ms = millis();
             transition_state = TRANSITION_TIMER;
-            GCS_MAVLINK::send_statustext_all(MAV_SEVERITY_INFO, "Transition airspeed reached %.1f", (double)aspeed);
         }
         assisted_flight = true;
+#if FRAME_CONFIG == TILT_QUAD_FRAME
+        // use slewed fixed-wing throttle
+        float thr_diff = fabsf(plane.aparm.throttle_max * 0.01f - motors->get_throttle_hover());
+        float slew_step = constrain_float(thr_diff / (transition_time_ms * 0.001f), 0.05f, 1.0f) * plane.G_Dt;
+        float throttle = plane.channel_throttle->get_servo_out() * 0.01f;
+        throttle = constrain_float(throttle, last_throttle - slew_step, last_throttle + slew_step);
+        attitude_control->set_throttle_out(throttle, true, 0);
+#else
         hold_hover(assist_climb_rate_cms());
-        if (fast_transition_ms > 0) {
-            float thr_diff = fabsf(plane.aparm.throttle_max * 0.01f - motors->get_throttle_hover());
-            float slew_step = constrain_float(thr_diff / (fast_transition_ms * 0.001f), 0.05f, 1.0f) * plane.G_Dt;
-            float throttle = plane.channel_throttle->get_servo_out() * 0.01f;
-            throttle = constrain_float(throttle, last_throttle - slew_step, last_throttle + slew_step);
-            attitude_control->set_throttle_out(throttle, true, 0);
-        }
+#endif
         run_rate_controller();
         motors_output();
 
@@ -992,14 +996,7 @@ void QuadPlane::update_transition(void)
             GCS_MAVLINK::send_statustext_all(MAV_SEVERITY_INFO, "Transition done");
         }
         float trans_time_ms = (float)transition_time_ms.get();
-#if FRAME_CONFIG != TILT_QUAD_FRAME
         float throttle_scaled = last_throttle * (trans_time_ms - (millis() - transition_start_ms)) / trans_time_ms;
-#else
-        float tc = (trans_time_ms - (millis() - transition_start_ms)) / trans_time_ms;
-        tc = constrain_float(tc, 0, 1);
-        float throttle_fwd = plane.channel_throttle->get_servo_out() * 0.01f;
-        float throttle_scaled = last_throttle * tc + throttle_fwd * (1 - tc);
-#endif
         if (throttle_scaled < 0) {
             throttle_scaled = 0;
         }
