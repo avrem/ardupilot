@@ -280,7 +280,7 @@ class sitl(Board):
                 if fnmatch.fnmatch(f, "font*bin"):
                     env.ROMFS_FILES += [(f,'libraries/AP_OSD/fonts/'+f)]
 
-        if sys.platform == 'cygwin':
+        if sys.platform == 'cygwin' or sys.platform == 'msys':
             env.LIB += [
                 'winmm',
             ]
@@ -438,8 +438,6 @@ class chibios(Board):
 class linux(Board):
     def configure_env(self, cfg, env):
         super(linux, self).configure_env(cfg, env)
-
-        cfg.find_toolchain_program('pkg-config', var='PKGCONFIG')
 
         env.DEFINES.update(
             CONFIG_HAL_BOARD = 'HAL_BOARD_LINUX',
