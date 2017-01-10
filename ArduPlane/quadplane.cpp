@@ -1641,6 +1641,13 @@ void QuadPlane::setup_target_position(void)
  */
 void QuadPlane::takeoff_controller(void)
 {
+    if (!motors->armed()) {
+        attitude_control->set_throttle_out_unstabilized(0, true, 0);
+        pos_control->init_takeoff();
+        wp_nav->init_loiter_target();
+        return;
+    }
+
     /*
       for takeoff we need to use the loiter controller wpnav controller takes over the descent rate
       control
