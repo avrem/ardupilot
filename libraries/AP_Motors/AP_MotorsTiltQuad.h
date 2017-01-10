@@ -20,6 +20,8 @@ public:
         _conv(1000),
         _thr_max(1.0f)
     {
+        limit_tilt = true;
+
         AP_Param::setup_object_defaults(this, var_info);
     };
 
@@ -36,6 +38,8 @@ public:
     void                set_roll_tilt(float roll_tilt) { _roll_tilt = roll_tilt; }
     void                set_pitch_tilt(float pitch_tilt) { _pitch_tilt = pitch_tilt; }
     void                set_yaw_tilt(float yaw_tilt) { _yaw_tilt = yaw_tilt; }
+
+    uint8_t limit_tilt : 1; // we have reached servo limit
 
     // set absolute throttle cap 
     void                set_thr_max(float thr_max) { _thr_max = thr_max; }

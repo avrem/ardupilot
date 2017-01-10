@@ -51,7 +51,7 @@ float AC_AttitudeControl_TiltQuad::rate_target_to_motor_roll(float rate_target_r
     float current_rate_rads = _ahrs.get_gyro().x;
     float rate_error_rads = rate_target_rads - current_rate_rads;  
 
-    float output_tilt = process_rate_pid(_pid_rate_roll_tilt, rate_error_rads, rate_target_rads, false);
+    float output_tilt = process_rate_pid(_pid_rate_roll_tilt, rate_error_rads, rate_target_rads, _motors_tq.limit_tilt);
     _motors_tq.set_roll_tilt(control_mix(0, output_tilt));
 
     float output = process_rate_pid(get_rate_roll_pid(), rate_error_rads, rate_target_rads, _motors.limit.roll_pitch);
@@ -63,7 +63,7 @@ float AC_AttitudeControl_TiltQuad::rate_target_to_motor_pitch(float rate_target_
     float current_rate_rads = _ahrs.get_gyro().y;
     float rate_error_rads = rate_target_rads - current_rate_rads;
 
-    float output_tilt = process_rate_pid(_pid_rate_pitch_tilt, rate_error_rads, rate_target_rads, false);
+    float output_tilt = process_rate_pid(_pid_rate_pitch_tilt, rate_error_rads, rate_target_rads, _motors_tq.limit_tilt);
     _motors_tq.set_pitch_tilt(control_mix(0, output_tilt));
 
     float output = process_rate_pid(get_rate_pitch_pid(), rate_error_rads, rate_target_rads, _motors.limit.roll_pitch);
@@ -75,7 +75,7 @@ float AC_AttitudeControl_TiltQuad::rate_target_to_motor_yaw(float rate_target_ra
     float current_rate_rads = _ahrs.get_gyro().z;
     float rate_error_rads = rate_target_rads - current_rate_rads;
 
-    float output = process_rate_pid(_pid_rate_yaw, rate_error_rads, rate_target_rads, false);
+    float output = process_rate_pid(_pid_rate_yaw, rate_error_rads, rate_target_rads, _motors_tq.limit_tilt);
     _motors_tq.set_yaw_tilt(control_mix(output, 0));
 
     float output_tilt = process_rate_pid(_pid_rate_yaw_tilt, rate_error_rads, rate_target_rads, _motors.limit.yaw);

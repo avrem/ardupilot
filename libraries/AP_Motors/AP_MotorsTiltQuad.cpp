@@ -103,6 +103,8 @@ void AP_MotorsTiltQuad::output_tilt()
 {
     uint16_t s[4];
 
+    limit_tilt = false;
+
     for (int i = 0; i < 4; i++) {
         s[i] = 1000 + _conv + _servo_trim[i];
 
@@ -114,9 +116,13 @@ void AP_MotorsTiltQuad::output_tilt()
                 _yaw_tilt * _yaw_factor[i];
             // as we use thrust vectoring, scale servo angles by motor thrust
             float angle = asinf(constrain_float(thrust / constrain_float(mot_thrust, 0.1f, 1.0f), -1.0f, 1.0f));
-
-            s[i] += constrain_int16(angle / M_PI_2 * 1000, -_servo_limit, _servo_limit);
+            int16_t pwm = constrain_int16(angle / M_PI_2 * 1000, -_servo_limit, _servo_limit);
+            if (pwm == -_servo_limit || pwm == _servo_limit)
+                limit_tilt = true;
+            s[i] += pwm;
         }
+        else
+            limit_tilt = true;
 
         s[i] = 1500 + (s[i] - 1500) * _servo_scale * _servo_factor[i];
 
