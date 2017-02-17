@@ -27,5 +27,6 @@ private:
 
     float _charge_current;
 
+    void send_packet(uint8_t *p, uint8_t *last);
     void process_telemetry();
 };
