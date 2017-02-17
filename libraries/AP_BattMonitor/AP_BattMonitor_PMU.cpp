@@ -1,5 +1,6 @@
 #include <AP_HAL/AP_HAL.h>
 #include <AP_SerialManager/AP_SerialManager.h>
+#include <RC_Channel/RC_Channel.h>
 
 #include "AP_BattMonitor_PMU.h"
 
@@ -16,6 +17,39 @@ int read_2(const uint8_t *p)
 int read_2s(const uint8_t *p)
 {
     return ((read_2(p) << 18) >> 18);
+}
+
+void write_2(uint8_t* &p, uint16_t v)
+{
+    *++p = v & 0x7F;
+    *++p = (v >> 7) & 0x7F;
+}
+
+void write_5(uint8_t* &p, float f)
+{
+    union { float f; unsigned v; } u;
+    u.f = f;
+    for (int i = 0; i < 5; i++)
+        *++p = (u.v >> (7 * i)) & 0x7F;
+}
+
+void AP_BattMonitor_PMU::send_packet(uint8_t *p, uint8_t *last)
+{
+    int n = last - p + 1;
+    if (n <= 0)
+        return;
+
+    uint8_t cs = 0; // set checksum
+    for (int i = 0; i < n; i++)
+        cs ^= p[i];
+    p[n] = cs;
+
+    for (int i = 1; i < n + 1; i++) // set mark bits
+        p[i] |= 0x80;
+
+    unsigned sz = n + 1; // forward to serial
+    if (_port->txspace() >= sz)
+        _port->write(p, sz);
 }
 
 AP_BattMonitor_PMU::AP_BattMonitor_PMU(AP_BattMonitor &mon, AP_BattMonitor::BattMonitor_State &mon_state, AP_BattMonitor_Params &params) :
@@ -45,6 +79,25 @@ void AP_BattMonitor_PMU::read()
     if (_port->txspace() >= 3) { // request extended telemetry
         uint8_t telem_req[] = {0x44, 0x80, 0xC4};
         _port->write(telem_req, sizeof(telem_req));
+    }
+
+    if (_port->txspace() >= 3) { // ICE start/stop
+        uint8_t ice_start[] = {0x42, 0x80, 0xC2};
+        uint8_t ice_stop[] = {0x43, 0x80, 0xC3};
+
+                        
+        uint16_t cvalue = RC_Channels::get_radio_in(7-1);
+        bool should_run = cvalue >= 1700;
+
+        _port->write(should_run ? ice_start : ice_stop, 3);
+    }
+
+    RC_Channel *ch8 = RC_Channels::rc_channel(8-1);
+    if (ch8) { // ICE injection control
+        uint8_t ice_injection[4] = {0x47};
+        uint8_t *p = ice_injection;
+        write_2(p, ch8->percent_input() * 10);
+        send_packet(ice_injection, p);
     }
 
     int numc = MIN((int)_port->available(), 64); // try to avoid bogging down in PMU data
