@@ -28,6 +28,9 @@ void Plane::parachute_release()
         gcs().send_text(MAV_SEVERITY_CRITICAL,"Parachute: Released");
     }
 
+    // disarm motors
+    disarm_motors();
+
     // release parachute
     parachute.release();
 }
