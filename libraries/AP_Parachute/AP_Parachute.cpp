@@ -6,6 +6,7 @@
 #include <AP_Notify/AP_Notify.h>
 #include <AP_HAL/AP_HAL.h>
 #include <AP_Logger/AP_Logger.h>
+#include <AP_Arming/AP_Arming.h>
 #include <GCS_MAVLink/GCS.h>
 
 extern const AP_HAL::HAL& hal;
@@ -106,6 +107,9 @@ void AP_Parachute::release()
 
     // update AP_Notify
     AP_Notify::flags.parachute_release = 1;
+
+    // disarm motors
+    AP::arming().disarm();
 }
 
 /// update - shuts off the trigger should be called at about 10hz
