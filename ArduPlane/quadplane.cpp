@@ -1292,6 +1292,12 @@ float QuadPlane::get_pilot_input_yaw_rate_cds(void) const
         return 0;
     }
 
+    if (plane.control_mode != &plane.mode_qstabilize &&
+        plane.control_mode != &plane.mode_qhover &&
+        plane.control_mode != &plane.mode_qloiter) {
+        return 0;
+    }
+
     // add in rudder input
     return plane.channel_rudder->get_control_in() * yaw_rate_max / 45;
 }
