@@ -1099,6 +1099,14 @@ float QuadPlane::get_pilot_input_yaw_rate_cds(void)
         return 0;
     }
 
+    if (plane.control_mode == AUTO ||
+        plane.control_mode == GUIDED ||
+        plane.control_mode == QRTL ||
+        plane.control_mode == QLAND) {
+        // ignore rc yaw in VTOL auto modes
+        return 0;
+    }
+
     // add in rudder input
     return plane.channel_rudder->get_control_in() * yaw_rate_max / 45;
 }
