@@ -88,6 +88,10 @@ void Plane::read_airspeed(void)
     float aspeed;
     if (ahrs.airspeed_estimate(&aspeed)) {
         smoothed_airspeed = smoothed_airspeed * 0.8f + aspeed * 0.2f;
+#if FRAME_CONFIG == TILT_QUAD_FRAME
+        if (quadplane.available())
+            quadplane.motors->set_airspeed(smoothed_airspeed);
+#endif
     }
 }
 
