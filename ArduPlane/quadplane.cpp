@@ -2557,8 +2557,11 @@ bool QuadPlane::guided_mode_enabled(void)
     if (!available()) {
         return false;
     }
-    // only use quadplane guided when in AUTO or GUIDED mode
-    if (plane.control_mode != GUIDED && plane.control_mode != AUTO) {
+    // only use quadplane guided when in AUTO loiter or GUIDED mode
+    if (plane.control_mode != GUIDED && 
+        !(plane.control_mode == AUTO && 
+        (plane.mission.get_current_nav_cmd().id == MAV_CMD_NAV_LOITER_UNLIM || 
+         plane.mission.get_current_nav_cmd().id == MAV_CMD_NAV_LOITER_TIME))) {
         return false;
     }
     return guided_mode != 0;
