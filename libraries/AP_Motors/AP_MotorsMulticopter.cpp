@@ -175,6 +175,8 @@ const AP_Param::GroupInfo AP_MotorsMulticopter::var_info[] = {
     AP_GROUPINFO("BOOST_SCALE",  37, AP_MotorsMulticopter,  _boost_scale, 0),
 
     // 38 RESERVED for BAT_POW_MAX
+
+    AP_GROUPINFO("THR_MAX", 50, AP_MotorsMulticopter, _thr_max, 1.0f),
     
     // @Param: BAT_IDX
     // @DisplayName: Battery compensation index
@@ -279,14 +281,14 @@ float AP_MotorsMulticopter::get_current_limit_max_throttle()
         !_flags.armed || // remove throttle limit if disarmed
         !battery.has_current(_batt_idx)) { // no current monitoring is available
         _throttle_limit = 1.0f;
-        return 1.0f;
+        return _thr_max;
     }
 
     float _batt_resistance = battery.get_resistance(_batt_idx);
 
     if (is_zero(_batt_resistance)) {
         _throttle_limit = 1.0f;
-        return 1.0f;
+        return _thr_max;
     }
 
     float _batt_current = battery.current_amps(_batt_idx);
@@ -303,7 +305,7 @@ float AP_MotorsMulticopter::get_current_limit_max_throttle()
     _throttle_limit = constrain_float(_throttle_limit, 0.2f, 1.0f);
 
     // limit max throttle
-    return get_throttle_hover() + ((1.0-get_throttle_hover())*_throttle_limit);
+    return (get_throttle_hover() + ((1.0-get_throttle_hover())*_throttle_limit)) * _thr_max;
 }
 
 // apply_thrust_curve_and_volt_scaling - returns throttle in the range 0 ~ 1
