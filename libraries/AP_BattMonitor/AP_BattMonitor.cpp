@@ -26,6 +26,8 @@ const AP_Param::GroupInfo AP_BattMonitor::var_info[] = {
     // @Path: AP_BattMonitor_Params.cpp
     AP_SUBGROUPINFO(_params[1], "2_", 24, AP_BattMonitor, AP_BattMonitor_Params),
 
+    AP_SUBGROUPPTR(drivers[0], "H", 7, AP_BattMonitor, AP_BattMonitor_PMU),
+
     AP_GROUPEND
 };
 
@@ -108,6 +110,7 @@ AP_BattMonitor::init()
                 break;
             case AP_BattMonitor_Params::BattMonitor_TYPE_PMU:
                 drivers[instance] = new AP_BattMonitor_PMU(*this, state[instance], _params[instance]);
+                AP_Param::load_object_from_eeprom(drivers[instance], AP_BattMonitor_PMU::var_info);
                 _num_instances++;
                 break;
             case AP_BattMonitor_Params::BattMonitor_TYPE_NONE:

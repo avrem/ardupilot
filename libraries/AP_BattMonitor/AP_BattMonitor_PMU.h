@@ -26,6 +26,23 @@ public:
 
     void status_msg(mavlink_channel_t chan) const override;
 
+    static const struct AP_Param::GroupInfo var_info[];
+
+protected:
+
+    /// parameters
+    AP_Int16    _throttle_min;
+    AP_Int16    _throttle_max;
+    AP_Float    _throttle_gain;
+    AP_Int16    _temp_choke;
+    AP_Int16    _temp_min;
+    AP_Int16    _temp_max;
+    AP_Int16    _cooler_max;
+    AP_Int16    _charge_target;
+    AP_Int16    _charge_max;
+    AP_Float    _charge_amp_per_volt;
+    AP_Float    _charge_amp_offset;
+
 private:
     AP_HAL::UARTDriver *_port;
     uint8_t _rx_buf[32];
