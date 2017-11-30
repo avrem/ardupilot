@@ -8,6 +8,28 @@
 
 extern const AP_HAL::HAL& hal;
 
+const AP_Param::GroupInfo AP_BattMonitor_PMU::var_info[] = {
+    AP_GROUPINFO("_THR_MIN", 0, AP_BattMonitor_PMU, _throttle_min, 0),
+    AP_GROUPINFO("_THR_MAX", 1, AP_BattMonitor_PMU, _throttle_max, 0),
+
+    AP_GROUPINFO("_THR_GAIN", 2, AP_BattMonitor_PMU, _throttle_gain, 0.01f),
+
+    AP_GROUPINFO("_TEMP_CHK", 3, AP_BattMonitor_PMU, _temp_choke, 10),
+    AP_GROUPINFO("_TEMP_MIN", 4, AP_BattMonitor_PMU, _temp_min, 60),
+    AP_GROUPINFO("_TEMP_MAX", 5, AP_BattMonitor_PMU, _temp_max, 130),
+
+    AP_GROUPINFO("_CLR_MAX", 6, AP_BattMonitor_PMU, _cooler_max, 0),
+
+    AP_GROUPINFO("_CHG_TGT", 7, AP_BattMonitor_PMU, _charge_target, 5),
+    AP_GROUPINFO("_CHG_MAX", 8, AP_BattMonitor_PMU, _charge_max, 0),
+
+    // 9 was _SHNT_RAT
+    AP_GROUPINFO("_AMPPERVOLT", 10, AP_BattMonitor_PMU, _charge_amp_per_volt, 157),
+    AP_GROUPINFO("_AMP_OFFSET", 11, AP_BattMonitor_PMU, _charge_amp_offset, 1.65f),
+
+    AP_GROUPEND
+};
+
 #define AP_BATTMONITOR_PMU_TIMEOUT_MICROS 5000000    // sensor becomes unhealthy if no successful readings for 5 seconds
 #define AP_PMU_TELEMETRY_LENGTH 23
 
@@ -61,6 +83,8 @@ AP_BattMonitor_PMU::AP_BattMonitor_PMU(AP_BattMonitor &mon, AP_BattMonitor::Batt
 
     // starts with not healthy
     _state.healthy = false;
+
+    AP_Param::setup_object_defaults(this, var_info);
 }
 
 void AP_BattMonitor_PMU::init(void)
@@ -101,6 +125,24 @@ void AP_BattMonitor_PMU::read()
         write_2(p, ch8->percent_input() * 10);
         send_packet(ice_injection, p);
     }
+
+    uint8_t ice_params[128] = {0x48};
+    uint8_t *p = ice_params;
+    write_2(p, _throttle_min);
+    write_2(p, _throttle_max);
+    write_2(p, _temp_choke);
+    write_2(p, _temp_min);
+    write_2(p, _temp_max);
+    write_2(p, _cooler_max);
+    write_2(p, _charge_target);
+    write_2(p, _charge_max);
+    write_5(p, _throttle_gain);
+    write_5(p, _params._volt_multiplier);
+    write_5(p, _params._curr_amp_per_volt);
+    write_5(p, _params._curr_amp_offset);
+    write_5(p, _charge_amp_per_volt);
+    write_5(p, _charge_amp_offset);
+    send_packet(ice_params, p);
 
     int numc = MIN((int)_port->available(), 64); // try to avoid bogging down in PMU data
     for (int i = 0; i < numc; i++) { // process incoming data
