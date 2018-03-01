@@ -497,6 +497,16 @@ void AP_BattMonitor::status_msg(mavlink_channel_t chan) const
     }
 }
 
+// handle DO_ENGINE_CONTROL messages via MAVLink or mission
+void AP_BattMonitor::engine_control(float start_control, float cold_start, float height_delay)
+{
+    for (uint8_t i=0; i<_num_instances; i++) {
+        if (drivers[i] != nullptr && _params[i].type() != AP_BattMonitor_Params::BattMonitor_TYPE_NONE) {
+            drivers[i]->engine_control(start_control, cold_start, height_delay);
+        }
+    }
+}
+
 namespace AP {
 
 AP_BattMonitor &battery()

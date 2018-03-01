@@ -1100,9 +1100,7 @@ MAV_RESULT GCS_MAVLINK_Plane::handle_command_long_packet(const mavlink_command_l
         return MAV_RESULT_ACCEPTED;
 
     case MAV_CMD_DO_ENGINE_CONTROL:
-        if (!plane.g2.ice_control.engine_control(packet.param1, packet.param2, packet.param3)) {
-            return MAV_RESULT_FAILED;
-        }
+        plane.battery.engine_control(packet.param1, packet.param2, packet.param3);
         return MAV_RESULT_ACCEPTED;
 
     default:

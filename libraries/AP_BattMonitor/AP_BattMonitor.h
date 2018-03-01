@@ -93,6 +93,9 @@ public:
     // output status information for all instances
     void status_msg(mavlink_channel_t chan) const;
 
+    // handle DO_ENGINE_CONTROL messages via MAVLink or mission
+    void engine_control(float start_control, float cold_start, float height_delay);
+
     // healthy - returns true if monitor is functioning
     bool healthy(uint8_t instance) const;
     bool healthy() const { return healthy(AP_BATT_PRIMARY_INSTANCE); }
