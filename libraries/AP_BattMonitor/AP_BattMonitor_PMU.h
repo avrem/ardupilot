@@ -26,6 +26,8 @@ public:
 
     void status_msg(mavlink_channel_t chan) const override;
 
+    void engine_control(float start_control, float cold_start, float height_delay) override;
+
     static const struct AP_Param::GroupInfo var_info[];
 
 protected:
@@ -51,6 +53,8 @@ private:
     float _charge_current;
     uint16_t _rpm;
     AP_ICEngine::ICE_State _ice_state;
+
+    bool _ice_should_run, _rc_should_run;
 
     void send_packet(uint8_t *p, uint8_t *last);
     void process_telemetry();

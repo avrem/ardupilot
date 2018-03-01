@@ -107,15 +107,18 @@ void AP_BattMonitor_PMU::read()
         _port->write(telem_req, sizeof(telem_req));
     }
 
+    uint16_t cvalue = RC_Channels::get_radio_in(7-1);
+    bool rc_should_run = cvalue >= 1700;
+    if (_rc_should_run != rc_should_run) {
+        _rc_should_run = rc_should_run;
+        _ice_should_run = _rc_should_run;
+    }
+
     if (_port->txspace() >= 3) { // ICE start/stop
         uint8_t ice_start[] = {0x42, 0x80, 0xC2};
         uint8_t ice_stop[] = {0x43, 0x80, 0xC3};
 
-                        
-        uint16_t cvalue = RC_Channels::get_radio_in(7-1);
-        bool should_run = cvalue >= 1700;
-
-        _port->write(should_run ? ice_start : ice_stop, 3);
+        _port->write(_ice_should_run ? ice_start : ice_stop, 3);
     }
 
     RC_Channel *ch8 = RC_Channels::rc_channel(8-1);
@@ -239,4 +242,11 @@ void AP_BattMonitor_PMU::status_msg(mavlink_channel_t chan) const
         mavlink_msg_rpm_send(chan, _rpm, 0);
     if (HAVE_PAYLOAD_SPACE(chan, BATTERY2))
         mavlink_msg_battery2_send(chan, _state.voltage, _charge_current * 100);
+}
+
+// handle DO_ENGINE_CONTROL messages via MAVLink or mission
+void AP_BattMonitor_PMU::engine_control(float start_control, float cold_start, float height_delay)
+{
+    _ice_should_run = !_ice_should_run;
+    // for now just restart whole stuff
 }
