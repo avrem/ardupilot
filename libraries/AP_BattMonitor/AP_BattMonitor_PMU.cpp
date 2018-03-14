@@ -214,6 +214,11 @@ void AP_BattMonitor_PMU::process_telemetry()
     _state.last_time_micros = tnow;
     _state.healthy = true;
 
+    if (_state.temperature > _temp_max + 10 && _ice_should_run) {
+        gcs().send_text(MAV_SEVERITY_CRITICAL, "Engine overheating");
+        _ice_should_run = false;
+    }
+
     struct log_RPM pkt1 = {
         LOG_PACKET_HEADER_INIT(LOG_RPM_MSG),
         time_us     : AP_HAL::micros64(),
