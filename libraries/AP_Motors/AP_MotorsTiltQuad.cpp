@@ -25,10 +25,12 @@ const AP_Param::GroupInfo AP_MotorsTiltQuad::var_info[] = {
     // variables from parent vehicle
     AP_NESTEDGROUPINFO(AP_MotorsMulticopter, 3), // 3 to keep parameters from before deep nesting index fix
 
-    // parameters 1 ~ 29 were reserved for tradheli
-    // parameters 30 ~ 39 reserved for tricopter
-    // parameters 40 ~ 49 for single copter and coax copter (these have identical parameter files)
-    // parameters 50 ~ 59 for tilt-quad
+    AP_GROUPINFO("COAXIAL", 40, AP_MotorsTiltQuad, _coaxial, 0),
+
+    AP_GROUPINFO("CX1_TRIM", 41, AP_MotorsTiltQuad, _servos[0].coax_trim, 0),
+    AP_GROUPINFO("CX2_TRIM", 42, AP_MotorsTiltQuad, _servos[1].coax_trim, 0),
+    AP_GROUPINFO("CX3_TRIM", 43, AP_MotorsTiltQuad, _servos[2].coax_trim, 0),
+    AP_GROUPINFO("CX4_TRIM", 44, AP_MotorsTiltQuad, _servos[3].coax_trim, 0),
 
     // 50 was SV_SPEED
     // 51 was SV_OFFSET
@@ -80,6 +82,18 @@ void AP_MotorsTiltQuad::init(motor_frame_class frame_class, motor_frame_type fra
         add_motor_num(AP_MOTORS_MOT_5 + i);
     }
 
+    if (_coaxial) {
+        // setup coaxial servo mappings
+        for (int i = 0; i < 4; i++) {
+            if (!SRV_Channels::get_channel_for((SRV_Channel::Aux_servo_function_t)(SRV_Channel::k_motor9 + i), CH_5 + i)) {
+                gcs().send_text(MAV_SEVERITY_ERROR, "MotorsTiltQuad: unable to setup coaxial output channels");
+                // don't set initialised_ok
+                return;
+            }
+            add_motor_num(AP_MOTORS_MOT_9 + i);
+        }
+    }
+
     // record successful initialisation if what we setup was the desired frame_class
     _flags.initialised_ok = (frame_class == MOTOR_FRAME_TILTQUAD);
 }
@@ -129,6 +143,9 @@ void AP_MotorsTiltQuad::output_tilt()
         s = 1500 + (s - 1500) * _servo_scale * _servos[i].factor * (_servos[i].chan->get_reversed() ? -1 : 1);
 
         rc_write(AP_MOTORS_MOT_5 + i, s);
+
+        if (_coaxial)
+            rc_write(AP_MOTORS_MOT_9 + i, s + _servos[i].coax_trim);
     }
 }
 
