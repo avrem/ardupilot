@@ -51,8 +51,11 @@ protected:
     struct {
         SRV_Channel *chan;
         AP_Int16 trim;
+        AP_Int16 coax_trim;
         float factor;
     } _servos[4];
+
+    AP_Int8            _coaxial;
 
     AP_Float           _servo_scale;
     AP_Int16           _servo_limit;
