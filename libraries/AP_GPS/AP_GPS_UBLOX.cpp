@@ -701,17 +701,8 @@ AP_GPS_UBLOX::_parse_gps(void)
                 for(int i = 0; i < _buffer.gnss.numConfigBlocks; i++) {
                     // Reserve an equal portion of channels for all enabled systems
                     if(gps._gnss_mode[state.instance] & (1 << _buffer.gnss.configBlock[i].gnssId)) {
-                        if(GNSS_SBAS !=_buffer.gnss.configBlock[i].gnssId) {
-                            _buffer.gnss.configBlock[i].resTrkCh = (_buffer.gnss.numTrkChHw - 3) / (gnssCount * 2);
-                            _buffer.gnss.configBlock[i].maxTrkCh = _buffer.gnss.numTrkChHw;
-                        } else {
-                            _buffer.gnss.configBlock[i].resTrkCh = 1;
-                            _buffer.gnss.configBlock[i].maxTrkCh = 3;
-                        }
                         _buffer.gnss.configBlock[i].flags = _buffer.gnss.configBlock[i].flags | 0x00000001;
                     } else {
-                        _buffer.gnss.configBlock[i].resTrkCh = 0;
-                        _buffer.gnss.configBlock[i].maxTrkCh = 0;
                         _buffer.gnss.configBlock[i].flags = _buffer.gnss.configBlock[i].flags & 0xFFFFFFFE;
                     }
                 }
