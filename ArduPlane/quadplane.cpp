@@ -1913,6 +1913,23 @@ void QuadPlane::vtol_position_controller(void)
                 pos_control->set_limit_accel_xy();
             }
         }
+        else {
+            uint32_t now = AP_HAL::millis();
+            if (now - last_pidz_init_ms < (uint32_t)transition_time_ms*4) {
+                // we limit pitch during initial transition
+                float pitch_limit_cd = linear_interpolate(0, aparm.angle_max,
+                                                  now,
+                                                  last_pidz_init_ms, last_pidz_init_ms+transition_time_ms*4);
+                if (plane.nav_pitch_cd > pitch_limit_cd) {
+                    plane.nav_pitch_cd = pitch_limit_cd;
+                    pos_control->set_limit_accel_xy();
+                }
+                else if (plane.nav_pitch_cd < -pitch_limit_cd) {
+                    plane.nav_pitch_cd = -pitch_limit_cd;
+                    pos_control->set_limit_accel_xy();
+                }
+            }
+        }
         
         // call attitude controller
         attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(plane.nav_roll_cd,
