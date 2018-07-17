@@ -32,6 +32,8 @@ const AP_Param::GroupInfo AP_MotorsTiltQuad::var_info[] = {
     AP_GROUPINFO("CX3_TRIM", 43, AP_MotorsTiltQuad, _servos[2].coax_trim, 0),
     AP_GROUPINFO("CX4_TRIM", 44, AP_MotorsTiltQuad, _servos[3].coax_trim, 0),
 
+    AP_GROUPINFO("CX_FOLDING", 45, AP_MotorsTiltQuad, _coax_folding, 0),
+
     // 50 was SV_SPEED
     // 51 was SV_OFFSET
 
@@ -123,6 +125,9 @@ void AP_MotorsTiltQuad::output_tilt()
 {
     limit_tilt = false;
 
+    uint32_t now = AP_HAL::millis();
+    float folding_thrust_ratio = 1.0f - constrain_float((float)(now - _last_unfolded_ms) / 2000, 0.0f, 1.0f);
+
     for (int i = 0; i < 4; i++) {
         uint16_t s = 1000 + _conv + _servos[i].trim;
 
@@ -130,6 +135,7 @@ void AP_MotorsTiltQuad::output_tilt()
         if (_flags.armed && !is_zero(mot_thrust)) {
             float thrust_vert = _roll_tilt * _roll_factor[i] + _pitch_tilt * _pitch_factor[i];
             float thrust_horiz = _yaw_tilt * _yaw_factor[i];
+            mot_thrust *= (1.0f + folding_thrust_ratio) * 0.5f;
             mot_thrust = constrain_float(mot_thrust, 0.1f, 1.0f);
             float angle = constrain_float(thrust_vert / (mot_thrust * _thrust_speed_scale + _elevon_scale) - thrust_horiz / mot_thrust, -M_PI_2, M_PI_2);
             int16_t pwm = constrain_int16(angle / M_PI_2 * 1000, -_servo_limit, _servo_limit);
@@ -154,5 +160,10 @@ void AP_MotorsTiltQuad::output()
 {
     AP_MotorsMatrix::output();
     output_tilt();
+
+    bool fold_props = _coax_folding && _conv < _coax_folding * 10;
+    SRV_Channels::set_output_scaled(SRV_Channel::k_unused1, fold_props ? 100 : 0);
+    if (!fold_props)
+        _last_unfolded_ms = AP_HAL::millis();
 }
 
