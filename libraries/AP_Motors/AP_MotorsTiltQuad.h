@@ -56,6 +56,7 @@ protected:
     } _servos[4];
 
     AP_Int8            _coaxial;
+    AP_Int8            _coax_folding;
 
     AP_Float           _servo_scale;
     AP_Int16           _servo_limit;
@@ -71,6 +72,8 @@ protected:
 
     float              _thrust_speed_scale = 1.0f;
     float              _elevon_scale;
+    
+    uint32_t           _last_unfolded_ms;
 
     void                add_motor_tq(int8_t motor_num, float angle_degrees, float yaw_factor, uint8_t testing_order, float servo_factor);
 
