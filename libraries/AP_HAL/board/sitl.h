@@ -21,3 +21,7 @@
 #define HAL_HAVE_BOARD_VOLTAGE 1
 #define HAL_HAVE_SERVO_VOLTAGE 1
 #define HAL_HAVE_SAFETY_SWITCH 1
+
+// allow for static semaphores
+#include <AP_HAL_SITL/Semaphores.h>
+#define HAL_Semaphore HALSITL::Semaphore
