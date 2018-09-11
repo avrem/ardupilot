@@ -44,6 +44,7 @@ protected:
     AP_Int16    _charge_max;
     AP_Float    _charge_amp_per_volt;
     AP_Float    _charge_amp_offset;
+    AP_Int16    _rpm_max;
 
 private:
     AP_HAL::UARTDriver *_port;

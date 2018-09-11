@@ -27,6 +27,8 @@ const AP_Param::GroupInfo AP_BattMonitor_PMU::var_info[] = {
     AP_GROUPINFO("_AMPPERVOLT", 10, AP_BattMonitor_PMU, _charge_amp_per_volt, 157),
     AP_GROUPINFO("_AMP_OFFSET", 11, AP_BattMonitor_PMU, _charge_amp_offset, 1.65f),
 
+    AP_GROUPINFO("_RPM_MAX", 12, AP_BattMonitor_PMU, _rpm_max, 0),
+
     AP_GROUPEND
 };
 
@@ -150,6 +152,7 @@ void AP_BattMonitor_PMU::read()
     write_5(p, _params._curr_amp_offset);
     write_5(p, _charge_amp_per_volt);
     write_5(p, _charge_amp_offset);
+    write_2(p, _rpm_max);
     send_packet(ice_params, p);
 
     int numc = MIN((int)_port->available(), 64); // try to avoid bogging down in PMU data
