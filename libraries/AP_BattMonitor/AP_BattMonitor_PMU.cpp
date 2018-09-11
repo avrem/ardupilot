@@ -114,6 +114,11 @@ void AP_BattMonitor_PMU::read()
         _ice_should_run = _rc_should_run;
     }
 
+    bool armed = hal.util->get_soft_armed();
+    if (_armed && !armed) // stop ICE on disarming
+        _ice_should_run = false;
+    _armed = armed;
+
     if (_port->txspace() >= 3) { // ICE start/stop
         uint8_t ice_start[] = {0x42, 0x80, 0xC2};
         uint8_t ice_stop[] = {0x43, 0x80, 0xC3};

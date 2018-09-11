@@ -54,7 +54,7 @@ private:
     uint16_t _rpm;
     AP_ICEngine::ICE_State _ice_state;
 
-    bool _ice_should_run, _rc_should_run;
+    bool _ice_should_run, _rc_should_run, _armed;
 
     void send_packet(uint8_t *p, uint8_t *last);
     void process_telemetry();
