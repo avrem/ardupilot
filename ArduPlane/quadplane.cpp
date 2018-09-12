@@ -530,7 +530,10 @@ const AP_Param::ConversionInfo q_conversion_table[] = {
     { Parameters::k_param_quadplane, 596,  AP_PARAM_FLOAT, "Q_LOIT_BRK_ACCEL" },// Q_WP_LOIT_MINA
     { Parameters::k_param_q_attitude_control, 385,  AP_PARAM_FLOAT, "Q_A_RAT_RLL_FLTD" },// Q_A_RAT_RLL_FILT
     { Parameters::k_param_q_attitude_control, 386,  AP_PARAM_FLOAT, "Q_A_RAT_PIT_FLTD" },// Q_A_RAT_PIT_FILT
-    { Parameters::k_param_q_attitude_control, 387,  AP_PARAM_FLOAT, "Q_A_RAT_YAW_FLTE" },// Q_A_RAT_YAW_FILT
+    { Parameters::k_param_q_attitude_control, 387,  AP_PARAM_FLOAT, "Q_A_RAT_YAW_FLTD" },// Q_A_RAT_YAW_FILT
+    { Parameters::k_param_q_attitude_control, 388,  AP_PARAM_FLOAT, "Q_A_RAT_RL2_FLTD" },// Q_A_RAT_RL2_FILT
+    { Parameters::k_param_q_attitude_control, 389,  AP_PARAM_FLOAT, "Q_A_RAT_PI2_FLTD" },// Q_A_RAT_PI2_FILT
+    { Parameters::k_param_q_attitude_control, 390,  AP_PARAM_FLOAT, "Q_A_RAT_YA2_FLTD" },// Q_A_RAT_YA2_FILT
     { Parameters::k_param_q_attitude_control, 449,  AP_PARAM_FLOAT, "Q_A_RAT_RLL_FF" },  // Q_A_RAT_RLL_FF
     { Parameters::k_param_q_attitude_control, 450,  AP_PARAM_FLOAT, "Q_A_RAT_PIT_FF" },  // Q_A_RAT_PIT_FF
     { Parameters::k_param_q_attitude_control, 451,  AP_PARAM_FLOAT, "Q_A_RAT_YAW_FF" },  // Q_A_RAT_YAW_FILT
@@ -567,6 +570,9 @@ bool QuadPlane::setup(void)
     enum AP_Motors::motor_frame_class motor_class;
     enum Rotation rotation = ROTATION_NONE;
 
+#if FRAME_CONFIG == TILT_QUAD_FRAME
+    frame_class.set_and_save(AP_Motors::MOTOR_FRAME_TILTQUAD);
+#else
     /*
       cope with upgrade from old AP_Motors values for frame_class
      */
@@ -594,6 +600,7 @@ bool QuadPlane::setup(void)
         }
         frame_class.set_and_save(new_value);
     }
+#endif
     
     if (hal.util->available_memory() <
         4096 + sizeof(*motors) + sizeof(*attitude_control) + sizeof(*pos_control) + sizeof(*wp_nav) + sizeof(*ahrs_view) + sizeof(*loiter_nav)) {
@@ -630,6 +637,8 @@ bool QuadPlane::setup(void)
         break;
     case AP_Motors::MOTOR_FRAME_TAILSITTER:
         break;
+    case AP_Motors::MOTOR_FRAME_TILTQUAD:
+        break;
     default:
         hal.console->printf("Unknown frame class %u - using QUAD\n", (unsigned)frame_class.get());
         frame_class.set(AP_Motors::MOTOR_FRAME_QUAD);
@@ -637,6 +646,10 @@ bool QuadPlane::setup(void)
         break;
     }
 
+#if FRAME_CONFIG == TILT_QUAD_FRAME
+    motors = new AP_MotorsTiltQuad(plane.scheduler.get_loop_rate_hz());
+    motors_var_info = AP_MotorsTiltQuad::var_info;
+#else
     if (tailsitter.motor_mask == 0) {
         // this is a normal quadplane
         switch (motor_class) {
@@ -668,6 +681,7 @@ bool QuadPlane::setup(void)
         motors = new AP_MotorsMatrixTS(plane.scheduler.get_loop_rate_hz(), rc_speed);
         motors_var_info = AP_MotorsMatrixTS::var_info;
     }
+#endif
 
     const static char *strUnableToAllocate = "Unable to allocate";
     if (!motors) {
@@ -683,7 +697,11 @@ bool QuadPlane::setup(void)
         goto failed;
     }
 
+#if FRAME_CONFIG == TILT_QUAD_FRAME
+    attitude_control = new AC_AttitudeControl_TiltQuad(*ahrs_view, aparm, *motors, loop_delta_t);
+#else
     attitude_control = new AC_AttitudeControl_Multi(*ahrs_view, aparm, *motors, loop_delta_t);
+#endif
     if (!attitude_control) {
         hal.console->printf("%s attitude_control\n", strUnableToAllocate);
         goto failed;
@@ -726,8 +744,10 @@ bool QuadPlane::setup(void)
     transition_state = TRANSITION_DONE;
 
     if (tilt.tilt_mask != 0) {
+#if FRAME_CONFIG != TILT_QUAD_FRAME
         // setup tilt compensation
         motors->set_thrust_compensation_callback(FUNCTOR_BIND_MEMBER(&QuadPlane::tilt_compensate, void, float *, uint8_t));
+#endif
         if (tilt.tilt_type == TILT_TYPE_VECTORED_YAW) {
             // setup tilt servos for vectored yaw
             SRV_Channels::set_range(SRV_Channel::k_tiltMotorLeft,  1000);
@@ -756,6 +776,7 @@ failed:
  */
 void QuadPlane::setup_defaults(void)
 {
+#if FRAME_CONFIG != TILT_QUAD_FRAME
     AP_Param::set_defaults_from_table(defaults_table, ARRAY_SIZE(defaults_table));
 
     enum AP_Motors::motor_frame_class motor_class;
@@ -763,6 +784,7 @@ void QuadPlane::setup_defaults(void)
     if (motor_class == AP_Motors::MOTOR_FRAME_TAILSITTER) {
         AP_Param::set_defaults_from_table(defaults_table_tailsitter, ARRAY_SIZE(defaults_table_tailsitter));
     }
+#endif
     
     // reset ESC calibration
     if (esc_calibration != 0) {

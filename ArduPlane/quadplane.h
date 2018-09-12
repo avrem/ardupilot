@@ -3,6 +3,7 @@
 #include <AP_Motors/AP_Motors.h>
 #include <AC_PID/AC_PID.h>
 #include <AC_AttitudeControl/AC_AttitudeControl_Multi.h> // Attitude control library
+#include <AC_AttitudeControl/AC_AttitudeControl_TiltQuad.h>
 #include <AP_InertialNav/AP_InertialNav.h>
 #include <AC_AttitudeControl/AC_PosControl.h>
 #include <AC_WPNav/AC_WPNav.h>
@@ -11,6 +12,8 @@
 #include <AC_Avoidance/AC_Avoid.h>
 #include <AP_Proximity/AP_Proximity.h>
 #include "qautotune.h"
+
+#define TILT_QUAD_FRAME 20
 
 /*
   QuadPlane specific functionality
@@ -106,6 +109,9 @@ public:
     // see if we are flying from vtol point of view
     bool is_flying_vtol(void) const;
 
+    // return true when tiltquad frame configured
+    bool is_tiltquad(void);
+
     // return true when tailsitter frame configured
     bool is_tailsitter(void) const;
 
@@ -161,11 +167,17 @@ private:
 
     AP_Int8 frame_class;
     AP_Int8 frame_type;
-    
-    AP_MotorsMulticopter *motors;
+
     const struct AP_Param::GroupInfo *motors_var_info;
     
+#if FRAME_CONFIG == TILT_QUAD_FRAME
+    AP_MotorsTiltQuad *motors;
+    AC_AttitudeControl_TiltQuad *attitude_control;
+#else
+    AP_MotorsMulticopter *motors;   
     AC_AttitudeControl_Multi *attitude_control;
+#endif
+
     AC_PosControl *pos_control;
     AC_WPNav *wp_nav;
     AC_Loiter *loiter_nav;

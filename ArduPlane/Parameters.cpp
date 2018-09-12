@@ -933,10 +933,10 @@ const AP_Param::Info Plane::var_info[] = {
     GOBJECT(tuning,           "TUNE_", AP_Tuning_Plane),
     
     // @Group: Q_A_
-    // @Path: ../libraries/AC_AttitudeControl/AC_AttitudeControl.cpp,../libraries/AC_AttitudeControl/AC_AttitudeControl_Multi.cpp
+    // @Path: ../libraries/AC_AttitudeControl/AC_AttitudeControl.cpp,../libraries/AC_AttitudeControl/AC_AttitudeControl_Multi.cpp,../libraries/AC_AttitudeControl/AC_AttitudeControl_TiltQuad.cpp
     { AP_PARAM_GROUP, "Q_A_", Parameters::k_param_q_attitude_control,
       (const void *)&plane.quadplane.attitude_control,
-      {group_info : AC_AttitudeControl_Multi::var_info}, AP_PARAM_FLAG_POINTER },
+      {group_info : plane.quadplane.attitude_control->var_info}, AP_PARAM_FLAG_POINTER },
     
     // @Group: RLL2SRV_
     // @Path: ../libraries/APM_Control/AP_RollController.cpp
@@ -1335,10 +1335,7 @@ void Plane::load_parameters(void)
     AP_Param::convert_old_parameters(&conversion_table[0], ARRAY_SIZE(conversion_table));
 
     // setup defaults in SRV_Channels
-    g2.servo_channels.set_default_function(CH_1, SRV_Channel::k_aileron);
-    g2.servo_channels.set_default_function(CH_2, SRV_Channel::k_elevator);
-    g2.servo_channels.set_default_function(CH_3, SRV_Channel::k_throttle);
-    g2.servo_channels.set_default_function(CH_4, SRV_Channel::k_rudder);
+    g2.servo_channels.set_default_function(CH_15, SRV_Channel::k_throttle);
         
     const uint8_t old_rc_keys[14] = { Parameters::k_param_rc_1_old,  Parameters::k_param_rc_2_old,
                                       Parameters::k_param_rc_3_old,  Parameters::k_param_rc_4_old,

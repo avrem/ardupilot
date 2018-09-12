@@ -42,6 +42,10 @@ void QuadPlane::tiltrotor_slew(float newtilt)
     float max_change = tilt_max_change(newtilt<tilt.current_tilt);
     tilt.current_tilt = constrain_float(newtilt, tilt.current_tilt-max_change, tilt.current_tilt+max_change);
 
+#if FRAME_CONFIG == TILT_QUAD_FRAME
+    attitude_control->set_tilt(tilt.current_tilt);
+    motors->set_tilt(tilt.current_tilt);
+#endif
     // translate to 0..1000 range and output
     SRV_Channels::set_output_scaled(SRV_Channel::k_motor_tilt, 1000 * tilt.current_tilt);
 }
@@ -413,4 +417,9 @@ void QuadPlane::tiltrotor_bicopter(void)
 
     SRV_Channels::set_output_scaled(SRV_Channel::k_tiltMotorLeft,  tilt_left);
     SRV_Channels::set_output_scaled(SRV_Channel::k_tiltMotorRight, tilt_right);
+}
+
+bool QuadPlane::is_tiltquad(void)
+{
+    return available() && frame_class == AP_Motors::MOTOR_FRAME_TILTQUAD;
 }
