@@ -144,7 +144,10 @@ void AP_BattMonitor_PMU::read()
     write_2(p, _temp_min);
     write_2(p, _temp_max);
     write_2(p, _cooler_max);
-    write_2(p, _charge_target);
+    if (_charge_target != 0)
+        write_2(p, MAX(_charge_target * _limit, 1));
+    else
+        write_2(p, _charge_target);
     write_2(p, _charge_max);
     write_5(p, _throttle_gain);
     write_5(p, _params._volt_multiplier);
@@ -172,6 +175,11 @@ void AP_BattMonitor_PMU::read()
             }
         }
     }
+}
+
+float get_temp_limit(float temp, float temp_min, float temp_max)
+{
+    return constrain_float((temp_max - temp) / (temp_max - temp_min), 0.0f, 1.0f);
 }
 
 void AP_BattMonitor_PMU::process_telemetry()
@@ -222,7 +230,12 @@ void AP_BattMonitor_PMU::process_telemetry()
     _state.last_time_micros = tnow;
     _state.healthy = true;
 
-    if (_state.temperature > _temp_max + 10 && _ice_should_run) {
+    float ice_limit = get_temp_limit(_state.temperature, _temp_max + 15, _temp_max + 30);
+    float gen_limit = get_temp_limit(_state.cell_voltages.cells[4] * 0.1f, 100, 120);
+
+    _limit = MIN(ice_limit, gen_limit);
+
+    if (is_zero(_limit) && _ice_should_run) {
         gcs().send_text(MAV_SEVERITY_CRITICAL, "Engine overheating");
         _ice_should_run = false;
     }
