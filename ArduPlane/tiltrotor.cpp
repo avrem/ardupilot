@@ -370,3 +370,8 @@ void QuadPlane::tiltrotor_vectored_yaw(void)
         SRV_Channels::set_output_scaled(SRV_Channel::k_tiltMotorRight, 1000 * (base_output - yaw_out * yaw_range));
     }
 }
+
+bool QuadPlane::is_tiltquad(void)
+{
+    return available() && frame_class == AP_Motors::MOTOR_FRAME_TILTQUAD;
+}
