@@ -17,7 +17,7 @@ float QuadPlane::tilt_max_change(bool up)
     } else {
         rate = tilt.max_rate_down_dps;
     }
-    if (tilt.tilt_type != TILT_TYPE_BINARY && !up) {
+    if (tilt.tilt_type != TILT_TYPE_BINARY && !up && !is_tiltquad()) {
         bool fast_tilt = false;
         if (plane.control_mode == MANUAL) {
             fast_tilt = true;
@@ -42,11 +42,15 @@ void QuadPlane::tiltrotor_slew(float newtilt)
     float max_change = tilt_max_change(newtilt<tilt.current_tilt);
     tilt.current_tilt = constrain_float(newtilt, tilt.current_tilt-max_change, tilt.current_tilt+max_change);
 
+#if FRAME_CONFIG == TILT_QUAD_FRAME
+    attitude_control->set_tilt(tilt.current_tilt);
+    motors->set_tilt(tilt.current_tilt);
+#endif
     // translate to 0..1000 range and output
     SRV_Channels::set_output_scaled(SRV_Channel::k_motor_tilt, 1000 * tilt.current_tilt);
 
-    // setup tilt compensation
-    motors->set_thrust_compensation_callback(FUNCTOR_BIND_MEMBER(&QuadPlane::tilt_compensate, void, float *, uint8_t));
+    if (!is_tiltquad()) // setup tilt compensation
+        motors->set_thrust_compensation_callback(FUNCTOR_BIND_MEMBER(&QuadPlane::tilt_compensate, void, float *, uint8_t));
 }
 
 /*
@@ -111,7 +115,9 @@ void QuadPlane::tiltrotor_continuous_update(void)
     */
     if (plane.control_mode == QSTABILIZE ||
         plane.control_mode == QHOVER) {
-        tiltrotor_slew(0);
+        // use manual copter modes for tilt test flights
+        float manual_tilt = constrain_float(1.0f - RC_Channels::rc_channel(6-1)->percent_input() * 0.01f, 0, 1);
+        tiltrotor_slew(manual_tilt);
         return;
     }
 
