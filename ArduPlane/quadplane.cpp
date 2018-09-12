@@ -454,6 +454,9 @@ bool QuadPlane::setup(void)
     enum AP_Motors::motor_frame_class motor_class;
     enum Rotation rotation = ROTATION_NONE;
         
+#if FRAME_CONFIG == TILT_QUAD_FRAME
+    frame_class.set_and_save(AP_Motors::MOTOR_FRAME_TILTQUAD);
+#else
     /*
       cope with upgrade from old AP_Motors values for frame_class
      */
@@ -481,6 +484,7 @@ bool QuadPlane::setup(void)
         }
         frame_class.set_and_save(new_value);
     }
+#endif
     
     if (hal.util->available_memory() <
         4096 + sizeof(*motors) + sizeof(*attitude_control) + sizeof(*pos_control) + sizeof(*wp_nav)) {
@@ -517,6 +521,8 @@ bool QuadPlane::setup(void)
         break;
     case AP_Motors::MOTOR_FRAME_TAILSITTER:
         break;
+    case AP_Motors::MOTOR_FRAME_TILTQUAD:
+        break;
     default:
         hal.console->printf("Unknown frame class %u - using QUAD\n", (unsigned)frame_class.get());
         frame_class.set(AP_Motors::MOTOR_FRAME_QUAD);
@@ -524,6 +530,10 @@ bool QuadPlane::setup(void)
         break;
     }
 
+#if FRAME_CONFIG == TILT_QUAD_FRAME
+    motors = new AP_MotorsTiltQuad(plane.scheduler.get_loop_rate_hz());
+    motors_var_info = AP_MotorsTiltQuad::var_info;
+#else
     switch (motor_class) {
     case AP_Motors::MOTOR_FRAME_TRI:
         motors = new AP_MotorsTri(plane.scheduler.get_loop_rate_hz(), rc_speed);
@@ -539,6 +549,7 @@ bool QuadPlane::setup(void)
         motors_var_info = AP_MotorsMatrix::var_info;
         break;
     }
+#endif
     const static char *strUnableToAllocate = "Unable to allocate";
     if (!motors) {
         hal.console->printf("%s motors\n", strUnableToAllocate);
@@ -553,7 +564,11 @@ bool QuadPlane::setup(void)
         goto failed;
     }
     
+#if FRAME_CONFIG == TILT_QUAD_FRAME
+    attitude_control = new AC_AttitudeControl_TiltQuad(*ahrs_view, aparm, *motors, loop_delta_t);
+#else
     attitude_control = new AC_AttitudeControl_Multi(*ahrs_view, aparm, *motors, loop_delta_t);
+#endif
     if (!attitude_control) {
         hal.console->printf("%s attitude_control\n", strUnableToAllocate);
         goto failed;
@@ -641,6 +656,7 @@ void QuadPlane::setup_defaults_table(const struct defaults_struct *table, uint8_
  */
 void QuadPlane::setup_defaults(void)
 {
+#if FRAME_CONFIG != TILT_QUAD_FRAME
     setup_defaults_table(defaults_table, ARRAY_SIZE(defaults_table));
 
     enum AP_Motors::motor_frame_class motor_class;
@@ -648,6 +664,7 @@ void QuadPlane::setup_defaults(void)
     if (motor_class == AP_Motors::MOTOR_FRAME_TAILSITTER) {
         setup_defaults_table(defaults_table_tailsitter, ARRAY_SIZE(defaults_table_tailsitter));
     }
+#endif
     
     // reset ESC calibration
     if (esc_calibration != 0) {
