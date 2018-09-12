@@ -57,6 +57,8 @@ private:
 
     bool _ice_should_run, _rc_should_run, _armed;
 
+    float _limit = 1.0f;
+
     void send_packet(uint8_t *p, uint8_t *last);
     void process_telemetry();
 };
