@@ -82,9 +82,16 @@ void QuadPlane::tiltrotor_continuous_update(void)
         if (!hal.util->get_soft_armed()) {
             tilt.current_throttle = 0;
         } else {
-            // the motors are all the way forward, start using them for fwd thrust
-            uint8_t mask = is_zero(tilt.current_throttle)?0:(uint8_t)tilt.tilt_mask.get();
-            motors->output_motor_mask(tilt.current_throttle, mask);
+            if (is_tiltquad()) {
+                multicopter_attitude_rate_update(desired_auto_yaw_rate_cds());
+                attitude_control->set_throttle_out(tilt.current_throttle, true, 0);
+                run_rate_controller();
+                motors_output();
+            } else {
+                // the motors are all the way forward, start using them for fwd thrust
+                uint8_t mask = is_zero(tilt.current_throttle)?0:(uint8_t)tilt.tilt_mask.get();
+                motors->output_motor_mask(tilt.current_throttle, mask);
+            }
             // prevent motor shutdown
             tilt.motors_active = true;
         }
@@ -126,6 +133,9 @@ void QuadPlane::tiltrotor_continuous_update(void)
         // we are transitioning to fixed wing - tilt the motors all
         // the way forward
         tiltrotor_slew(1);
+    } else if (is_tiltquad() && !in_vtol_mode() && transition_state == TRANSITION_AIRSPEED_WAIT) {
+        // we are starting fixed wing transition - tilt the motors to intermediate state
+        tiltrotor_slew(tilt.max_angle_deg / 90.0f);
     } else {
         // until we have completed the transition we limit the tilt to
         // Q_TILT_MAX. Anything above 50% throttle gets
