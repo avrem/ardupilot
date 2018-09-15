@@ -29,6 +29,9 @@ public:
     // you must have setup_motors before calling this
     void                set_update_rate(uint16_t speed_hz);
 
+    // set temporary spin limit
+    void set_spin_limit(float spin_limit) { _spin_limit = constrain_float(spin_limit, 0.0f, 1.0f); }
+
     // output_test_seq - spin a motor at the pwm value specified
     //  motor_seq is the motor's sequence number from 1 to the number of motors on the frame
     //  pwm value is an actual pwm value that will be output, normally in the range of 1000 ~ 2000
@@ -80,4 +83,6 @@ protected:
     uint8_t             _test_order[AP_MOTORS_MAX_NUM_MOTORS];  // order of the motors in the test sequence
     motor_frame_class   _last_frame_class; // most recently requested frame class (i.e. quad, hexa, octa, etc)
     motor_frame_type    _last_frame_type; // most recently requested frame type (i.e. plus, x, v, etc)
+
+    float               _spin_limit = 1.0f; // temporary spin limit, cleared on each loop
 };

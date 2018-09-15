@@ -74,6 +74,13 @@ void AP_MotorsMatrix::output_to_motors()
     int8_t i;
     int16_t motor_out[AP_MOTORS_MAX_NUM_MOTORS];    // final pwm values sent to the motor
 
+    // apply temporary spin limit and clear
+    float spin_max_temp = _spin_max;
+    if (_spin_limit < 1.0f) {
+        _spin_max = _spin_min + (_spin_max - _spin_min) * _spin_limit;
+        _spin_limit = 1.0f;
+    }
+   
     switch (_spool_mode) {
         case SHUT_DOWN: {
             // sends minimum values out to the motors
@@ -108,6 +115,8 @@ void AP_MotorsMatrix::output_to_motors()
             }
             break;
     }
+
+    _spin_max = spin_max_temp;
 
     // send output to each motor
     for (i=0; i<AP_MOTORS_MAX_NUM_MOTORS; i++) {
