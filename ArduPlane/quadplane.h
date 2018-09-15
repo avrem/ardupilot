@@ -275,6 +275,8 @@ private:
     // control if a VTOL GUIDED will be used
     AP_Int8 guided_mode;
 
+    AP_Int16 takeoff_spinup_ms;
+
     // control ESC throttle calibration
     AP_Int8 esc_calibration;
     void run_esc_calibration(void);
@@ -433,6 +435,9 @@ private:
 
     // time when we were last in a vtol control mode
     uint32_t last_vtol_mode_ms;
+    
+    // time since VTOL takeoff start
+    uint32_t takeoff_start_ms;
     
     void tiltrotor_slew(float tilt);
     void tiltrotor_binary_slew(bool forward);

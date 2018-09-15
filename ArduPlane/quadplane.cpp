@@ -14,6 +14,7 @@ const AP_Param::GroupInfo QuadPlane::var_info[] = {
     AP_SUBGROUPVARPTR(motors, "M_", 2, QuadPlane, plane.quadplane.motors_var_info),
 
     // 3 ~ 8 were used by quadplane attitude control PIDs
+    AP_GROUPINFO("TAKEOFF_MS", 3, QuadPlane, takeoff_spinup_ms, 3000), // use 3 to avoid conflicts with master
 
     // @Param: ANGLE_MAX
     // @DisplayName: Angle Max
@@ -2043,6 +2044,15 @@ void QuadPlane::setup_target_position(void)
  */
 void QuadPlane::takeoff_controller(void)
 {
+    if (!motors->spool_up_complete()) {
+        takeoff_start_ms = millis();
+    }
+
+    if (!hal.util->get_soft_armed()) {
+        loiter_nav->init_target();
+        return;
+    }
+
     /*
       for takeoff we use the position controller
     */
@@ -2071,6 +2081,11 @@ void QuadPlane::takeoff_controller(void)
 
     pos_control->set_alt_target_from_climb_rate(wp_nav->get_speed_up(), plane.G_Dt, true);
     run_z_controller();
+
+    if (takeoff_spinup_ms > 0) {
+        float spin_limit = constrain_float((float)(millis() - takeoff_start_ms) / takeoff_spinup_ms, 0.0f, 1.0f);
+        motors->set_spin_limit(spin_limit);
+    }
 }
 
 /*
