@@ -1,13 +1,15 @@
 #include <AP_HAL/AP_HAL.h>
 #include <AP_SerialManager/AP_SerialManager.h>
 #include <RC_Channel/RC_Channel.h>
+#include <DataFlash/DataFlash.h>
+#include <GCS_MAVLink/GCS.h>
 
 #include "AP_BattMonitor_PMU.h"
 
 extern const AP_HAL::HAL& hal;
 
 #define AP_BATTMONITOR_PMU_TIMEOUT_MICROS 5000000    // sensor becomes unhealthy if no successful readings for 5 seconds
-#define AP_PMU_TELEMETRY_LENGTH 21
+#define AP_PMU_TELEMETRY_LENGTH 23
 
 int read_2(const uint8_t *p)
 {
@@ -135,7 +137,27 @@ void AP_BattMonitor_PMU::process_telemetry()
 
     _state.voltage = read_2(_rx_buf + 1) * 0.01f;
     _state.current_amps = read_2(_rx_buf + 3) * 0.1f;
+    _rpm = read_2(_rx_buf + 5) * 10;
     _charge_current = read_2s(_rx_buf + 7) * 0.1f;
+
+    _state.temperature = read_2s(_rx_buf + 9) * 0.1f;
+    _state.temperature_time = AP_HAL::millis();
+
+    _state.cell_voltages.cells[0] = read_2(_rx_buf + 11); // throttle
+    _state.cell_voltages.cells[1] = read_2(_rx_buf + 14); // starter
+    _state.cell_voltages.cells[2] = read_2(_rx_buf + 16); // cooler
+    _state.cell_voltages.cells[3] = read_2(_rx_buf + 18); // fuel
+    _state.cell_voltages.cells[4] = read_2(_rx_buf + 20); // gen temp
+
+    auto state = (AP_ICEngine::ICE_State)_rx_buf[13];
+    if (_ice_state != state) {
+        if (state == AP_ICEngine::ICE_STARTING)
+            gcs().send_text(MAV_SEVERITY_INFO, "Starting engine");
+        else if (state == AP_ICEngine::ICE_OFF)
+            gcs().send_text(MAV_SEVERITY_INFO, "Stopped engine");
+
+        _ice_state = state;
+   }
 
     // update total current drawn since startup
     if (_state.last_time_micros != 0 && dt < 2000000.0f) {
@@ -146,4 +168,33 @@ void AP_BattMonitor_PMU::process_telemetry()
 
     _state.last_time_micros = tnow;
     _state.healthy = true;
+
+    struct log_RPM pkt1 = {
+        LOG_PACKET_HEADER_INIT(LOG_RPM_MSG),
+        time_us     : AP_HAL::micros64(),
+        rpm1        : (float)_rpm,
+        rpm2        : 0
+    };
+    DataFlash_Class::instance()->WriteBlock(&pkt1, sizeof(pkt1));
+
+    struct log_Current pkt2 = {
+        LOG_PACKET_HEADER_INIT(LOG_CURRENT2_MSG),
+        time_us             : AP_HAL::micros64(),
+        voltage             : 0,
+        voltage_resting     : 0,
+        current_amps        : _charge_current,
+        current_total       : 0,
+        consumed_wh         : 0,
+        temperature         : 0,
+        resistance          : 0
+    };
+    DataFlash_Class::instance()->WriteBlock(&pkt2, sizeof(pkt2));
+}
+
+void AP_BattMonitor_PMU::status_msg(mavlink_channel_t chan) const
+{
+    if (HAVE_PAYLOAD_SPACE(chan, RPM))
+        mavlink_msg_rpm_send(chan, _rpm, 0);
+    if (HAVE_PAYLOAD_SPACE(chan, BATTERY2))
+        mavlink_msg_battery2_send(chan, _state.voltage, _charge_current * 100);
 }
