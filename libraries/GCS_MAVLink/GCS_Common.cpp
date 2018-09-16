@@ -226,6 +226,7 @@ bool GCS_MAVLINK::send_battery_status() const
         CHECK_PAYLOAD_SIZE(BATTERY_STATUS);
         send_battery_status(battery, i);
     }
+    battery.status_msg(chan);
     return true;
 }
 

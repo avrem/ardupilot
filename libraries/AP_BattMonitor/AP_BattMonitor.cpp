@@ -484,6 +484,15 @@ bool AP_BattMonitor::get_temperature(float &temperature, const uint8_t instance)
     }
 }
 
+// output status information for all instances
+void AP_BattMonitor::status_msg(mavlink_channel_t chan) const
+{
+    for (uint8_t i=0; i<_num_instances; i++) {
+        if (drivers[i] != nullptr && _params[i].type() != AP_BattMonitor_Params::BattMonitor_TYPE_NONE) {
+            drivers[i]->status_msg(chan);
+        }
+    }
+}
 
 namespace AP {
 

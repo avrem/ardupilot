@@ -90,6 +90,9 @@ public:
     /// Read the battery voltage and current for all batteries.  Should be called at 10hz
     void read();
 
+    // output status information for all instances
+    void status_msg(mavlink_channel_t chan) const;
+
     // healthy - returns true if monitor is functioning
     bool healthy(uint8_t instance) const;
     bool healthy() const { return healthy(AP_BATT_PRIMARY_INSTANCE); }
