@@ -359,6 +359,8 @@ const AP_Param::GroupInfo QuadPlane::var_info2[] = {
     // @Range: 1 5
     // @User: Standard
     AP_GROUPINFO("TAILSIT_THSCMX", 3, QuadPlane, tailsitter.throttle_scale_max, 5),
+
+    AP_GROUPINFO("RLAND_ENABLE", 50, QuadPlane, rland.enable, 0),
 	
     AP_GROUPEND
 };
@@ -2324,6 +2326,18 @@ bool QuadPlane::verify_vtol_land(void)
     if (!available()) {
         return true;
     }
+
+    if (plane.control_mode == AUTO && rland.enable) {
+        Vector3f dist_vec, dist_vec_offs, vel_of_target;
+        Location loc;
+        if (AP::ahrs().get_position(loc) && 
+            plane.g2.follow.get_target_dist_and_vel_ned(dist_vec, dist_vec_offs, vel_of_target)) {
+            location_offset(loc, dist_vec_offs.x, dist_vec_offs.y);
+            plane.next_WP_loc.lat = loc.lat;
+            plane.next_WP_loc.lng = loc.lng;
+        }
+    }
+
     if (poscontrol.state == QPOS_POSITION2 &&
         plane.auto_state.wp_distance < 2) {
         poscontrol.state = QPOS_LAND_DESCEND;

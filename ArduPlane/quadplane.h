@@ -477,6 +477,10 @@ private:
       return true if current mission item is a vtol landing
      */
     bool is_vtol_land(uint16_t id) const;
+
+    struct {
+        AP_Int8 enable;
+    } rland;
     
 public:
     void motor_test_output();
