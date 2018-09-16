@@ -417,6 +417,10 @@ public:
     // returns true if all GPS instances have passed all final arming checks/state changes
     bool prepare_for_arming(void);
 
+    Location rtk_base {};
+    Vector3f rtk_baseline;
+    uint32_t rtk_base_valid_ms;
+
 protected:
 
     // configuration parameters

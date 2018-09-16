@@ -20,6 +20,8 @@
 #include "AP_GPS.h"
 #include "AP_GPS_ERB.h"
 
+#include <AP_AHRS/AP_AHRS.h>
+
 #define ERB_DEBUGGING 0
 
 #define STAT_FIX_VALID 0x01
@@ -218,6 +220,19 @@ AP_GPS_ERB::_parse_gps(void)
 
         state.rtk_week_number   = _buffer.rtk.base_week_number;
         state.rtk_time_week_ms  = _buffer.rtk.base_time_week_ms;
+
+        if (next_fix == AP_GPS::GPS_OK_FIX_3D_RTK_FIXED) {
+            Location loc;
+            if (AP::ahrs().get_position(loc)) {
+                location_offset(loc, -_buffer.rtk.baseline_N_mm * 0.001f, -_buffer.rtk.baseline_E_mm * 0.001f);
+                gps.rtk_base = loc;
+                gps.rtk_base_valid_ms = AP_HAL::millis();
+                gps.rtk_baseline.x = -_buffer.rtk.baseline_N_mm * 0.001f;
+                gps.rtk_baseline.y = -_buffer.rtk.baseline_E_mm * 0.001f;
+                gps.rtk_baseline.z = -_buffer.rtk.baseline_D_mm * 0.001f; // probably
+            }
+        }
+
         break;
     default:
         Debug("Unexpected message 0x%02x", (unsigned)_msg_id);
