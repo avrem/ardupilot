@@ -55,7 +55,7 @@ public:
     bool have_target();
 
     // get target's estimated location and velocity (in NED)
-    bool get_target_location_and_velocity(Location &loc, Vector3f &vel_ned) const;
+    bool get_target_location_and_velocity(Location &loc, Vector3f &vel_ned);
 
     // get distance vector to target (in meters), target plus offsets, and target's velocity all in NED frame
     bool get_target_dist_and_vel_ned(Vector3f &dist_ned, Vector3f &dist_with_ofs, Vector3f &vel_ned);
@@ -120,6 +120,8 @@ private:
     AP_Int8     _yaw_behave;        // following vehicle's yaw/heading behaviour (see YAW_BEHAVE enum)
     AP_Int8     _alt_type;          // altitude source for follow mode
     AC_P        _p_pos;             // position error P controller
+    AP_Int8     _use_rtk;           // use RTK baseline as target distance vector
+    AP_Int16    _rtk_delay_ms;
 
     // local variables
     bool _healthy;                  // true if we are receiving mavlink messages (regardless of whether they have target position info within them)
@@ -133,6 +135,7 @@ private:
     float _dist_to_target;          // latest distance to target in meters (for reporting purposes)
     float _bearing_to_target;       // latest bearing to target in degrees (for reporting purposes)
     bool _offsets_were_zero;        // true if offsets were originally zero and then initialised to the offset from lead vehicle
+    bool _target_from_rtk;          // true if targeting RTK base
 
     // setup jitter correction with max transport lag of 3s
     JitterCorrection _jitter{3000};

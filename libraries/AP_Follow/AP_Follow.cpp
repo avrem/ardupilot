@@ -19,6 +19,7 @@
 #include <stdio.h>
 
 #include <AP_AHRS/AP_AHRS.h>
+#include <AP_GPS/AP_GPS.h>
 #include <AP_Logger/AP_Logger.h>
 
 extern const AP_HAL::HAL& hal;
@@ -120,6 +121,9 @@ const AP_Param::GroupInfo AP_Follow::var_info[] = {
     AP_GROUPINFO("_ALT_TYPE", 10, AP_Follow, _alt_type, AP_FOLLOW_ALTITUDE_TYPE_RELATIVE),
 #endif
 
+    AP_GROUPINFO("_USE_RTK", 20, AP_Follow, _use_rtk, 0),
+    AP_GROUPINFO("_RTK_LAG", 21, AP_Follow, _rtk_delay_ms, 300),
+
     AP_GROUPEND
 };
 
@@ -144,11 +148,27 @@ void AP_Follow::clear_offsets_if_required()
 }
 
 // get target's estimated location
-bool AP_Follow::get_target_location_and_velocity(Location &loc, Vector3f &vel_ned) const
+bool AP_Follow::get_target_location_and_velocity(Location &loc, Vector3f &vel_ned)
 {
     // exit immediately if not enabled
     if (!_enabled) {
         return false;
+    }
+
+    _target_from_rtk = false;
+
+    if (_use_rtk) {
+        int rtk_instance = 0; // fixme: make configurable?
+        uint32_t rtk_fix_ms = AP::gps().get_rtk_base_time_ms(rtk_instance);
+        if (rtk_fix_ms != 0 && AP_HAL::millis() - rtk_fix_ms < 1000) { // we have recent RTK fix, use it
+            _last_location_update_ms = rtk_fix_ms - _rtk_delay_ms;
+            _target_location = AP::gps().get_rtk_base_location(rtk_instance);
+            _target_from_rtk = true;
+            if (_alt_type == AP_FOLLOW_ALTITUDE_TYPE_RELATIVE) {
+                _target_location.alt -= AP::ahrs().get_home().alt;
+                _target_location.relative_alt = 1;
+            }
+        }
     }
 
     // check that we have a location
@@ -448,6 +468,9 @@ void AP_Follow::send_status(mavlink_channel_t chan)
         ft.vel[1] = dist_with_offs.y;
         ft.vel[2] = dist_with_offs.z;
     }
+
+    if (_target_from_rtk)
+        ft.est_capabilities |= 8;
 
     mavlink_msg_follow_target_send_struct(chan, &ft);
 }
