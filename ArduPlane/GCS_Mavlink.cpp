@@ -434,6 +434,11 @@ bool GCS_MAVLINK_Plane::try_send_message(enum ap_message id)
         plane.adsb.send_adsb_vehicle(chan);
         break;
 
+    case MSG_FOLLOW_TARGET:
+        CHECK_PAYLOAD_SIZE(FOLLOW_TARGET);
+        plane.g2.follow.send_status(chan);
+        break;
+
     case MSG_AOA_SSA:
         CHECK_PAYLOAD_SIZE(AOA_SSA);
         plane.send_aoa_ssa(chan);
@@ -562,6 +567,7 @@ static const ap_message STREAM_EXTENDED_STATUS_msgs[] = {
     MSG_GPS_RTK,
     MSG_GPS2_RAW,
     MSG_GPS2_RTK,
+    MSG_FOLLOW_TARGET,
     MSG_NAV_CONTROLLER_OUTPUT,
     MSG_FENCE_STATUS,
     MSG_POSITION_TARGET_GLOBAL_INT,
@@ -1330,6 +1336,10 @@ void GCS_MAVLINK_Plane::handleMessage(const mavlink_message_t &msg)
     case MAVLINK_MSG_ID_UAVIONIX_ADSB_OUT_DYNAMIC:
     case MAVLINK_MSG_ID_UAVIONIX_ADSB_TRANSCEIVER_HEALTH_REPORT:
         plane.adsb.handle_message(chan, msg);
+        break;
+
+    case MAVLINK_MSG_ID_GLOBAL_POSITION_INT:
+        plane.g2.follow.handle_msg(msg);
         break;
 
     default:
