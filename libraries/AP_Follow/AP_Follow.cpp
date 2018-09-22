@@ -115,6 +115,8 @@ const AP_Param::GroupInfo AP_Follow::var_info[] = {
     // @User: Standard
     AP_GROUPINFO("_ALT_TYPE", 10, AP_Follow, _alt_type, AP_FOLLOW_ALTITUDE_TYPE_RELATIVE),
 
+    AP_GROUPINFO("_USE_RTK", 20, AP_Follow, _use_rtk, 0),
+
     AP_GROUPEND
 };
 
@@ -183,7 +185,12 @@ bool AP_Follow::get_target_dist_and_vel_ned(Vector3f &dist_ned, Vector3f &dist_w
     }
 
     // calculate difference
-    const Vector3f dist_vec = location_3d_diff_NED(current_loc, target_loc);
+    Vector3f dist_vec = location_3d_diff_NED(current_loc, target_loc);
+
+    if (_use_rtk && AP_HAL::millis() - AP::gps().rtk_base_valid_ms < 300) {
+        Vector3f rtk_vec = AP::gps().rtk_baseline;
+        dist_vec = rtk_vec; // save correction and use it?
+    }
 
     // fail if too far
     if (is_positive(_dist_max.get()) && (dist_vec.length() > _dist_max)) {

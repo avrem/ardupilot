@@ -96,6 +96,7 @@ private:
     AP_Int8     _yaw_behave;        // following vehicle's yaw/heading behaviour
     AP_Int8     _alt_type;          // altitude source for follow mode
     AC_P        _p_pos;             // position error P controller
+    AP_Int8     _use_rtk;           // use RTK baseline as target distance vector
 
     // local variables
     bool _healthy;                  // true if we are receiving mavlink messages (regardless of whether they have target position info within them)
