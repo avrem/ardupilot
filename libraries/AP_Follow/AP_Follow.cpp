@@ -23,7 +23,7 @@ extern const AP_HAL::HAL& hal;
 
 #define AP_FOLLOW_TIMEOUT_MS    3000    // position estimate timeout after 1 second
 #define AP_FOLLOW_SYSID_TIMEOUT_MS 10000 // forget sysid we are following if we haave not heard from them in 10 seconds
-#define AP_GCS_INTERVAL_MS 1000 // interval between updating GCS on position of vehicle
+#define AP_GCS_INTERVAL_MS 2000 // interval between updating GCS on position of vehicle
 
 #define AP_FOLLOW_OFFSET_TYPE_NED       0   // offsets are in north-east-down frame
 #define AP_FOLLOW_OFFSET_TYPE_RELATIVE  0   // offsets are relative to lead vehicle's heading
@@ -302,11 +302,15 @@ void AP_Follow::handle_msg(const mavlink_message_t &msg)
         }
         if ((now - _last_location_sent_to_gcs) > AP_GCS_INTERVAL_MS) {
             _last_location_sent_to_gcs = now;
-            gcs().send_text(MAV_SEVERITY_INFO, "Foll: %u %ld %ld %4.2f\n",
+            Vector3f dist_ned, dist_with_offs, vel_ned;
+            get_target_dist_and_vel_ned(dist_ned, dist_with_offs, vel_ned);
+            gcs().send_text(MAV_SEVERITY_NOTICE, "Foll: %u %ld %ld %4.2f %.2f %.2f",
                             (unsigned)_sysid_to_follow,
                             (long)_target_location.lat,
                             (long)_target_location.lng,
-                            (double)(_target_location.alt * 0.01f));    // cm to m
+                            (double)(_target_location.alt * 0.01f),
+                            dist_with_offs.x,
+                            dist_with_offs.y);
         }
 
         // log lead's estimated vs reported position
