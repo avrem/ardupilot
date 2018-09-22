@@ -1946,7 +1946,7 @@ void QuadPlane::vtol_position_controller(void)
         plane.nav_controller->update_waypoint(plane.prev_WP_loc, loc);
         FALLTHROUGH;
 
-    case QPOS_LAND_FINAL:
+    case QPOS_LAND_FINAL: {
 
         // set position controller desired velocity and acceleration to zero
         pos_control->set_desired_velocity_xy(0.0f,0.0f);
@@ -1961,10 +1961,15 @@ void QuadPlane::vtol_position_controller(void)
         plane.nav_pitch_cd = pos_control->get_pitch();
 
         // call attitude controller
-        attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(plane.nav_roll_cd,
+        float target_hdg = 0.0f;
+        if (plane.control_mode == AUTO && rland.enable && plane.g2.follow.get_target_heading(target_hdg))
+            attitude_control->input_euler_angle_roll_pitch_yaw(plane.nav_roll_cd, plane.nav_pitch_cd, target_hdg * 100, true);
+        else
+            attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(plane.nav_roll_cd,
                                                                       plane.nav_pitch_cd,
                                                                       get_pilot_input_yaw_rate_cds() + get_weathervane_yaw_rate_cds());
         break;
+    }
 
     case QPOS_LAND_COMPLETE:
         // nothing to do
