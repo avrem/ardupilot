@@ -348,6 +348,20 @@ private:
         uint32_t AFS_last_valid_rc_ms;
     } failsafe;
 
+    enum Landing_ApproachStage {
+        LOITER_TO_ALT,
+        ENSURE_RADIUS,
+        WAIT_FOR_BREAKOUT,
+        APPROACH_LINE,
+        VTOL_LANDING,
+    };
+
+    // Landing
+    struct {
+        enum Landing_ApproachStage approach_stage;
+        float approach_direction_deg;
+    } vtol_approach_s;
+
     bool any_failsafe_triggered() {
         return failsafe.state != FAILSAFE_NONE || battery.has_failsafed() || failsafe.adsb;
     }
@@ -998,6 +1012,7 @@ private:
     void do_takeoff(const AP_Mission::Mission_Command& cmd);
     void do_nav_wp(const AP_Mission::Mission_Command& cmd);
     void do_land(const AP_Mission::Mission_Command& cmd);
+    void do_landing_vtol_approach(const AP_Mission::Mission_Command& cmd);
     void loiter_set_direction_wp(const AP_Mission::Mission_Command& cmd);
     void do_loiter_unlimited(const AP_Mission::Mission_Command& cmd);
     void do_loiter_turns(const AP_Mission::Mission_Command& cmd);
@@ -1008,6 +1023,7 @@ private:
     void do_vtol_takeoff(const AP_Mission::Mission_Command& cmd);
     void do_vtol_land(const AP_Mission::Mission_Command& cmd);
     bool verify_nav_wp(const AP_Mission::Mission_Command& cmd);
+    bool verify_landing_vtol_approach(const AP_Mission::Mission_Command& cmd);
     void do_wait_delay(const AP_Mission::Mission_Command& cmd);
     void do_within_distance(const AP_Mission::Mission_Command& cmd);
     void do_change_speed(const AP_Mission::Mission_Command& cmd);
