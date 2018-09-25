@@ -101,10 +101,6 @@ void Plane::init_rc_out_aux()
     SRV_Channels::cork();
     
     servos_output();
-    
-    // setup PWM values to send if the FMU firmware dies
-    // allows any VTOL motors to shut off
-    SRV_Channels::setup_failsafe_trim_all_non_motors();
 }
 
 /*
