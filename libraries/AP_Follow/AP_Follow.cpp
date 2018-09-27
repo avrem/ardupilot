@@ -133,11 +133,18 @@ AP_Follow::AP_Follow() :
 }
 
 // get target's estimated location
-bool AP_Follow::get_target_location_and_velocity(Location &loc, Vector3f &vel_ned) const
+bool AP_Follow::get_target_location_and_velocity(Location &loc, Vector3f &vel_ned)
 {
     // exit immediately if not enabled
     if (!_enabled) {
         return false;
+    }
+
+    if (_use_rtk && AP_HAL::millis() - AP::gps().rtk_base_valid_ms < 300) { // we have decently recent RTK position, use it instead
+        // we can also filter by +- recent rtk_age_ms 
+        // also should use gps fix time probably
+        _last_location_update_ms = AP::gps().rtk_base_valid_ms;
+        _target_location = AP::gps().rtk_base;
     }
 
     // check for timeout
@@ -186,11 +193,6 @@ bool AP_Follow::get_target_dist_and_vel_ned(Vector3f &dist_ned, Vector3f &dist_w
 
     // calculate difference
     Vector3f dist_vec = location_3d_diff_NED(current_loc, target_loc);
-
-    if (_use_rtk && AP_HAL::millis() - AP::gps().rtk_base_valid_ms < 300) {
-        Vector3f rtk_vec = AP::gps().rtk_baseline;
-        dist_vec = rtk_vec; // save correction and use it?
-    }
 
     // fail if too far
     if (is_positive(_dist_max.get()) && (dist_vec.length() > _dist_max)) {
