@@ -221,7 +221,7 @@ AP_GPS_ERB::_parse_gps(void)
         state.rtk_week_number   = _buffer.rtk.base_week_number;
         state.rtk_time_week_ms  = _buffer.rtk.base_time_week_ms;
 
-        if (next_fix == AP_GPS::GPS_OK_FIX_3D_RTK_FIXED) {
+        if (next_fix == AP_GPS::GPS_OK_FIX_3D_RTK_FIXED && state.rtk_age_ms < 250) {
             Location loc;
             if (AP::ahrs().get_position(loc)) {
                 location_offset(loc, -_buffer.rtk.baseline_N_mm * 0.001f, -_buffer.rtk.baseline_E_mm * 0.001f);

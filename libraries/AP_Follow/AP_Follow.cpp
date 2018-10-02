@@ -140,10 +140,10 @@ bool AP_Follow::get_target_location_and_velocity(Location &loc, Vector3f &vel_ne
         return false;
     }
 
-    if (_use_rtk && AP_HAL::millis() - AP::gps().rtk_base_valid_ms < 300) { // we have decently recent RTK position, use it instead
+    if (_use_rtk && AP_HAL::millis() - AP::gps().rtk_base_valid_ms < 1000) { // we have decently recent RTK position, use it instead
         // we can also filter by +- recent rtk_age_ms 
         // also should use gps fix time probably
-        _last_location_update_ms = AP::gps().rtk_base_valid_ms;
+        _last_location_update_ms = AP::gps().rtk_base_valid_ms - 300;
         _target_location = AP::gps().rtk_base;
     }
 
