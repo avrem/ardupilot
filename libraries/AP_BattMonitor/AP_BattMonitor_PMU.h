@@ -20,8 +20,6 @@ public:
     // read the latest battery voltage
     void read() override;
 
-    bool has_cell_voltages() const override { return true; }
-
     bool has_current() const override { return true; }
 
     void status_msg(mavlink_channel_t chan) const override;
@@ -52,7 +50,10 @@ private:
     int _rx_pos = 0;
 
     float _charge_current;
-    uint16_t _rpm;
+    uint32_t _rpm;
+    float _ice_temp, _gen_temp;
+    int _fuel_pct;
+    int _cooler_pct, _starter_pct, _throttle_pct;
     AP_ICEngine::ICE_State _ice_state;
 
     bool _ice_should_run, _rc_should_run, _armed;
