@@ -182,6 +182,13 @@ float get_temp_limit(float temp, float temp_min, float temp_max)
     return constrain_float((temp_max - temp) / (temp_max - temp_min), 0.0f, 1.0f);
 }
 
+int pwm_to_pct(int pwm_val, int pwm_min, int pwm_max)
+{
+    if (pwm_max == pwm_min)
+        return 0;
+    return constrain_int32(100.0f * (pwm_val - pwm_min) / (pwm_max - pwm_min) + 0.5f, 0, 100);
+}
+
 void AP_BattMonitor_PMU::process_telemetry()
 {
     if (_rx_buf[0] != 0x44 || _rx_pos != AP_PMU_TELEMETRY_LENGTH)
@@ -201,14 +208,13 @@ void AP_BattMonitor_PMU::process_telemetry()
     _rpm = read_2(_rx_buf + 5) * 10;
     _charge_current = read_2s(_rx_buf + 7) * 0.1f;
 
-    _state.temperature = read_2s(_rx_buf + 9) * 0.1f;
-    _state.temperature_time = AP_HAL::millis();
+    _ice_temp = read_2s(_rx_buf + 9) * 0.1f;
 
-    _state.cell_voltages.cells[0] = read_2(_rx_buf + 11); // throttle
-    _state.cell_voltages.cells[1] = read_2(_rx_buf + 14); // starter
-    _state.cell_voltages.cells[2] = read_2(_rx_buf + 16); // cooler
-    _state.cell_voltages.cells[3] = read_2(_rx_buf + 18); // fuel
-    _state.cell_voltages.cells[4] = read_2(_rx_buf + 20); // gen temp
+    _throttle_pct = pwm_to_pct(read_2(_rx_buf + 11), _throttle_min, _throttle_max);
+    _starter_pct = pwm_to_pct(read_2(_rx_buf + 14), 1000, 2000);
+    _cooler_pct = pwm_to_pct(read_2(_rx_buf + 16), 1000, _cooler_max);
+    _fuel_pct = read_2(_rx_buf + 18);
+    _gen_temp = read_2(_rx_buf + 20) * 0.1f;
 
     auto state = (AP_ICEngine::ICE_State)_rx_buf[13];
     if (_ice_state != state) {
@@ -240,34 +246,29 @@ void AP_BattMonitor_PMU::process_telemetry()
         _ice_should_run = false;
     }
 
-    struct log_RPM pkt1 = {
-        LOG_PACKET_HEADER_INIT(LOG_RPM_MSG),
-        time_us     : AP_HAL::micros64(),
-        rpm1        : (float)_rpm,
-        rpm2        : 0
-    };
-    DataFlash_Class::instance()->WriteBlock(&pkt1, sizeof(pkt1));
-
-    struct log_Current pkt2 = {
-        LOG_PACKET_HEADER_INIT(LOG_CURRENT2_MSG),
-        time_us             : AP_HAL::micros64(),
-        voltage             : 0,
-        voltage_resting     : 0,
-        current_amps        : _charge_current,
-        current_total       : 0,
-        consumed_wh         : 0,
-        temperature         : 0,
-        resistance          : 0
-    };
-    DataFlash_Class::instance()->WriteBlock(&pkt2, sizeof(pkt2));
+    DataFlash_Class::instance()->Log_Write(
+        "GEN",
+        "TimeUS,Curr,CTot,RPM,EngTemp,GenTemp,Fuel,Clr,Str,Thr", 
+        "sAAqOO%%%%",
+        "F000000000",
+        "QffIffbbbb",
+        AP_HAL::micros64(),
+        (double)_charge_current,
+        (double)_state.current_amps,
+        _rpm,
+        (double)_ice_temp,
+        (double)_gen_temp,
+        _fuel_pct,
+        _cooler_pct,
+        _starter_pct,
+        _throttle_pct
+        );
 }
 
 void AP_BattMonitor_PMU::status_msg(mavlink_channel_t chan) const
 {
-    if (HAVE_PAYLOAD_SPACE(chan, RPM))
-        mavlink_msg_rpm_send(chan, _rpm, 0);
-    if (HAVE_PAYLOAD_SPACE(chan, BATTERY2))
-        mavlink_msg_battery2_send(chan, _state.voltage, _charge_current * 100);
+    if (HAVE_PAYLOAD_SPACE(chan, GEN_STATUS))
+        mavlink_msg_gen_status_send(chan, _charge_current, _rpm, _ice_temp, _gen_temp, _fuel_pct, _cooler_pct, _starter_pct, _throttle_pct);
 }
 
 // handle DO_ENGINE_CONTROL messages via MAVLink or mission
