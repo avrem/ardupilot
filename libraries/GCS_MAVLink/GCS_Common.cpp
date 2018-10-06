@@ -38,6 +38,7 @@
 #include <AP_VisualOdom/AP_VisualOdom.h>
 #include <AP_OpticalFlow/OpticalFlow.h>
 #include <AP_Baro/AP_Baro.h>
+#include <AP_Generator/AP_Generator.h>
 
 #include <stdio.h>
 
@@ -780,6 +781,7 @@ ap_message GCS_MAVLINK::mavlink_id_to_ap_message_id(const uint32_t mavlink_id) c
         { MAVLINK_MSG_ID_POSITION_TARGET_LOCAL_NED,  MSG_POSITION_TARGET_LOCAL_NED},
         { MAVLINK_MSG_ID_ADSB_VEHICLE,          MSG_ADSB_VEHICLE},
         { MAVLINK_MSG_ID_BATTERY_STATUS,        MSG_BATTERY_STATUS},
+        { MAVLINK_MSG_ID_GEN_STATUS,            MSG_GEN_STATUS},
         { MAVLINK_MSG_ID_FOLLOW_TARGET,         MSG_FOLLOW_TARGET},
         { MAVLINK_MSG_ID_AOA_SSA,               MSG_AOA_SSA},
         { MAVLINK_MSG_ID_DEEPSTALL,             MSG_LANDING},
@@ -4222,6 +4224,16 @@ bool GCS_MAVLINK::try_send_message(const enum ap_message id)
 
     case MSG_BATTERY_STATUS:
         send_battery_status();
+        break;
+
+    case MSG_GEN_STATUS:
+        {
+            AP_Generator *generator = AP_Generator::get_singleton();
+            if (generator == nullptr)
+                break;
+            CHECK_PAYLOAD_SIZE(GEN_STATUS);
+            generator->send_status(chan);
+        }
         break;
 
     case MSG_BATTERY2:
