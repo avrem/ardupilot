@@ -22,6 +22,7 @@
 #include <AP_Airspeed/AP_Airspeed.h>
 #include <AP_Gripper/AP_Gripper.h>
 #include <AP_BLHeli/AP_BLHeli.h>
+#include <AP_Generator/AP_Generator.h>
 
 #include "GCS.h"
 
@@ -3110,6 +3111,14 @@ bool GCS_MAVLINK::try_send_message(const enum ap_message id)
         CHECK_PAYLOAD_SIZE(ESC_TELEMETRY_1_TO_4);
         AP_UAVCAN::send_esc_telemetry_mavlink(uint8_t(chan));
 #endif
+        break;
+    }
+
+    case MSG_GEN_STATUS: {
+        AP_Generator *gen = AP_Generator::instance();
+        if (gen) {
+            gen->send_telemetry(chan);
+        }
         break;
     }
 
