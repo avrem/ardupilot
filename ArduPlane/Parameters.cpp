@@ -1126,8 +1126,8 @@ const AP_Param::GroupInfo ParametersG2::var_info[] = {
     // @Path: ../libraries/AP_ICEngine/AP_ICEngine.cpp
     AP_SUBGROUPINFO(ice_control, "ICE_", 2, ParametersG2, AP_ICEngine),
 
-    // 3 was used by prototype for servo_channels
-    
+    AP_SUBGROUPINFO(generator, "GEN_", 3, ParametersG2, AP_Generator),
+   
     // @Param: SYSID_ENFORCE
     // @DisplayName: GCS sysid enforcement
     // @Description: This controls whether packets from other than the expected GCS system ID will be accepted
