@@ -610,6 +610,7 @@ static const ap_message STREAM_EXTRA3_msgs[] = {
 #endif
     MSG_BATTERY2,
     MSG_BATTERY_STATUS,
+    MSG_GEN_STATUS,
     MSG_MOUNT_STATUS,
     MSG_OPTICAL_FLOW,
     MSG_GIMBAL_REPORT,
@@ -1021,7 +1022,7 @@ MAV_RESULT GCS_MAVLINK_Plane::handle_command_long_packet(const mavlink_command_l
         return MAV_RESULT_ACCEPTED;
 
     case MAV_CMD_DO_ENGINE_CONTROL:
-        if (!plane.g2.ice_control.engine_control(packet.param1, packet.param2, packet.param3)) {
+        if (!plane.g2.generator.engine_control(packet.param1, packet.param2, packet.param3)) {
             return MAV_RESULT_FAILED;
         }
         return MAV_RESULT_ACCEPTED;

@@ -515,6 +515,8 @@ public:
     // internal combustion engine control
     AP_ICEngine ice_control;
 
+    AP_Generator generator;
+
     // RC input channels
     RC_Channels_Plane rc_channels;
     
