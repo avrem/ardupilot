@@ -1,0 +1,7 @@
+#
+# ECU status
+# Unknown fields should be set to NAN.
+#
+
+float16 engine_temperature        # Kelvin
+float16 generator_temperature     # Kelvin
