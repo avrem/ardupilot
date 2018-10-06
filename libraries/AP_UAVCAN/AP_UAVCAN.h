@@ -45,6 +45,8 @@
 
 #define AP_UAVCAN_MAX_LED_DEVICES 4
 
+#define AP_UAVCAN_MAX_ACT_DEVICES 15
+
 /*
     Frontend Backend-Registry Binder: Whenever a message of said DataType_ from new node is received,
     the Callback will invoke registery to register the node as separate backend.
@@ -80,6 +82,9 @@ public:
 
     ///// LED /////
     bool led_write(uint8_t led_index, uint8_t red, uint8_t green, uint8_t blue);
+
+    ///// ACT /////
+    static bool act_write(uint8_t act_index, float value);
 
 
     template <typename DataType_>
@@ -147,6 +152,10 @@ private:
     ///// LED /////
     void led_out_send();
 
+    ///// ACT /////
+    void act_out_send();
+    bool _act_write(uint8_t act_index, float value);
+
 
     // UAVCAN parameters
     AP_Int8 _uavcan_node;
@@ -188,6 +197,17 @@ private:
     } _led_conf;
 
     AP_HAL::Semaphore *_led_out_sem;
+
+    ///// ACT /////
+    struct act_device {
+        uint8_t act_index;
+        float value;
+    };
+    struct {
+        act_device devices[AP_UAVCAN_MAX_ACT_DEVICES];
+        uint8_t devices_count;
+        uint64_t last_update;
+    } _act_conf;
 };
 
 #endif /* AP_UAVCAN_H_ */
