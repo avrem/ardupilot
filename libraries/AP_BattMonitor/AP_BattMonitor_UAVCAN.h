@@ -5,7 +5,7 @@
 
 #include <AP_UAVCAN/AP_UAVCAN.h>
 
-#define AP_BATTMONITOR_UAVCAN_TIMEOUT_MICROS         5000000 // sensor becomes unhealthy if no successful readings for 5 seconds
+#define AP_BATTMONITOR_UAVCAN_TIMEOUT_MICROS         500000 // sensor becomes unhealthy if no successful readings for 0.5 seconds
 
 class BattInfoCb;
 
