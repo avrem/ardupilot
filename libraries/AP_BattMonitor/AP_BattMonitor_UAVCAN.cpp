@@ -118,7 +118,7 @@ void AP_BattMonitor_UAVCAN::read()
 {
     uint32_t tnow = AP_HAL::micros();
 
-    // timeout after 5 seconds
+    // timeout after 0.5 seconds
     if ((tnow - _interim_state.last_time_micros) > AP_BATTMONITOR_UAVCAN_TIMEOUT_MICROS) {
         _interim_state.healthy = false;
     }
