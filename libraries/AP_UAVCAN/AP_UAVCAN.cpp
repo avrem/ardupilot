@@ -277,6 +277,17 @@ void AP_UAVCAN::loop(void)
     }
 }
 
+float AP_UAVCAN::calc_servo_output(uint16_t pulse)
+{
+    /*
+    * This converts output PWM from [500:2500] range to [-1:1] range that
+    * is passed to servo as unitless type via UAVCAN.
+    * This approach allows for MIN/TRIM/MAX values to be used fully on
+    * autopilot side and for servo it should have the setup to provide maximum
+    * physically possible throws at [-1:1] limits.
+    */
+    return constrain_float(((float)pulse - 1500) / 1000, -1.0f, 1.0f);
+}
 
 ///// SRV output /////
 
@@ -296,15 +307,6 @@ void AP_UAVCAN::SRV_send_actuator(void)
         for (i = 0; starting_servo < UAVCAN_SRV_NUMBER && i < 15; starting_servo++) {
             uavcan::equipment::actuator::Command cmd;
 
-            /*
-             * Servo output uses a range of 1000-2000 PWM for scaling.
-             * This converts output PWM from [1000:2000] range to [-1:1] range that
-             * is passed to servo as unitless type via UAVCAN.
-             * This approach allows for MIN/TRIM/MAX values to be used fully on
-             * autopilot side and for servo it should have the setup to provide maximum
-             * physically possible throws at [-1:1] limits.
-             */
-
             if (_SRV_conf[starting_servo].servo_pending && ((((uint32_t) 1) << starting_servo) & _servo_bm)) {
                 cmd.actuator_id = starting_servo + 1;
 
@@ -312,7 +314,7 @@ void AP_UAVCAN::SRV_send_actuator(void)
                 cmd.command_type = uavcan::equipment::actuator::Command::COMMAND_TYPE_UNITLESS;
 
                 // TODO: failsafe, safety
-                cmd.command_value = constrain_float(((float) _SRV_conf[starting_servo].pulse - 1000.0) / 500.0 - 1.0, -1.0, 1.0);
+                cmd.command_value = calc_servo_output(_SRV_conf[starting_servo].pulse);
 
                 msg.commands.push_back(cmd);
 
