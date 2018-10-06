@@ -274,6 +274,7 @@ void AP_UAVCAN::loop(void)
         }
 
         led_out_send();
+        act_out_send();
     }
 }
 
@@ -471,6 +472,68 @@ bool AP_UAVCAN::led_write(uint8_t led_index, uint8_t red, uint8_t green, uint8_t
     _led_out_sem->give();
 
     return true;
+}
+
+
+///// ACT /////
+
+void AP_UAVCAN::act_out_send()
+{
+    if (_act_conf.devices_count == 0)
+        return;
+
+    uint64_t now = AP_HAL::micros64();
+
+    const uint32_t servo_period_us = 1000000UL / unsigned(_servo_rate_hz.get());
+    if ((now - _act_conf.last_update) < servo_period_us)
+        return;
+
+    uavcan::equipment::actuator::ArrayCommand msg;
+
+    // UAVCAN can hold maximum of 15 commands in one frame
+    for (uint8_t i = 0; i < _act_conf.devices_count && i < 15; i++) {
+        uavcan::equipment::actuator::Command cmd;
+        cmd.actuator_id = _act_conf.devices[i].act_index;
+        cmd.command_type = uavcan::equipment::actuator::Command::COMMAND_TYPE_UNITLESS;
+        cmd.command_value = _act_conf.devices[i].value;
+        msg.commands.push_back(cmd);
+    }
+
+    act_out_array[_driver_index]->broadcast(msg);
+    _act_conf.last_update = now;
+}
+
+bool AP_UAVCAN::_act_write(uint8_t act_index, float value)
+{
+    uint8_t instance = 0;
+    for (; instance < _act_conf.devices_count; instance++)
+        if (_act_conf.devices[instance].act_index == act_index)
+            break;
+
+    if (instance >= AP_UAVCAN_MAX_ACT_DEVICES)
+        return false;
+
+    _act_conf.devices[instance].value = value;
+    if (instance == _act_conf.devices_count) {
+        _act_conf.devices[instance].act_index = act_index;
+        _act_conf.devices_count++;
+    }
+
+    return true;
+}
+
+bool AP_UAVCAN::act_write(uint8_t act_index, float value)
+{
+    bool success = false;
+    uint8_t can_num_drivers = AP::can().get_num_drivers();
+
+    for (uint8_t i = 0; i < can_num_drivers; i++) {
+        AP_UAVCAN *uavcan = AP_UAVCAN::get_uavcan(i);
+        if (uavcan != nullptr) {
+            success = uavcan->_act_write(act_index, value) || success;
+        }
+    }
+    return success;
 }
 
 #endif // HAL_WITH_UAVCAN
