@@ -542,6 +542,8 @@ public:
     // Payload Gripper
     AP_Gripper gripper;
 #endif
+
+    AP_Generator generator;
 };
 
 extern const AP_Param::Info var_info[];
