@@ -45,6 +45,7 @@
 #define AP_UAVCAN_HW_VERS_MINOR 0
 
 #define AP_UAVCAN_MAX_LED_DEVICES 4
+#define AP_UAVCAN_MAX_ACT_DEVICES 15
 
 // fwd-declare callback classes
 class ButtonCb;
@@ -88,6 +89,9 @@ public:
 
     ///// LED /////
     bool led_write(uint8_t led_index, uint8_t red, uint8_t green, uint8_t blue);
+
+    ///// ACT /////
+    static bool act_write(uint8_t act_index, float value);
 
     // buzzer
     void set_buzzer_tone(float frequency, float duration_s);
@@ -163,6 +167,10 @@ private:
     ///// LED /////
     void led_out_send();
 
+    ///// ACT /////
+    void act_out_send();
+    bool _act_write(uint8_t act_index, float value);
+
     // buzzer
     void buzzer_send();
 
@@ -211,6 +219,17 @@ private:
     } _led_conf;
 
     HAL_Semaphore _led_out_sem;
+
+    ///// ACT /////
+    struct act_device {
+        uint8_t act_index;
+        float value;
+    };
+    struct {
+        act_device devices[AP_UAVCAN_MAX_ACT_DEVICES];
+        uint8_t devices_count;
+        uint64_t last_update;
+    } _act_conf;
 
     // buzzer
     struct {
