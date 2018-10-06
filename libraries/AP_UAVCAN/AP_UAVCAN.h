@@ -72,6 +72,8 @@ public:
     uavcan::Node<0>* get_node() { return _node; }
     uint8_t get_driver_index() { return _driver_index; }
 
+    static float calc_servo_output(uint16_t pulse);
+    
 
     ///// SRV output /////
     void SRV_push_servos(void);
