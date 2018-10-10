@@ -41,6 +41,7 @@
 #include <AP_GPS/AP_GPS_UAVCAN.h>
 #include <AP_BattMonitor/AP_BattMonitor_UAVCAN.h>
 #include <AP_Compass/AP_Compass_UAVCAN.h>
+#include <AP_Generator/AP_Generator.h>
 
 #define LED_DELAY_US 50000
 
@@ -194,6 +195,7 @@ void AP_UAVCAN::init(uint8_t driver_index)
     AP_GPS_UAVCAN::subscribe_msgs(this);
     AP_Compass_UAVCAN::subscribe_msgs(this);
     AP_BattMonitor_UAVCAN::subscribe_msgs(this);
+    AP_Generator::subscribe_msgs(this);
 
     auto esc_listener = new uavcan::Subscriber<uavcan::equipment::esc::Status>(*_node);
     esc_listener->start(&AP_UAVCAN::esc_read_status);
