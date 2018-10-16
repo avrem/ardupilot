@@ -40,12 +40,15 @@ GCS_MAVLINK::queued_param_send()
     const uint32_t tnow = AP_HAL::millis();
     const uint32_t tstart = AP_HAL::micros();
 
-    // use at most 30% of bandwidth on parameters. The constant 26 is
-    // 1/(1000 * 1/8 * 0.001 * 0.3)
+    // use at most 30% of bandwidth on parameters
     const uint32_t link_bw = _port->bw_in_kilobytes_per_second();
+    uint32_t bytes_allowed = link_bw * (tnow - _queued_parameter_send_time_ms) * 0.3f;
 
-    uint32_t bytes_allowed = link_bw * (tnow - _queued_parameter_send_time_ms) * 26;
+    uint32_t saved_reserve_param_space_start_ms = reserve_param_space_start_ms;
+    reserve_param_space_start_ms = 0; // bypass packet_overhead_chan reservation checking
     const uint16_t size_for_one_param_value_msg = MAVLINK_MSG_ID_PARAM_VALUE_LEN + packet_overhead();
+    reserve_param_space_start_ms = saved_reserve_param_space_start_ms;
+
     if (bytes_allowed < size_for_one_param_value_msg) {
         bytes_allowed = size_for_one_param_value_msg;
     }
