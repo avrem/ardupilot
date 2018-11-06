@@ -236,8 +236,8 @@ void AP_BattMonitor_PMU::process_telemetry()
     _state.last_time_micros = tnow;
     _state.healthy = true;
 
-    float ice_limit = get_temp_limit(_state.temperature, _temp_max + 15, _temp_max + 30);
-    float gen_limit = get_temp_limit(_state.cell_voltages.cells[4] * 0.1f, 100, 120);
+    float ice_limit = get_temp_limit(_ice_temp, _temp_max + 15, _temp_max + 30);
+    float gen_limit = get_temp_limit(_gen_temp, 100, 120);
 
     _limit = MIN(ice_limit, gen_limit);
 
