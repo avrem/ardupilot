@@ -1455,7 +1455,8 @@ void QuadPlane::update(void)
         return;
     }
 
-    bool engage_magnets = in_vtol_auto() && motors->get_throttle() < 0.01f;
+    bool engage_magnets = in_vtol_auto() && 
+        (motors->get_throttle() < 0.01f || (poscontrol.state == QPOS_LAND_FINAL && height_above_landing() < 1));
     SRV_Channels::set_output_pwm(SRV_Channel::k_gripper, engage_magnets ? 1900 : 1100);
     
     if (motor_test.running) {
@@ -2014,7 +2015,7 @@ void QuadPlane::vtol_position_controller(void)
     }
 
     case QPOS_LAND_DESCEND: {
-        float height_above_ground = plane.relative_ground_altitude(plane.g.rangefinder_landing);
+        float height_above_ground = height_above_landing();
         pos_control->set_alt_target_from_climb_rate(-landing_descent_rate_cms(height_above_ground),
                                                     plane.G_Dt, true);
         break;
@@ -2229,6 +2230,13 @@ bool QuadPlane::do_vtol_takeoff(const AP_Mission::Mission_Command& cmd)
     return true;
 }
 
+float QuadPlane::height_above_landing()
+{
+    Vector3f dist_vec, dist_vec_offs, vel_of_target;
+    if (rland.enable && plane.g2.follow.get_target_dist_and_vel_ned(dist_vec, dist_vec_offs, vel_of_target))
+        return -dist_vec_offs.z;
+    return plane.relative_ground_altitude(plane.g.rangefinder_landing);    
+}
 
 /*
   start a VTOL landing
@@ -2358,7 +2366,7 @@ bool QuadPlane::verify_vtol_land(void)
     }
 
     // at land_final_alt begin final landing
-    float height_above_ground = plane.relative_ground_altitude(plane.g.rangefinder_landing);
+    float height_above_ground = height_above_landing();
     if (poscontrol.state == QPOS_LAND_DESCEND && height_above_ground < land_final_alt) {
         poscontrol.state = QPOS_LAND_FINAL;
 

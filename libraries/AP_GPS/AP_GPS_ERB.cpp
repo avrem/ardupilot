@@ -225,6 +225,7 @@ AP_GPS_ERB::_parse_gps(void)
             Location loc;
             if (AP::ahrs().get_position(loc)) {
                 location_offset(loc, -_buffer.rtk.baseline_N_mm * 0.001f, -_buffer.rtk.baseline_E_mm * 0.001f);
+                loc.alt += _buffer.rtk.baseline_D_mm * 0.1f; // probably
                 gps.rtk_base = loc;
                 gps.rtk_base_valid_ms = AP_HAL::millis();
                 gps.rtk_baseline.x = -_buffer.rtk.baseline_N_mm * 0.001f;

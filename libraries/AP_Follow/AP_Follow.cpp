@@ -146,6 +146,10 @@ bool AP_Follow::get_target_location_and_velocity(Location &loc, Vector3f &vel_ne
         // also should use gps fix time probably
         _last_location_update_ms = AP::gps().rtk_base_valid_ms - _rtk_delay_ms;
         _target_location = AP::gps().rtk_base;
+        if (_alt_type == AP_FOLLOW_ALTITUDE_TYPE_RELATIVE) {
+            _target_location.alt -= AP::ahrs().get_home().alt;
+            _target_location.flags.relative_alt = 1;
+        }
     }
 
     // check for timeout
@@ -307,13 +311,12 @@ void AP_Follow::handle_msg(const mavlink_message_t &msg)
             _last_location_sent_to_gcs = now;
             Vector3f dist_ned, dist_with_offs, vel_ned;
             get_target_dist_and_vel_ned(dist_ned, dist_with_offs, vel_ned);
-            gcs().send_text(MAV_SEVERITY_NOTICE, "Foll: %u %ld %ld %4.2f %.2f %.2f",
+            gcs().send_text(MAV_SEVERITY_NOTICE, "Foll: %u %4.2f %.2f %.2f %.2f",
                             (unsigned)_sysid_to_follow,
-                            (long)_target_location.lat,
-                            (long)_target_location.lng,
                             (double)(_target_location.alt * 0.01f),
                             dist_with_offs.x,
-                            dist_with_offs.y);
+                            dist_with_offs.y,
+                            dist_with_offs.z);
         }
 
         // log lead's estimated vs reported position

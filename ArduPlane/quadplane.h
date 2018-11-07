@@ -78,6 +78,8 @@ public:
     // vtol help for is_flying()
     bool is_flying(void);
 
+    float height_above_landing();
+
     // return current throttle as a percentate
     uint8_t throttle_percentage(void) const {
         return last_throttle * 100;
