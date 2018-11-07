@@ -133,6 +133,7 @@ public:
         float    dax;
         float    day;
         float    throttle_mix;
+        float    height_above_landing;
     };
         
 private:

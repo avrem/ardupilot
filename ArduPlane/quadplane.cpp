@@ -2400,6 +2400,7 @@ void QuadPlane::Log_Write_QControl_Tuning()
         dax                 : accel_target.x*0.01f,
         day                 : accel_target.y*0.01f,
         throttle_mix        : attitude_control->get_throttle_mix(),
+        height_above_landing: height_above_landing()
     };
     plane.DataFlash.WriteBlock(&pkt, sizeof(pkt));
 
