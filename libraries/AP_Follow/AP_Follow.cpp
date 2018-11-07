@@ -116,6 +116,7 @@ const AP_Param::GroupInfo AP_Follow::var_info[] = {
     AP_GROUPINFO("_ALT_TYPE", 10, AP_Follow, _alt_type, AP_FOLLOW_ALTITUDE_TYPE_RELATIVE),
 
     AP_GROUPINFO("_USE_RTK", 20, AP_Follow, _use_rtk, 0),
+    AP_GROUPINFO("_RTK_LAG", 21, AP_Follow, _rtk_delay_ms, 300),
 
     AP_GROUPEND
 };
@@ -143,7 +144,7 @@ bool AP_Follow::get_target_location_and_velocity(Location &loc, Vector3f &vel_ne
     if (_use_rtk && AP_HAL::millis() - AP::gps().rtk_base_valid_ms < 1000) { // we have decently recent RTK position, use it instead
         // we can also filter by +- recent rtk_age_ms 
         // also should use gps fix time probably
-        _last_location_update_ms = AP::gps().rtk_base_valid_ms - 300;
+        _last_location_update_ms = AP::gps().rtk_base_valid_ms - _rtk_delay_ms;
         _target_location = AP::gps().rtk_base;
     }
 
