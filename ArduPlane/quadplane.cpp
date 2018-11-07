@@ -1454,6 +1454,9 @@ void QuadPlane::update(void)
         motors->output();
         return;
     }
+
+    bool engage_magnets = in_vtol_auto() && motors->get_throttle() < 0.01f;
+    SRV_Channels::set_output_pwm(SRV_Channel::k_gripper, engage_magnets ? 1900 : 1100);
     
     if (motor_test.running) {
         motor_test_output();
