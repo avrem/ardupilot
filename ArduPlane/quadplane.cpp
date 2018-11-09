@@ -361,6 +361,7 @@ const AP_Param::GroupInfo QuadPlane::var_info2[] = {
     AP_GROUPINFO("TAILSIT_THSCMX", 3, QuadPlane, tailsitter.throttle_scale_max, 5),
 
     AP_GROUPINFO("RLAND_ENABLE", 50, QuadPlane, rland.enable, 0),
+    AP_GROUPINFO("POS2_DIST", 51, QuadPlane, pos2_dist, 5),
 	
     AP_GROUPEND
 };
@@ -1931,7 +1932,7 @@ void QuadPlane::vtol_position_controller(void)
                                                    plane.nav_pitch_cd,
                                                    get_bearing_cd(plane.current_loc, loc), true);
         if (plane.auto_state.wp_proportion >= 1 ||
-            plane.auto_state.wp_distance < 5) {
+            plane.auto_state.wp_distance < MAX(pos2_dist,5)) {
             poscontrol.state = QPOS_POSITION2;
             loiter_nav->init_target();
             gcs().send_text(MAV_SEVERITY_INFO,"VTOL position2 started v=%.1f d=%.1f",

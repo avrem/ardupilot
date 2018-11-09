@@ -484,6 +484,8 @@ private:
     struct {
         AP_Int8 enable;
     } rland;
+   
+    AP_Int8 pos2_dist;
     
 public:
     void motor_test_output();
