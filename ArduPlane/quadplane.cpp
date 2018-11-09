@@ -2234,7 +2234,7 @@ float QuadPlane::height_above_landing()
 {
     Vector3f dist_vec, dist_vec_offs, vel_of_target;
     if (rland.enable && plane.g2.follow.get_target_dist_and_vel_ned(dist_vec, dist_vec_offs, vel_of_target))
-        return -dist_vec_offs.z;
+        return dist_vec_offs.z;
     return plane.relative_ground_altitude(plane.g.rangefinder_landing);    
 }
 
