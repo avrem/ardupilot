@@ -2236,9 +2236,9 @@ void QuadPlane::vtol_position_controller(void)
         plane.nav_controller->update_waypoint(plane.prev_WP_loc, loc);
 
         /*
-          calculate target velocity, not dropping it below 2m/s
+          calculate target velocity, not dropping it below wpnav speed
          */
-        const float final_speed = 2.0f;
+        const float final_speed = wp_nav->get_default_speed_xy() * 0.01f;
         Vector2f target_speed_xy = diff_wp * poscontrol.speed_scale;
         float target_speed = target_speed_xy.length();
         if (distance < 1) {
@@ -2246,7 +2246,7 @@ void QuadPlane::vtol_position_controller(void)
             target_speed_xy(0.1, 0.1);
         }
         if (target_speed < final_speed) {
-            // until we enter the loiter we always aim for at least 2m/s
+            // until we enter the loiter we always aim for at least wpnav speed
             target_speed_xy = target_speed_xy.normalized() * final_speed;
             poscontrol.max_speed = final_speed;
         } else if (target_speed > poscontrol.max_speed) {
@@ -2321,7 +2321,7 @@ void QuadPlane::vtol_position_controller(void)
                                                                              plane.nav_pitch_cd,
                                                                              desired_auto_yaw_rate_cds() + get_weathervane_yaw_rate_cds());
         if (plane.auto_state.wp_proportion >= 1 ||
-            plane.auto_state.wp_distance < 5) {
+            plane.auto_state.wp_distance < sq(final_speed) / (2 * transition_decel)) {
             poscontrol.state = QPOS_POSITION2;
             loiter_nav->clear_pilot_desired_acceleration();
             loiter_nav->init_target();
