@@ -1857,7 +1857,7 @@ void QuadPlane::vtol_position_controller(void)
         /*
           calculate target velocity, not dropping it below wpnav speed
          */
-        const float final_speed = wp_nav->get_speed_xy();
+        const float final_speed = wp_nav->get_speed_xy() * 0.01f;
         Vector2f target_speed_xy = diff_wp * poscontrol.speed_scale;
         float target_speed = target_speed_xy.length();
         if (distance < 1) {
@@ -1952,9 +1952,9 @@ void QuadPlane::vtol_position_controller(void)
         FALLTHROUGH;
 
     case QPOS_LAND_FINAL: {
-        Vector3f dist_vec, dist_vec_offs, vel_of_target;
-        if (rland.enable && plane.g2.follow.get_target_dist_and_vel_ned(dist_vec, dist_vec_offs, vel_of_target))
-            pos_control->set_desired_velocity_xy(vel_of_target.x, vel_of_target.y);
+        Location target_loc; Vector3f target_vel;
+        if (rland.enable && plane.g2.follow.get_target_location_and_velocity(target_loc, target_vel))
+            pos_control->set_desired_velocity_xy(target_vel.x*100, target_vel.y*100);
         else
             pos_control->set_desired_velocity_xy(0.0f,0.0f);
         pos_control->set_desired_accel_xy(0.0f,0.0f);
