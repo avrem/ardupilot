@@ -1031,6 +1031,8 @@ private:
 #if OSD_ENABLED == ENABLED
     void publish_osd_info();
 #endif
+    bool rland_engaged();
+    void update_landing_pad();
     void accel_cal_update(void);
     void update_soft_armed();
     void update_soaring();

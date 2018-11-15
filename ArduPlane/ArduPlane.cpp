@@ -99,6 +99,7 @@ const AP_Scheduler::Task Plane::scheduler_tasks[] = {
 #if OSD_ENABLED == ENABLED
     SCHED_TASK(publish_osd_info, 1, 10),
 #endif
+    SCHED_TASK(update_landing_pad, 50, 100),
 };
 
 constexpr int8_t Plane::_failsafe_priorities[5];
@@ -959,5 +960,27 @@ void Plane::publish_osd_info()
     osd.set_nav_info(nav_info);
 }
 #endif
+
+bool Plane::rland_engaged()
+{
+    return g2.rland_enable &&
+        (control_mode == RTL || 
+        control_mode == QRTL ||
+        (control_mode == AUTO && quadplane.is_vtol_land(mission.get_current_nav_cmd().id)));
+}
+
+void Plane::update_landing_pad()
+{
+    if (!rland_engaged())
+        return;
+
+    Location loc;
+    Vector3f dist_vec, dist_vec_offs, tgt_vel;
+    if (ahrs.get_position(loc) && g2.follow.get_target_dist_and_vel_ned(dist_vec, dist_vec_offs, tgt_vel)) {
+        location_offset(loc, dist_vec_offs.x, dist_vec_offs.y);
+        next_WP_loc.lat = loc.lat;
+        next_WP_loc.lng = loc.lng;
+    }
+}
 
 AP_HAL_MAIN_CALLBACKS(&plane);

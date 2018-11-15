@@ -125,6 +125,11 @@ int32_t Plane::get_RTL_altitude()
  */
 float Plane::relative_ground_altitude(bool use_rangefinder_if_available)
 {
+    Vector3f dist_vec, dist_vec_offs, vel_of_target;
+    if (rland_engaged() && g2.follow.get_target_dist_and_vel_ned(dist_vec, dist_vec_offs, vel_of_target)) {
+        return dist_vec_offs.z;
+    }
+
    if (use_rangefinder_if_available && rangefinder_state.in_range) {
         return rangefinder_state.height_estimate;
     }

@@ -544,6 +544,7 @@ public:
 #endif
 
     AP_Follow follow;
+    AP_Int8 rland_enable;
 };
 
 extern const AP_Param::Info var_info[];

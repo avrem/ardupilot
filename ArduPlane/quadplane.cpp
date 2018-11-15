@@ -360,7 +360,6 @@ const AP_Param::GroupInfo QuadPlane::var_info2[] = {
     // @User: Standard
     AP_GROUPINFO("TAILSIT_THSCMX", 3, QuadPlane, tailsitter.throttle_scale_max, 5),
 
-    AP_GROUPINFO("RLAND_ENABLE", 50, QuadPlane, rland.enable, 0),
     AP_GROUPINFO("POS2_DIST", 51, QuadPlane, pos2_dist, 5),
 	
     AP_GROUPEND
@@ -1457,7 +1456,7 @@ void QuadPlane::update(void)
     }
 
     bool engage_magnets = in_vtol_auto() && 
-        (motors->get_throttle() < 0.01f || (poscontrol.state == QPOS_LAND_FINAL && height_above_landing() < 1));
+        (motors->get_throttle() < 0.01f || (poscontrol.state == QPOS_LAND_FINAL && plane.relative_ground_altitude(plane.g.rangefinder_landing) < 1));
     SRV_Channels::set_output_pwm(SRV_Channel::k_gripper, engage_magnets ? 1100 : 1900);
     
     if (motor_test.running) {
@@ -1953,7 +1952,7 @@ void QuadPlane::vtol_position_controller(void)
 
     case QPOS_LAND_FINAL: {
         Location target_loc; Vector3f target_vel;
-        if (rland.enable && plane.g2.follow.get_target_location_and_velocity(target_loc, target_vel))
+        if (plane.rland_engaged() && plane.g2.follow.get_target_location_and_velocity(target_loc, target_vel))
             pos_control->set_desired_velocity_xy(target_vel.x*100, target_vel.y*100);
         else
             pos_control->set_desired_velocity_xy(0.0f,0.0f);
@@ -1969,7 +1968,7 @@ void QuadPlane::vtol_position_controller(void)
 
         // call attitude controller
         float target_hdg = 0.0f;
-        if (plane.control_mode == AUTO && rland.enable && plane.g2.follow.get_target_heading(target_hdg))
+        if (plane.rland_engaged() && plane.g2.follow.get_target_heading(target_hdg))
             attitude_control->input_euler_angle_roll_pitch_yaw(plane.nav_roll_cd, plane.nav_pitch_cd, target_hdg * 100, true);
         else
             attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(plane.nav_roll_cd,
@@ -2018,7 +2017,7 @@ void QuadPlane::vtol_position_controller(void)
     }
 
     case QPOS_LAND_DESCEND: {
-        float height_above_ground = height_above_landing();
+        float height_above_ground = plane.relative_ground_altitude(plane.g.rangefinder_landing);
         pos_control->set_alt_target_from_climb_rate(-landing_descent_rate_cms(height_above_ground),
                                                     plane.G_Dt, true);
         break;
@@ -2053,14 +2052,16 @@ void QuadPlane::setup_target_position(void)
     poscontrol.target.z = plane.next_WP_loc.alt - origin.alt;
 
     const uint32_t now = AP_HAL::millis();
-    if (!locations_are_same(loc, last_auto_target) ||
-        plane.next_WP_loc.alt != last_auto_target.alt ||
-        now - last_loiter_ms > 500) {
-        wp_nav->set_wp_destination(poscontrol.target);
-        last_auto_target = loc;
+    if (now - last_loiter_ms > 100) {
+        if (!locations_are_same(loc, last_auto_target) ||
+            plane.next_WP_loc.alt != last_auto_target.alt ||
+            now - last_loiter_ms > 500) {
+                wp_nav->set_wp_destination(poscontrol.target);
+                last_auto_target = loc;
+            }
+        last_loiter_ms = now;
     }
-    last_loiter_ms = now;
-
+    
     pos_control->set_speed_xy(wp_nav->get_speed_xy());
     pos_control->set_accel_xy(wp_nav->get_wp_acceleration());
     pos_control->set_speed_z(-wp_nav->get_speed_down(), wp_nav->get_speed_up());
@@ -2234,14 +2235,6 @@ bool QuadPlane::do_vtol_takeoff(const AP_Mission::Mission_Command& cmd)
     return true;
 }
 
-float QuadPlane::height_above_landing()
-{
-    Vector3f dist_vec, dist_vec_offs, vel_of_target;
-    if (rland.enable && plane.g2.follow.get_target_dist_and_vel_ned(dist_vec, dist_vec_offs, vel_of_target))
-        return dist_vec_offs.z;
-    return plane.relative_ground_altitude(plane.g.rangefinder_landing);    
-}
-
 /*
   start a VTOL landing
  */
@@ -2347,17 +2340,6 @@ bool QuadPlane::verify_vtol_land(void)
         return true;
     }
 
-    if (plane.control_mode == AUTO && rland.enable) {
-        Vector3f dist_vec, dist_vec_offs, vel_of_target;
-        Location loc;
-        if (AP::ahrs().get_position(loc) && 
-            plane.g2.follow.get_target_dist_and_vel_ned(dist_vec, dist_vec_offs, vel_of_target)) {
-            location_offset(loc, dist_vec_offs.x, dist_vec_offs.y);
-            plane.next_WP_loc.lat = loc.lat;
-            plane.next_WP_loc.lng = loc.lng;
-        }
-    }
-
     if (poscontrol.state == QPOS_POSITION2 &&
         plane.auto_state.wp_distance < 2) {
         poscontrol.state = QPOS_LAND_DESCEND;
@@ -2370,7 +2352,7 @@ bool QuadPlane::verify_vtol_land(void)
     }
 
     // at land_final_alt begin final landing
-    float height_above_ground = height_above_landing();
+    float height_above_ground = plane.relative_ground_altitude(plane.g.rangefinder_landing);
     if (poscontrol.state == QPOS_LAND_DESCEND && height_above_ground < land_final_alt) {
         poscontrol.state = QPOS_LAND_FINAL;
 
@@ -2404,7 +2386,7 @@ void QuadPlane::Log_Write_QControl_Tuning()
         dax                 : accel_target.x*0.01f,
         day                 : accel_target.y*0.01f,
         throttle_mix        : attitude_control->get_throttle_mix(),
-        height_above_landing: height_above_landing()
+        height_above_landing: plane.relative_ground_altitude(plane.g.rangefinder_landing)
     };
     plane.DataFlash.WriteBlock(&pkt, sizeof(pkt));
 

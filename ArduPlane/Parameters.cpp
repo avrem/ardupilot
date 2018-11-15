@@ -1186,6 +1186,7 @@ const AP_Param::GroupInfo ParametersG2::var_info[] = {
     // @Group: FOLL
     // @Path: ../libraries/AP_Follow/AP_Follow.cpp
     AP_SUBGROUPINFO(follow, "FOLL", 27, ParametersG2, AP_Follow),
+    AP_GROUPINFO("RLAND_ENABLE", 28, ParametersG2, rland_enable, 0),
 
     AP_GROUPEND
 };
