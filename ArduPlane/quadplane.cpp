@@ -943,7 +943,7 @@ bool QuadPlane::should_relax(void)
         landing_detect.lower_limit_start_ms = millis();
     }
     bool relax_loiter = landing_detect.lower_limit_start_ms != 0 &&
-        (millis() - landing_detect.lower_limit_start_ms) > 1000;
+        (millis() - landing_detect.lower_limit_start_ms) > 200;
     return relax_loiter;
 }
 
@@ -2296,34 +2296,29 @@ void QuadPlane::check_land_complete(void)
         return;
     }
     const uint32_t now = AP_HAL::millis();
-    bool might_be_landed =  (landing_detect.lower_limit_start_ms != 0 &&
-                             now - landing_detect.lower_limit_start_ms > 1000);
+    bool might_be_landed = should_relax();
     if (!might_be_landed) {
         landing_detect.land_start_ms = 0;
         return;
     }
-    float height = inertial_nav.get_altitude()*0.01f;
+    float height = plane.relative_ground_altitude(plane.g.rangefinder_landing);
     if (landing_detect.land_start_ms == 0) {
         landing_detect.land_start_ms = now;
         landing_detect.vpos_start_m = height;
     }
-    // we only consider the vehicle landed when the motors have been
-    // at minimum for 3s and the vertical position estimate has not
-    // changed by more than 20cm for 2s
     if (fabsf(height - landing_detect.vpos_start_m) > 0.2) {
         // height has changed, call off landing detection
         landing_detect.land_start_ms = 0;
         return;
     }
            
-    if ((now - landing_detect.land_start_ms) < 2000 ||
-        (now - landing_detect.lower_limit_start_ms) < 3000) {
+    if ((now - landing_detect.land_start_ms) < 1300) {
         // not landed yet
         return;
     }
     landing_detect.land_start_ms = 0;
-    // motors have been at zero for 3s, and we have had less than 0.3m
-    // change in altitude for last 2s. We are landed.
+    // motors have been at zero and we are not moving vertically
+    // we are landed
     plane.disarm_motors();
     poscontrol.state = QPOS_LAND_COMPLETE;
     gcs().send_text(MAV_SEVERITY_INFO,"Land complete");
