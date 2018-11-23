@@ -963,6 +963,8 @@ void Plane::publish_osd_info()
 
 bool Plane::rland_engaged()
 {
+    if (g2.rtakeoff_enable && control_mode == AUTO && quadplane.is_vtol_takeoff(mission.get_current_nav_cmd().id))
+        return true;
     return g2.rland_enable &&
         (control_mode == RTL || 
         control_mode == QRTL ||

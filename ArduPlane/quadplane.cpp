@@ -2090,8 +2090,12 @@ void QuadPlane::takeoff_controller(void)
 
     setup_target_position();
 
-    // set position controller desired velocity and acceleration to zero
-    pos_control->set_desired_velocity_xy(0.0f,0.0f);
+    // set position controller desired velocity and acceleration
+    Location target_loc; Vector3f target_vel;
+    if (plane.rland_engaged() && plane.g2.follow.get_target_location_and_velocity(target_loc, target_vel))
+        pos_control->set_desired_velocity_xy(target_vel.x*100, target_vel.y*100);
+    else
+        pos_control->set_desired_velocity_xy(0.0f,0.0f);
     pos_control->set_desired_accel_xy(0.0f,0.0f);
 
     // set position control target and update

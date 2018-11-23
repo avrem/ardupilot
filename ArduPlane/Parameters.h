@@ -545,6 +545,7 @@ public:
 
     AP_Follow follow;
     AP_Int8 rland_enable;
+    AP_Int8 rtakeoff_enable;
 };
 
 extern const AP_Param::Info var_info[];
