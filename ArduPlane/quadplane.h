@@ -73,6 +73,7 @@ public:
     bool verify_vtol_land(void);
     bool in_vtol_auto(void) const;
     bool in_vtol_mode(void) const;
+    bool in_vtol_land(void) const;
 
     // vtol help for is_flying()
     bool is_flying(void);

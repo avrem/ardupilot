@@ -1500,8 +1500,14 @@ void QuadPlane::update(void)
 
         assisted_flight = false;
         
-        // give full authority to attitude control
-        attitude_control->set_throttle_mix_max();
+        if (in_vtol_land() && poscontrol.state == QPOS_LAND_FINAL) {
+            // set throttle mix for landing
+            attitude_control->set_throttle_mix_min();
+        }
+        else {
+            // give full authority to attitude control
+            attitude_control->set_throttle_mix_max();
+        }
 
         // run low level rate controllers
         run_rate_controller();
@@ -1812,6 +1818,15 @@ bool QuadPlane::in_vtol_mode(void) const
             in_vtol_auto());
 }
 
+/*
+  are we in a VTOL landing state?
+ */
+bool QuadPlane::in_vtol_land(void) const
+{
+    return (plane.control_mode == QLAND ||
+            plane.control_mode == QRTL ||
+            (plane.control_mode == AUTO && is_vtol_land(plane.mission.get_current_nav_cmd().id)));
+}
 
 /*
   main landing controller. Used for landing and RTL.
