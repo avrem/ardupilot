@@ -2168,6 +2168,15 @@ bool QuadPlane::in_vtol_mode(void) const
             in_vtol_auto());
 }
 
+/*
+  are we in a VTOL landing state?
+ */
+bool QuadPlane::in_vtol_land(void) const
+{
+    return (plane.control_mode == &plane.mode_qland ||
+            plane.control_mode == &plane.mode_qrtl ||
+            (plane.control_mode == &plane.mode_auto && is_vtol_land(plane.mission.get_current_nav_cmd().id)));
+}
 
 /*
   main landing controller. Used for landing and RTL.
@@ -3168,6 +3177,14 @@ float QuadPlane::stopping_distance(void)
 
 void QuadPlane::update_throttle_thr_mix(void)
 {
+    if (is_tiltquad()) {
+        if (in_vtol_land() && poscontrol.state == QPOS_LAND_FINAL)
+            attitude_control->set_throttle_mix_min();
+        else
+            attitude_control->set_throttle_mix_max(1.0f);
+        return;
+    }
+
     // transition will directly manage the mix
     if (in_transition()) {
       return;

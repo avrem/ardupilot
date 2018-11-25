@@ -552,6 +552,8 @@ private:
     QAutoTune qautotune;
 #endif
 
+    bool in_vtol_land(void) const;
+
     /*
       are we in the approach phase of a VTOL landing?
      */

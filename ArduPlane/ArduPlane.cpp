@@ -177,8 +177,7 @@ void Plane::update_speed_height(void)
         SpdHgt_Controller->update_50hz();
     }
 
-    if (quadplane.in_vtol_mode() ||
-        quadplane.in_assisted_flight()) {
+    if (quadplane.available()) {
         quadplane.update_throttle_thr_mix();
     }
 }
