@@ -25,6 +25,8 @@
 
 #include <uavcan/helpers/heap_based_pool_allocator.hpp>
 
+#include <uavcan/equipment/esc/Status.hpp>
+
 #ifndef UAVCAN_NODE_POOL_SIZE
 #define UAVCAN_NODE_POOL_SIZE 8192
 #endif
@@ -85,6 +87,9 @@ public:
 
     ///// ACT /////
     static bool act_write(uint8_t act_index, float value);
+
+    ///// ESC status /////
+    static void send_esc_telemetry_mavlink(uint8_t mav_chan);
 
 
     template <typename DataType_>
@@ -208,6 +213,9 @@ private:
         uint8_t devices_count;
         uint64_t last_update;
     } _act_conf;
+
+    ///// ESC status /////
+    static void esc_read_status(const uavcan::ReceivedDataStructure<uavcan::equipment::esc::Status> &msg);
 };
 
 #endif /* AP_UAVCAN_H_ */

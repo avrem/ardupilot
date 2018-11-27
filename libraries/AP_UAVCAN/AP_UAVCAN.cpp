@@ -22,6 +22,7 @@
 
 #include "AP_UAVCAN.h"
 #include <GCS_MAVLink/GCS.h>
+#include <DataFlash/DataFlash.h>
 
 #include <AP_BoardConfig/AP_BoardConfig.h>
 #include <AP_BoardConfig/AP_BoardConfig_CAN.h>
@@ -193,6 +194,9 @@ void AP_UAVCAN::init(uint8_t driver_index)
     AP_GPS_UAVCAN::subscribe_msgs(this);
     AP_Compass_UAVCAN::subscribe_msgs(this);
     AP_BattMonitor_UAVCAN::subscribe_msgs(this);
+
+    auto esc_listener = new uavcan::Subscriber<uavcan::equipment::esc::Status>(*_node);
+    esc_listener->start(&AP_UAVCAN::esc_read_status);
 
     act_out_array[driver_index] = new uavcan::Publisher<uavcan::equipment::actuator::ArrayCommand>(*_node);
     act_out_array[driver_index]->setTxTimeout(uavcan::MonotonicDuration::fromMSec(2));
@@ -534,6 +538,86 @@ bool AP_UAVCAN::act_write(uint8_t act_index, float value)
         }
     }
     return success;
+}
+
+struct telem_data {
+    uint8_t temperature; // degrees C
+    uint16_t voltage;    // volts * 100
+    uint16_t current;    // amps * 100
+    uint16_t rpm;        // RPM
+    uint32_t timestamp_ms;
+};
+
+const uint8_t max_motors = 8;
+
+struct telem_data last_telem[max_motors];
+
+void AP_UAVCAN::esc_read_status(const uavcan::ReceivedDataStructure<uavcan::equipment::esc::Status> &msg)
+{
+    if (msg.esc_index < 1 || msg.esc_index > max_motors)
+        return;
+
+    int idx = msg.esc_index - 1;
+
+    last_telem[idx].timestamp_ms = AP_HAL::millis();
+    last_telem[idx].temperature = constrain_float(roundf(msg.temperature - C_TO_KELVIN), 0, UINT8_MAX);
+    last_telem[idx].voltage = constrain_float(roundf(msg.voltage * 100.0f), 0, UINT16_MAX);
+    last_telem[idx].current = constrain_float(roundf(msg.current * 100.0f), 0, UINT16_MAX);
+    last_telem[idx].rpm = msg.rpm;
+
+    DataFlash_Class *df = DataFlash_Class::instance();
+    if (df && df->logging_enabled()) {
+        struct log_Esc pkt = {
+            LOG_PACKET_HEADER_INIT(uint8_t(LOG_ESC1_MSG + idx)),
+            time_us     : AP_HAL::micros64(),
+            rpm         : last_telem[idx].rpm,
+            voltage     : last_telem[idx].voltage,
+            current     : last_telem[idx].current,
+            temperature : (int16_t)constrain_float(roundf((msg.temperature - C_TO_KELVIN) * 100.0f), INT16_MIN, INT16_MAX),
+            current_tot : 0
+        };
+        df->WriteBlock(&pkt, sizeof(pkt));
+    }
+}
+
+/*
+  send ESC telemetry messages over MAVLink
+ */
+void AP_UAVCAN::send_esc_telemetry_mavlink(uint8_t mav_chan)
+{
+    uint8_t temperature[4];
+    uint16_t voltage[4];
+    uint16_t current[4];
+    uint16_t totalcurrent[4];
+    uint16_t rpm[4];
+    uint16_t count[4];
+    uint32_t now = AP_HAL::millis();
+    for (uint8_t i = 0; i < max_motors; i++) {
+        uint8_t idx = i % 4;
+        if (last_telem[i].timestamp_ms && (now - last_telem[i].timestamp_ms < 1000)) {
+            temperature[idx]  = last_telem[i].temperature;
+            voltage[idx]      = last_telem[i].voltage;
+            current[idx]      = last_telem[i].current;
+            rpm[idx]          = last_telem[i].rpm;
+        } else {
+            temperature[idx] = 0;
+            voltage[idx] = 0;
+            current[idx] = 0;
+            rpm[idx] = 0;
+        }
+        totalcurrent[idx] = 0;
+        count[idx] = 0;
+        if (i % 4 == 3) {
+            if (!HAVE_PAYLOAD_SPACE((mavlink_channel_t)mav_chan, ESC_TELEMETRY_1_TO_4)) {
+                return;
+            }
+            if (i < 4) {
+                mavlink_msg_esc_telemetry_1_to_4_send((mavlink_channel_t)mav_chan, temperature, voltage, current, totalcurrent, rpm, count);
+            } else {
+                mavlink_msg_esc_telemetry_5_to_8_send((mavlink_channel_t)mav_chan, temperature, voltage, current, totalcurrent, rpm, count);
+            }
+        }
+    }
 }
 
 #endif // HAL_WITH_UAVCAN
