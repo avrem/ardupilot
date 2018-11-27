@@ -1455,8 +1455,9 @@ void QuadPlane::update(void)
         return;
     }
 
-    bool engage_magnets = (plane.control_mode == AUTO && is_vtol_takeoff(plane.mission.get_current_nav_cmd().id) && motors->get_throttle() < 0.01f) ||
-        (in_vtol_land() && poscontrol.state >= QPOS_LAND_FINAL && plane.relative_ground_altitude(plane.g.rangefinder_landing) < 1);
+    bool engage_magnets = (motors->get_throttle() < 0.01f) &&
+        ((plane.control_mode == AUTO && is_vtol_takeoff(plane.mission.get_current_nav_cmd().id)) || 
+         (in_vtol_land() && poscontrol.state >= QPOS_LAND_FINAL));
     SRV_Channels::set_output_pwm(SRV_Channel::k_gripper, engage_magnets ? 1100 : 1900);
     
     if (motor_test.running) {
