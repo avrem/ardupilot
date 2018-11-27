@@ -1082,9 +1082,9 @@ struct PACKED log_DSTL {
 #define BARO_MULTS "F00B0C?0"
 
 #define ESC_LABELS "TimeUS,RPM,Volt,Curr,Temp,CTot"
-#define ESC_FMT   "QeCCcH"
+#define ESC_FMT   "QiCCcH"
 #define ESC_UNITS "sqvAO-"
-#define ESC_MULTS "FBBBB-"
+#define ESC_MULTS "F0BBB-"
 
 #define GPA_LABELS "TimeUS,VDop,HAcc,VAcc,SAcc,VV,SMS,Delta"
 #define GPA_FMT   "QCCCCBIH"

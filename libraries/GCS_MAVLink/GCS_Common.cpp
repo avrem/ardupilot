@@ -3106,6 +3106,10 @@ bool GCS_MAVLINK::try_send_message(const enum ap_message id)
             blheli->send_esc_telemetry_mavlink(uint8_t(chan));
         }
 #endif
+#ifdef HAL_WITH_UAVCAN
+        CHECK_PAYLOAD_SIZE(ESC_TELEMETRY_1_TO_4);
+        AP_UAVCAN::send_esc_telemetry_mavlink(uint8_t(chan));
+#endif
         break;
     }
 
