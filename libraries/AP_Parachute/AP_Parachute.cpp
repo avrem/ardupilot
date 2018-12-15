@@ -59,6 +59,9 @@ const AP_Param::GroupInfo AP_Parachute::var_info[] = {
     // @Increment: 1
     // @User: Standard
     AP_GROUPINFO("DELAY_MS", 5, AP_Parachute, _delay_ms, AP_PARACHUTE_RELEASE_DELAY_MS),
+
+    AP_GROUPINFO("WDT_MS", 6, AP_Parachute, _watchdog_ms, 0),   
+    AP_GROUPINFO("SINK_MAX", 7, AP_Parachute, _max_sink_rate, AP_PARACHUTE_MAX_SINK_DEFAULT),
     
     AP_GROUPEND
 };

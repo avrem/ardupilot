@@ -19,6 +19,8 @@
 #define AP_PARACHUTE_SERVO_OFF_PWM_DEFAULT     1100    // default PWM value to move servo to when shutter is deactivated
 
 #define AP_PARACHUTE_ALT_MIN_DEFAULT            10     // default min altitude the vehicle should have before parachute is released
+                                                     
+#define AP_PARACHUTE_MAX_SINK_DEFAULT           12.0   // default maximum sink speed in m/s to trigger emergency parachute
 
 /// @class	AP_Parachute
 /// @brief	Class managing the release of a parachute
@@ -62,6 +64,12 @@ public:
     /// update - shuts off the trigger should be called at about 10hz
     void update();
 
+    /// watchdog_ms - returns the configured emergency watchdog trigger time
+    int16_t watchdog_ms() const { return _watchdog_ms; }
+    
+    /// max_sink - returns the configured maximum sink rate to trigger emergency release
+    float max_sink_rate() const { return _max_sink_rate; }
+
     /// alt_min - returns the min altitude above home the vehicle should have before parachute is released
     ///   0 = altitude check disabled
     int16_t alt_min() const { return _alt_min; }
@@ -76,6 +84,8 @@ private:
     AP_Int16    _servo_off_pwm; // PWM value to move servo to when shutter is deactivated
     AP_Int16    _alt_min;       // min altitude the vehicle should have before parachute is released
     AP_Int16    _delay_ms;      // delay before chute release for motors to stop
+    AP_Int16    _watchdog_ms;   // emergency watchdog trigger time
+    AP_Float    _max_sink_rate; // maximum sink rate to trigger emergency parachute
 
     // internal variables
     AP_Relay   &_relay;         // pointer to relay object from the base class Relay.
