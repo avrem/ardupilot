@@ -2368,7 +2368,15 @@ bool QuadPlane::verify_vtol_land(void)
         plane.auto_state.wp_distance < 2) {
         poscontrol.state = QPOS_LAND_DESCEND;
         gcs().send_text(MAV_SEVERITY_INFO,"Land descend started");
-        plane.set_next_WP(plane.next_WP_loc);
+        if (plane.control_mode == AUTO) {
+            // set height to mission height, so we can use the mission
+            // WP height for triggering land final if no rangefinder
+            // available
+            plane.set_next_WP(plane.mission.get_current_nav_cmd().content.location);
+        } else {
+            plane.set_next_WP(plane.next_WP_loc);
+            plane.next_WP_loc.alt = ahrs.get_home().alt;
+        }
     }
 
     if (should_relax()) {
@@ -2711,4 +2719,16 @@ float QuadPlane::stopping_distance(void)
     // varies with pitch, but it gives something for the user to
     // control the transition distance in a reasonable way
     return plane.ahrs.groundspeed_vector().length_squared() / (2 * transition_decel);
+}
+
+/*
+  see if we are in the descent phase of a VTOL landing
+ */
+bool QuadPlane::in_vtol_land_descent(void) const
+{
+    if (in_vtol_auto() && is_vtol_land(plane.mission.get_current_nav_cmd().id) &&
+        (poscontrol.state == QPOS_LAND_DESCEND || poscontrol.state == QPOS_LAND_FINAL)) {
+        return true;
+    }
+    return false;
 }
