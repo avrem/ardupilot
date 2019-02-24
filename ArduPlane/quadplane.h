@@ -483,6 +483,11 @@ private:
       return true if current mission item is a vtol landing
      */
     bool is_vtol_land(uint16_t id) const;
+
+    /*
+      are we in the descent phase of a VTOL landing?
+     */
+    bool in_vtol_land_descent(void) const;
     
 public:
     void motor_test_output();
