@@ -2119,9 +2119,20 @@ void QuadPlane::takeoff_controller(void)
     plane.nav_roll_cd = pos_control->get_roll();
     plane.nav_pitch_cd = pos_control->get_pitch();
 
-    attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(plane.nav_roll_cd,
-                                                                  plane.nav_pitch_cd,
-                                                                  get_pilot_input_yaw_rate_cds() + get_weathervane_yaw_rate_cds());
+    float yaw_align_height = plane.next_WP_loc.alt;
+    if (is_positive(attitude_control->get_slew_yaw_rads()))
+        yaw_align_height -= radians(180) / attitude_control->get_slew_yaw_rads() * wp_nav->get_speed_up();
+    int32_t next_ground_course_cd = plane.mission.get_next_ground_course_cd(-1);
+
+    if (next_ground_course_cd != -1 && plane.current_loc.alt > yaw_align_height)
+        attitude_control->input_euler_angle_roll_pitch_yaw(plane.nav_roll_cd,
+                                                           plane.nav_pitch_cd,
+                                                           next_ground_course_cd,
+                                                           true);
+    else
+        attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(plane.nav_roll_cd,
+                                                                      plane.nav_pitch_cd,
+                                                                      get_pilot_input_yaw_rate_cds() + get_weathervane_yaw_rate_cds());
 
     pos_control->set_alt_target_from_climb_rate(wp_nav->get_speed_up(), plane.G_Dt, true);
     run_z_controller();
