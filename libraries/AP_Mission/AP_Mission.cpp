@@ -385,7 +385,19 @@ int32_t AP_Mission::get_next_ground_course_cd(int32_t default_angle)
     if (cmd.id == MAV_CMD_NAV_SET_YAW_SPEED) {
         return (_nav_cmd.content.set_yaw_speed.angle_deg * 100);
     }
-    return _nav_cmd.content.location.get_bearing_to(cmd.content.location);
+    // same location as next waypoint
+    if (cmd.content.location.lat == 0 || cmd.content.location.lng == 0) {
+        return default_angle;
+    }
+
+    Location current_loc;
+    if (!AP::ahrs().get_position(current_loc)) {
+        return default_angle;
+    }
+    Location current_tgt_loc = _nav_cmd.content.location;
+    current_tgt_loc.sanitize(current_loc);
+
+    return current_tgt_loc.get_bearing_to(cmd.content.location);
 }
 
 // set_current_cmd - jumps to command specified by index
