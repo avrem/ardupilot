@@ -439,6 +439,7 @@ void Plane::update_navigation()
             
     case Mode::Number::RTL:
         if (quadplane.available() && quadplane.rtl_mode == 1 &&
+            height_above_target() < 10.0f &&
             ((nav_controller->reached_loiter_target() && AP_HAL::millis() - last_mode_change_ms > 1000) ||
              current_loc.past_interval_finish_line(prev_WP_loc, next_WP_loc) ||
              auto_state.wp_distance < MAX(qrtl_radius, quadplane.stopping_distance()))
