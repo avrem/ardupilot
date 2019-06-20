@@ -521,7 +521,7 @@ void Plane::check_long_failsafe()
         if (failsafe.rc_failsafe &&
             (tnow - radio_timeout_ms) > g.fs_timeout_long*1000) {
             failsafe_long_on_event(FAILSAFE_LONG, MODE_REASON_RADIO_FAILSAFE);
-        } else if (g.gcs_heartbeat_fs_enabled == GCS_FAILSAFE_HB_AUTO && control_mode == AUTO &&
+        } else if (g.gcs_heartbeat_fs_enabled == GCS_FAILSAFE_HB_AUTO && (control_mode == AUTO || control_mode == GUIDED || control_mode == LOITER) &&
                    failsafe.last_heartbeat_ms != 0 &&
                    (tnow - failsafe.last_heartbeat_ms) > g.fs_timeout_long*1000) {
             failsafe_long_on_event(FAILSAFE_GCS, MODE_REASON_GCS_FAILSAFE);
@@ -549,7 +549,7 @@ void Plane::check_long_failsafe()
             failsafe_long_off_event(MODE_REASON_RADIO_FAILSAFE);
         } else if (failsafe.state == FAILSAFE_GCS &&
             g.gcs_heartbeat_fs_enabled == GCS_FAILSAFE_HB_AUTO &&
-            control_mode != AUTO) {
+            !(control_mode == AUTO || control_mode == GUIDED || control_mode == LOITER)) {
             failsafe_long_off_event(MODE_REASON_GCS_FAILSAFE);
         }
     }
