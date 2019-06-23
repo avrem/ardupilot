@@ -1926,7 +1926,7 @@ void QuadPlane::vtol_position_controller(void)
         // call attitude controller
         attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(plane.nav_roll_cd,
                                                                              plane.nav_pitch_cd,
-                                                                             desired_auto_yaw_rate_cds() + get_weathervane_yaw_rate_cds());
+                                                                             desired_auto_yaw_rate_cds());
         if (plane.auto_state.wp_proportion >= 1 ||
             plane.auto_state.wp_distance < 5) {
             poscontrol.state = QPOS_POSITION2;
@@ -2518,7 +2518,7 @@ float QuadPlane::get_weathervane_yaw_rate_cds(void)
         weathervane.last_output = 0;
         return 0;
     }
-    if (plane.channel_rudder->get_control_in() != 0) {
+    if (get_pilot_input_yaw_rate_cds() != 0) {
         weathervane.last_pilot_input_ms = AP_HAL::millis();
         weathervane.last_output = 0;
         return 0;
