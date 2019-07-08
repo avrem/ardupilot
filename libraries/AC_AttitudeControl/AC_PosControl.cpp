@@ -702,7 +702,7 @@ void AC_PosControl::set_target_to_stopping_point_xy()
 ///     results placed in stopping_position vector
 ///     set_accel_xy() should be called before this method to set vehicle acceleration
 ///     set_leash_length() should have been called before this method
-void AC_PosControl::get_stopping_point_xy(Vector3f &stopping_point) const
+void AC_PosControl::get_stopping_point_xy(Vector3f &stopping_point, bool force_inactive) const
 {
     const Vector3f curr_pos = _inav.get_position();
     Vector3f curr_vel = _inav.get_velocity();
@@ -712,7 +712,7 @@ void AC_PosControl::get_stopping_point_xy(Vector3f &stopping_point) const
     float kP = _p_pos_xy.kP();
 
     // add velocity error to current velocity
-    if (is_active_xy()) {
+    if (is_active_xy() && !force_inactive) {
         curr_vel.x += _vel_error.x;
         curr_vel.y += _vel_error.y;
     }

@@ -240,7 +240,7 @@ public:
     ///     results placed in stopping_position vector
     ///     set_accel_xy() should be called before this method to set vehicle acceleration
     ///     set_leash_length() should have been called before this method
-    void get_stopping_point_xy(Vector3f &stopping_point) const;
+    void get_stopping_point_xy(Vector3f &stopping_point, bool force_inactive = false) const;
 
     /// get_distance_to_target - get horizontal distance to position target in cm (used for reporting)
     float get_distance_to_target() const;

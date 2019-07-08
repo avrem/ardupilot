@@ -16,6 +16,8 @@ const AP_Param::GroupInfo QuadPlane::var_info[] = {
     // 3 ~ 8 were used by quadplane attitude control PIDs
     AP_GROUPINFO("TAKEOFF_MS", 3, QuadPlane, takeoff_spinup_ms, 3000), // use 3 to avoid conflicts with master
 
+    AP_GROUPINFO("WP_NAVALT_MIN", 4, QuadPlane, wp_navalt_min, 0),
+
     // @Param: ANGLE_MAX
     // @DisplayName: Angle Max
     // @Description: Maximum lean angle in all VTOL flight modes
@@ -2093,6 +2095,7 @@ void QuadPlane::takeoff_controller(void)
         plane.next_WP_loc.lat = plane.current_loc.lat;
         plane.next_WP_loc.lng = plane.current_loc.lng;
 
+        takeoff_start_alt_cm = inertial_nav.get_altitude();
         loiter_nav->init_target();
         return;
     }
@@ -2118,6 +2121,20 @@ void QuadPlane::takeoff_controller(void)
     // nav roll and pitch are controller by position controller
     plane.nav_roll_cd = pos_control->get_roll();
     plane.nav_pitch_cd = pos_control->get_pitch();
+
+    if (wp_navalt_min > 0 && inertial_nav.get_altitude() < takeoff_start_alt_cm + wp_navalt_min * 100) {
+        // we haven't reached the takeoff navigation altitude yet
+        plane.nav_roll_cd = 0;
+        plane.nav_pitch_cd = 0;
+        // tell the position controller that we have limited roll/pitch demand to prevent integrator buildup
+        pos_control->set_limit_accel_xy();
+        // set target to position controller stopping point
+        Vector3f stopping_point;
+        pos_control->get_stopping_point_xy(stopping_point, true);
+        Location_Class stopping_loc = stopping_point;
+        plane.next_WP_loc.lat = stopping_loc.lat;
+        plane.next_WP_loc.lng = stopping_loc.lng;
+    }
 
     float yaw_align_height = plane.next_WP_loc.alt;
     if (is_positive(attitude_control->get_slew_yaw_rads()))
@@ -2251,6 +2268,7 @@ bool QuadPlane::do_vtol_takeoff(const AP_Mission::Mission_Command& cmd)
     loc.lng = 0;
     plane.set_next_WP(loc);
     plane.next_WP_loc.alt = plane.current_loc.alt + cmd.content.location.alt;
+    takeoff_start_alt_cm = inertial_nav.get_altitude();
     throttle_wait = false;
 
     // set target to current position
@@ -2664,6 +2682,7 @@ bool QuadPlane::do_user_takeoff(float takeoff_altitude)
     plane.prev_WP_loc = plane.current_loc;
     plane.next_WP_loc = plane.current_loc;
     plane.next_WP_loc.alt += takeoff_altitude*100;
+    takeoff_start_alt_cm = inertial_nav.get_altitude();
     motors->set_desired_spool_state(AP_Motors::DESIRED_THROTTLE_UNLIMITED);
     guided_start();
     guided_takeoff = true;
