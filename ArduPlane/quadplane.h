@@ -495,7 +495,7 @@ private:
 
     // time when we were last in a vtol control mode
     uint32_t last_vtol_mode_ms;
-    
+     
     void tiltrotor_slew(float tilt);
     void tiltrotor_binary_slew(bool forward);
     void tiltrotor_update(void);
@@ -536,6 +536,12 @@ private:
     AP_Float maximum_takeoff_airspeed;
     uint32_t takeoff_start_time_ms;
     uint32_t takeoff_time_limit_ms;
+
+    // VTOL takeoff starting altitude
+    int32_t takeoff_start_alt_cm;
+
+    // altitude at which nav control can start in takeoff
+    AP_Float wp_navalt_min;
 
     /*
       return true if current mission item is a vtol takeoff
