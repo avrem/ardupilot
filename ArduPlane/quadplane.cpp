@@ -2444,6 +2444,15 @@ void QuadPlane::setup_target_position(void)
  */
 void QuadPlane::takeoff_controller(void)
 {
+    if (!hal.util->get_soft_armed()) {
+        // move target to current position
+        plane.next_WP_loc.lat = plane.current_loc.lat;
+        plane.next_WP_loc.lng = plane.current_loc.lng;
+
+        loiter_nav->init_target();
+        return;
+    }
+
     /*
       for takeoff we use the position controller
     */
