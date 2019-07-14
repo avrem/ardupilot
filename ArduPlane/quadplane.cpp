@@ -2100,6 +2100,9 @@ void QuadPlane::takeoff_controller(void)
         plane.nav_pitch_cd = 0;
         // tell the position controller that we have limited roll/pitch demand to prevent integrator buildup
         pos_control->set_limit_accel_xy();
+        // move target to current position
+        plane.next_WP_loc.lat = plane.current_loc.lat;
+        plane.next_WP_loc.lng = plane.current_loc.lng;
     }
 
     attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(plane.nav_roll_cd,
