@@ -84,7 +84,7 @@ void QuadPlane::tiltrotor_continuous_update(void)
         } else {
             if (is_tiltquad()) {
                 multicopter_attitude_rate_update(desired_auto_yaw_rate_cds());
-                attitude_control->set_throttle_out(tilt.current_throttle, true, 0);
+                attitude_control->set_throttle_out(tilt.current_throttle, false, 0);
                 run_rate_controller();
                 motors_output();
             } else {

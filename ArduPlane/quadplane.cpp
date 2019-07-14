@@ -744,7 +744,7 @@ void QuadPlane::hold_stabilize(float throttle_in)
         }
     } else {
         motors->set_desired_spool_state(AP_Motors::DESIRED_THROTTLE_UNLIMITED);
-        attitude_control->set_throttle_out(throttle_in, true, 0);
+        attitude_control->set_throttle_out(throttle_in, false, 0);
     }
 }
 
@@ -1379,7 +1379,7 @@ void QuadPlane::update_transition(void)
             float slew_step = constrain_float(thr_diff / (transition_time_ms * 0.001f), 0.05f, 1.0f) * plane.G_Dt;
             float throttle = SRV_Channels::get_output_scaled(SRV_Channel::k_throttle) * 0.01f;
             throttle = constrain_float(throttle, last_throttle - slew_step, last_throttle + slew_step);
-            attitude_control->set_throttle_out(throttle, true, 0);
+            attitude_control->set_throttle_out(throttle, false, 0);
         }
         run_rate_controller();
         motors_output();
