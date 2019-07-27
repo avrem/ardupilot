@@ -48,7 +48,7 @@ uint8_t AP_BattMonitor_Backend::capacity_remaining_pct() const
 void AP_BattMonitor_Backend::update_resistance_estimate()
 {
     // return immediately if no current
-    if (!has_current() || !is_positive(_state.current_amps)) {
+    if (!has_current()) {
         return;
     }
 
@@ -60,7 +60,7 @@ void AP_BattMonitor_Backend::update_resistance_estimate()
     }
 
     // update reference voltage and current
-    if (_state.voltage > _resistance_voltage_ref) {
+    if (_state.voltage > _resistance_voltage_ref && is_positive(_state.current_amps)) {
         _resistance_voltage_ref = _state.voltage;
         _resistance_current_ref = _state.current_amps;
     }
