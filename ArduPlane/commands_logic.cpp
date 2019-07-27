@@ -1037,8 +1037,7 @@ bool Plane::verify_loiter_heading(bool init)
     AP_Mission::Mission_Command next_nav_cmd;
     if (! mission.get_next_nav_cmd(mission.get_current_nav_index() + 1,
                                    next_nav_cmd)) {
-        //no next waypoint to shoot for -- go ahead and break out of loiter
-        return true;
+        next_nav_cmd.content.location = rally.calc_best_rally_or_home_location(current_loc, get_RTL_altitude());
     }
 
     if (get_distance(next_WP_loc, next_nav_cmd.content.location) < abs(aparm.loiter_radius)) {
