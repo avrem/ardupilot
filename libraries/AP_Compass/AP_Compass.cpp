@@ -24,6 +24,7 @@
 #include "AP_Compass_MMC3416.h"
 #include "AP_Compass_MAG3110.h"
 #include "AP_Compass.h"
+#include "Compass_learn.h"
 
 extern AP_HAL::HAL& hal;
 
@@ -84,8 +85,8 @@ const AP_Param::GroupInfo Compass::var_info[] = {
 
     // @Param: LEARN
     // @DisplayName: Learn compass offsets automatically
-    // @Description: Enable or disable the automatic learning of compass offsets. You can enable learning either using a compass-only method that is suitable only for fixed wing aircraft or using the offsets learnt by the active EKF state estimator. If this option is enabled then the learnt offsets are saved when you disarm the vehicle.
-    // @Values: 0:Disabled,1:Internal-Learning,2:EKF-Learning
+    // @Description: Enable or disable the automatic learning of compass offsets. You can enable learning either using a compass-only method that is suitable only for fixed wing aircraft or using the offsets learnt by the active EKF state estimator. If this option is enabled then the learnt offsets are saved when you disarm the vehicle. If InFlight learning is enabled then the compass with automatically start learning once a flight starts (must be armed). While InFlight learning is running you cannot use position control modes.
+    // @Values: 0:Disabled,1:Internal-Learning,2:EKF-Learning,3:InFlight-Learning
     // @User: Advanced
     AP_GROUPINFO("LEARN",  3, Compass, _learn, COMPASS_LEARN_DEFAULT),
 
@@ -1027,6 +1028,13 @@ Compass::read(void)
     uint32_t time = AP_HAL::millis();
     for (uint8_t i=0; i < COMPASS_MAX_INSTANCES; i++) {
         _state[i].healthy = (time - _state[i].last_update_ms < 500);
+    }
+    if (_learn == LEARN_INFLIGHT && !learn_allocated) {
+        learn_allocated = true;
+        learn = new CompassLearn(*this);
+    }
+    if (_learn == LEARN_INFLIGHT && learn != nullptr) {
+        learn->update();
     }
     return healthy();
 }
