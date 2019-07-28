@@ -297,12 +297,15 @@ void Plane::one_second_loop()
 void Plane::compass_save()
 {
     if (g.compass_enabled &&
-        compass.get_learn_type() >= Compass::LEARN_INTERNAL &&
+        compass.get_learn_type() == Compass::LEARN_EKF &&
         !hal.util->get_soft_armed()) {
-        /*
-          only save offsets when disarmed
-         */
-        compass.save_offsets();
+        // save compass offsets learned by the EKF if enabled
+        for(uint8_t i=0; i<COMPASS_MAX_INSTANCES; i++) {
+            Vector3f magOffsets;
+            if (ahrs.getMagOffsets(i, magOffsets)) {
+                compass.set_and_save_offsets(i, magOffsets);
+            }
+        }
     }
 }
 
