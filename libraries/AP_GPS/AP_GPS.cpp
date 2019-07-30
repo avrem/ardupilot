@@ -414,7 +414,7 @@ void AP_GPS::detect_instance(uint8_t instance)
     state[instance].status = NO_GPS;
     state[instance].hdop = GPS_UNKNOWN_DOP;
     state[instance].vdop = GPS_UNKNOWN_DOP;
-    
+
     switch (_type[instance]) {
     // user has to explicitly set the MAV type, do not use AUTO
     // do not try to detect the MAV type, assume it's there
@@ -424,38 +424,14 @@ void AP_GPS::detect_instance(uint8_t instance)
         goto found_gps;
         break;
 
-#if HAL_WITH_UAVCAN
     // user has to explicitly set the UAVCAN type, do not use AUTO
     case GPS_TYPE_UAVCAN:
+#if HAL_WITH_UAVCAN
         dstate->auto_detected_baud = false; // specified, not detected
-        if (AP_BoardConfig_CAN::get_can_num_ifaces() == 0) {
-            return;
-        }
-        for (uint8_t i = 0; i < MAX_NUMBER_OF_CAN_DRIVERS; i++) {
-            AP_UAVCAN *ap_uavcan = AP_UAVCAN::get_uavcan(i);
-            if (ap_uavcan == nullptr) {
-                continue;
-            }
-            
-            uint8_t gps_node = ap_uavcan->find_gps_without_listener();
-            if (gps_node == UINT8_MAX) {
-                continue;
-            }
-
-            new_gps = new AP_GPS_UAVCAN(*this, state[instance], nullptr);
-            ((AP_GPS_UAVCAN*) new_gps)->set_uavcan_manager(i);
-            if (ap_uavcan->register_gps_listener_to_node(new_gps, gps_node)) {
-                if (AP_BoardConfig_CAN::get_can_debug() >= 2) {
-                    printf("AP_GPS_UAVCAN registered\n\r");
-                }
-                goto found_gps;
-            } else {
-                delete new_gps;
-            }
-        }
-        return;
+        new_gps = AP_GPS_UAVCAN::probe(*this, state[instance]);
+        goto found_gps;
 #endif
-
+        return; // We don't do anything here if UAVCAN is not supported
     default:
         break;
     }
