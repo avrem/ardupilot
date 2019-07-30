@@ -40,7 +40,7 @@
 #include "AP_Baro_LPS2XH.h"
 #include "AP_Baro_FBM320.h"
 #include "AP_Baro_DPS280.h"
-#if HAL_WITH_UAVCAN
+#if 0
 #include "AP_Baro_UAVCAN.h"
 #endif
 
@@ -414,7 +414,7 @@ void AP_Baro::init(void)
     return;
 #endif
     
-#if HAL_WITH_UAVCAN
+#if 0
     bool added;
     do {
         added = _add_backend(AP_Baro_UAVCAN::probe(*this));
