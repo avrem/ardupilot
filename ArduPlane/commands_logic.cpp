@@ -481,6 +481,9 @@ void Plane::do_landing_vtol_approach(const AP_Mission::Mission_Command& cmd)
     //set target alt
     Location loc = cmd.content.location;
     location_sanitize(current_loc, loc);
+    loc.alt = get_RTL_altitude();
+    loc.flags.relative_alt = false;
+    setup_terrain_target_alt(loc);
     set_next_WP(loc);
 
     // only set the direction if the quadplane landing radius override is not 0
