@@ -53,12 +53,10 @@ void Plane::loiter_angle_update(void)
     loiter_delta_cd = wrap_180_cd(loiter_delta_cd);
     loiter.sum_cd += loiter_delta_cd * loiter.direction;
 
-    if (labs(current_loc.alt - next_WP_loc.alt) < 500) {
+    if (loiter.sum_cd > 1 && fabsf(height_above_target()) < 5.0f) {
         loiter.reached_target_alt = true;
         loiter.unable_to_acheive_target_alt = false;
-        loiter.next_sum_lap_cd = loiter.sum_cd + lap_check_interval_cd;
-
-    } else if (!loiter.reached_target_alt && labs(loiter.sum_cd) >= loiter.next_sum_lap_cd) {
+    } else if (!loiter.reached_target_alt && loiter.sum_cd > loiter.next_sum_lap_cd) {
         // check every few laps for scenario where up/downdrafts inhibit you from loitering up/down for too long
         loiter.unable_to_acheive_target_alt = labs(current_loc.alt - loiter.start_lap_alt_cm) < 500;
         loiter.start_lap_alt_cm = current_loc.alt;
