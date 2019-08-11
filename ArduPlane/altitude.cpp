@@ -40,7 +40,7 @@ void Plane::adjust_altitude_target()
         landing.adjust_landing_slope_for_rangefinder_bump(rangefinder_state, prev_WP_loc, next_WP_loc, current_loc, auto_state.wp_distance, target_altitude.offset_cm);
     } else if (landing.get_target_altitude_location(target_location)) {
        set_target_altitude_location(target_location);
-    } else if (reached_loiter_target()) {
+    } else if (loiter.start_time_ms != 0) {
         // once we reach a loiter target then lock to the final
         // altitude target
         set_target_altitude_location(next_WP_loc);
@@ -507,7 +507,7 @@ float Plane::lookahead_adjustment(void)
         // there is no target waypoint in FBWB, so use yaw as an approximation
         bearing_cd = ahrs.yaw_sensor;
         distance = g.terrain_lookahead;
-    } else if (!reached_loiter_target()) {
+    } else if (loiter.start_time_ms == 0) {
         bearing_cd = nav_controller->target_bearing_cd();
         distance = constrain_float(auto_state.wp_distance, 0, g.terrain_lookahead);
     } else {
