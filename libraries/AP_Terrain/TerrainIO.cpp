@@ -232,7 +232,7 @@ void AP_Terrain::seek_offset(void)
     // shift another two blocks east to ensure room is available
     location_offset(loc2, 0, 2*grid_spacing*TERRAIN_GRID_BLOCK_SIZE_Y);
     Vector2f offset = location_diff(loc1, loc2);
-    uint16_t east_blocks = offset.y / (grid_spacing*TERRAIN_GRID_BLOCK_SIZE_Y);
+    uint16_t east_blocks = offset.y / (grid_spacing*TERRAIN_GRID_BLOCK_SPACING_Y);
 
     uint32_t file_offset = (east_blocks * block.grid_idx_x + 
                             block.grid_idx_y) * sizeof(union grid_io_block);
