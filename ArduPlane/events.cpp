@@ -109,7 +109,8 @@ void Plane::failsafe_long_on_event(enum failsafe_state fstype, mode_reason_t rea
         } else if (g.fs_action_long == FS_ACTION_LONG_GLIDE) {
             set_mode(FLY_BY_WIRE_A, reason);
         } else if (g.fs_action_long == FS_ACTION_LONG_RTL || fstype == FAILSAFE_GCS) {
-            set_mode(RTL, reason);
+            if (!quadplane.in_vtol_land_descent())
+                set_mode(RTL, reason);
         }
         break;
 
