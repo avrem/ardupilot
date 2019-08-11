@@ -681,10 +681,7 @@ bool Plane::verify_loiter_time()
     update_loiter(0);
 
     if (loiter.start_time_ms == 0) {
-        if (reached_loiter_target() && loiter.sum_cd > 1) {
-            // we've reached the target, start the timer
-            loiter.start_time_ms = millis();
-        }
+        // not reached target yet
     } else if (condition_value != 0) {
         // primary goal, loiter time
         if ((millis() - loiter.start_time_ms) > loiter.time_max_ms) {
