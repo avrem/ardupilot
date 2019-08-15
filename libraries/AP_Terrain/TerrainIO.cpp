@@ -294,8 +294,8 @@ void AP_Terrain::read_block(void)
 
     ssize_t ret = ::read(fd, &disk_block, sizeof(disk_block));
     if (ret != sizeof(disk_block) || 
-        disk_block.block.lat != lat || 
-        disk_block.block.lon != lon ||
+        labs(disk_block.block.lat - lat) > 5 || 
+        labs(disk_block.block.lon - lon) > 5 ||
         disk_block.block.bitmap == 0 ||
         disk_block.block.spacing != grid_spacing ||
         disk_block.block.version != TERRAIN_GRID_FORMAT_VERSION ||
@@ -313,6 +313,8 @@ void AP_Terrain::read_block(void)
         disk_block.block.lon = lon;
         disk_block.block.bitmap = 0;
     } else {
+        disk_block.block.lat = lat;
+        disk_block.block.lon = lon;
 #if TERRAIN_DEBUG
         printf("read block at %ld %ld ret=%d mask=%07llx\n",
                (long)lat,
