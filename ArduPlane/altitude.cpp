@@ -196,13 +196,7 @@ void Plane::set_target_altitude_location(const Location &loc)
         target_altitude.amsl_cm += home.alt;
     }
 #if AP_TERRAIN_AVAILABLE
-    /*
-      if this location has the terrain_alt flag set and we know the
-      terrain altitude of our current location then treat it as a
-      terrain altitude
-     */
-    float height;
-    if (loc.flags.terrain_alt && terrain.height_above_terrain(height, true)) {
+    if (loc.flags.terrain_alt) {
         target_altitude.terrain_following = true;
         target_altitude.terrain_alt_cm = loc.alt;
         if (!loc.flags.relative_alt) {
@@ -538,12 +532,6 @@ float Plane::lookahead_adjustment(void)
     // ask the terrain code for the lookahead altitude change
     float lookahead = terrain.lookahead(bearing_cd*0.01f, distance, climb_ratio);
     
-    if (target_altitude.offset_cm < 0) {
-        // we are heading down to the waypoint, so we don't need to
-        // climb as much
-        lookahead += target_altitude.offset_cm*0.01f;
-    }
-
     // constrain lookahead to a reasonable limit
     return constrain_float(lookahead, 0, 1000.0f);
 #else
