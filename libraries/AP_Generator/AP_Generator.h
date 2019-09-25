@@ -94,7 +94,7 @@ private:
     float _gen_current;
     int32_t _rpm;
 
-    float _ice_temp = NAN, _gen_temp = NAN;
+    float _ice_temp = NAN, _gen_temp = NAN, _vsi_temp = NAN;
 
     bool _should_run, _rc_should_run, _armed;
 
