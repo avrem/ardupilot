@@ -62,6 +62,7 @@ void AP_Generator::escStatusCallback(const uavcan::equipment::esc::Status& msg)
 
     _last_update.starter_status = AP_HAL::millis();
     _rpm = msg.rpm;
+    _vsi_temp = msg.temperature - C_TO_KELVIN;
     _gen_current = -msg.current;
 }
 
@@ -95,16 +96,17 @@ void AP_Generator::update()
 
     DataFlash_Class::instance()->Log_Write(
         "GEN",
-        "TimeUS,Curr,CTot,RPM,EngTemp,GenTemp,Fuel,Clr,Str,Thr",
-        "sAAqOO%%%%",
-        "F000000000",
-        "QffIffbbbb",
+        "TimeUS,Curr,CTot,RPM,EngTemp,GenTemp,VsiTemp,Fuel,Clr,Str,Thr",
+        "sAAqOOO%%%%",
+        "F0000000000",
+        "QffIfffbbbb",
         AP_HAL::micros64(),
         (double)_gen_current,
         (double)(_gen_current + (AP::battery().healthy() ? AP::battery().current_amps() : 0)),
         _rpm,
         (double)_ice_temp,
         (double)_gen_temp,
+        (double)_vsi_temp,
         0,
         (int8_t)(_cooler * 100),
         (int8_t)(_starter * 100),
@@ -141,6 +143,7 @@ void AP_Generator::update_desired_state()
         _should_run = false;
         _rpm = 0;
         _gen_current = 0;
+        _vsi_temp = NAN;
     }
 
     if (now > _last_update.ecu_status + AP_GENERATOR_STALE_AFTER_MS) {
@@ -280,7 +283,7 @@ void AP_Generator::update_throttle(float dt)
 void AP_Generator::send_telemetry(mavlink_channel_t chan) const
 {
     if (enable && HAVE_PAYLOAD_SPACE(chan, GEN_STATUS))
-        mavlink_msg_gen_status_send(chan, _gen_current, _rpm, _ice_temp, _gen_temp, 0, _cooler * 100, _starter * 100, _throttle * 100);
+        mavlink_msg_gen_status_send(chan, _gen_current, _rpm, _ice_temp, _gen_temp, 0, _cooler * 100, _starter * 100, _throttle * 100, _vsi_temp);
 }
 
 bool AP_Generator::engine_control(float start_control, float cold_start, float height_delay)
