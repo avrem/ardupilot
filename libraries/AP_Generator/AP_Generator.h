@@ -97,6 +97,7 @@ private:
     float _ice_temp = NAN, _gen_temp = NAN, _vsi_temp = NAN;
 
     bool _should_run, _rc_should_run, _armed;
+    float _limit;
 
     struct {
         uint32_t starter_status;
@@ -106,6 +107,7 @@ private:
     float _cooler, _starter, _throttle, _rectifier;
 
     float get_gen_target();
+    float get_temp_limit(float temp, float temp_min, float temp_max);
 
     void update_desired_state();
 
