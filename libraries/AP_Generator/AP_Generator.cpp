@@ -114,6 +114,13 @@ void AP_Generator::update()
         );
 }
 
+float AP_Generator::get_temp_limit(float temp, float temp_min, float temp_max)
+{
+    if (isnan(temp))
+        return 0.0f;
+    return constrain_float((temp_max - temp) / (temp_max - temp_min), 0.0f, 1.0f);
+}
+
 void AP_Generator::update_desired_state()
 {
     if (start_chan != 0) {
@@ -157,7 +164,12 @@ void AP_Generator::update_desired_state()
         _should_run = false;
     }
 
-    if (_ice_temp > temp_max + 10) {
+    float ice_limit = get_temp_limit(_ice_temp, ice_temp_max + 5, ice_temp_max + 20);
+    float gen_limit = get_temp_limit(_gen_temp, 100, 115);
+
+    _limit = MIN(ice_limit, gen_limit);
+
+    if (is_zero(_limit)) {
         if (_should_run)
             gcs().send_text(MAV_SEVERITY_CRITICAL, "Generator: engine overheating");
         _should_run = false;
@@ -259,7 +271,7 @@ float AP_Generator::get_gen_target()
     float c_min = 0, c_max = _gen_current + batt.current_amps() + charge_target;
     float gen_target = k * c_min + (1 - k) * c_max;
     if (gen_max > 0)
-        gen_target = MIN(gen_target, gen_max);
+        gen_target = MIN(gen_target, gen_max * _limit);
     return gen_target;
 }
 
