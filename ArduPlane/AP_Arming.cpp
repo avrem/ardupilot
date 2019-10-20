@@ -104,6 +104,23 @@ bool AP_Arming_Plane::pre_arm_checks(bool display_failure)
         ret = false;
     }
 
+#if AP_TERRAIN_AVAILABLE
+    if (plane.g.terrain_follow) {
+        if (plane.terrain.status() != AP_Terrain::TerrainStatusOK) {
+            check_failed(display_failure, "Terrain not ready");
+            ret = false;
+        }
+        else {
+            uint16_t terr_pending, terr_loaded;
+            plane.terrain.get_statistics(terr_pending, terr_loaded);
+            if (terr_pending > 0) {
+                check_failed(display_failure, "Terrain blocks pending");
+                ret = false;
+            }
+        }
+    }
+#endif
+
     return ret;
 }
 
