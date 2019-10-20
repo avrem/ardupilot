@@ -93,6 +93,11 @@ bool AP_Arming_Plane::pre_arm_checks(bool display_failure)
         ret = false;
     }
 
+    if (plane.quadplane.available() && plane.quadplane.esc_calibration && plane.control_mode != &plane.mode_qstabilize) {
+        check_failed(display_failure, "Invalid mode for ESC calibration");
+        ret = false;
+    }
+
     // check adsb avoidance failsafe
     if (plane.failsafe.adsb) {
         check_failed(display_failure, "ADSB threat detected");
