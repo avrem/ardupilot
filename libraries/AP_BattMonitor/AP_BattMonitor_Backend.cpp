@@ -47,6 +47,9 @@ uint8_t AP_BattMonitor_Backend::capacity_remaining_pct() const
 // high current steps are integrated into the resistance estimate by varying the time constant of the resistance filter
 void AP_BattMonitor_Backend::update_resistance_estimate()
 {
+    // update estimated voltage without sag
+    _state.voltage_resting_estimate = _state.voltage + _state.current_amps * _state.resistance;
+
     // return immediately if no current
     if (!has_current()) {
         return;
@@ -87,15 +90,11 @@ void AP_BattMonitor_Backend::update_resistance_estimate()
     // update the filtered voltage and currents
     _voltage_filt = _voltage_filt*(1-filt_alpha) + _state.voltage*filt_alpha;
     _current_filt_amps = _current_filt_amps*(1-filt_alpha) + _state.current_amps*filt_alpha;
-
-    // update estimated voltage without sag
-    _state.voltage_resting_estimate = _state.voltage + _state.current_amps * _state.resistance;
 }
 
 float AP_BattMonitor_Backend::voltage_resting_estimate() const
 {
-    // resting voltage should always be greater than or equal to the raw voltage
-    return MAX(_state.voltage, _state.voltage_resting_estimate);
+    return _state.voltage_resting_estimate;
 }
 
 AP_BattMonitor::BatteryFailsafe AP_BattMonitor_Backend::update_failsafes(void)

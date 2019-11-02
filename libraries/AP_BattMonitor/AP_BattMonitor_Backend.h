@@ -47,7 +47,6 @@ public:
     uint8_t capacity_remaining_pct() const;
 
     /// get voltage with sag removed (based on battery current draw and resistance)
-    /// this will always be greater than or equal to the raw voltage
     float voltage_resting_estimate() const;
 
     // update battery resistance estimate and voltage_resting_estimate
