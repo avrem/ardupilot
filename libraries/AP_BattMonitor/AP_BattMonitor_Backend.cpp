@@ -47,6 +47,9 @@ uint8_t AP_BattMonitor_Backend::capacity_remaining_pct() const
 // high current steps are integrated into the resistance estimate by varying the time constant of the resistance filter
 void AP_BattMonitor_Backend::update_resistance_estimate()
 {
+    // update estimated voltage without sag
+    _state.voltage_resting_estimate = _state.voltage + _state.current_amps * _state.resistance;
+
     // return immediately if no current
     if (!has_current()) {
         return;
@@ -87,15 +90,11 @@ void AP_BattMonitor_Backend::update_resistance_estimate()
     // update the filtered voltage and currents
     _voltage_filt = _voltage_filt*(1-filt_alpha) + _state.voltage*filt_alpha;
     _current_filt_amps = _current_filt_amps*(1-filt_alpha) + _state.current_amps*filt_alpha;
-
-    // update estimated voltage without sag
-    _state.voltage_resting_estimate = _state.voltage + _state.current_amps * _state.resistance;
 }
 
 float AP_BattMonitor_Backend::voltage_resting_estimate() const
 {
-    // resting voltage should always be greater than or equal to the raw voltage
-    return MAX(_state.voltage, _state.voltage_resting_estimate);
+    return _state.voltage_resting_estimate;
 }
 
 AP_BattMonitor::BatteryFailsafe AP_BattMonitor_Backend::update_failsafes(void)
@@ -158,7 +157,7 @@ bool AP_BattMonitor_Backend::arming_checks(char * buffer, size_t buflen) const
     check_failsafe_types(low_voltage, low_capacity, critical_voltage, critical_capacity);
 
     bool below_arming_voltage = is_positive(_params._arming_minimum_voltage) &&
-                                (_state.voltage < _params._arming_minimum_voltage);
+                                (voltage_resting_estimate() < _params._arming_minimum_voltage);
     bool below_arming_capacity = (_params._arming_minimum_capacity > 0) &&
                                  ((_params._pack_capacity - _state.consumed_mah) < _params._arming_minimum_capacity);
     bool fs_capacity_inversion = is_positive(_params._critical_capacity) &&
