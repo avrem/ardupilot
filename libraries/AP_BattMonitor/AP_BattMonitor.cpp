@@ -259,8 +259,7 @@ float AP_BattMonitor::voltage(uint8_t instance) const
 float AP_BattMonitor::voltage_resting_estimate(uint8_t instance) const
 {
     if (instance < _num_instances) {
-        // resting voltage should always be greater than or equal to the raw voltage
-        return MAX(state[instance].voltage, state[instance].voltage_resting_estimate);
+        return state[instance].voltage_resting_estimate;
     } else {
         return 0.0f;
     }
