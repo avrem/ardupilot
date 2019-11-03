@@ -488,7 +488,7 @@ void Plane::do_landing_vtol_approach(const AP_Mission::Mission_Command& cmd)
     //set target alt
     Location loc = cmd.content.location;
     location_sanitize(current_loc, loc);
-    loc.alt = get_RTL_altitude();
+    loc.alt = home.alt + quadplane.land_max_alt * 100;
     loc.flags.relative_alt = false;
     setup_terrain_target_alt(loc);
     set_next_WP(loc);
