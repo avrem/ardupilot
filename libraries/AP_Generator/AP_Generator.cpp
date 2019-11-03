@@ -23,6 +23,7 @@ const AP_Param::GroupInfo AP_Generator::var_info[] = {
     AP_GROUPINFO("CURR_MAX",    13, AP_Generator, gen_max,              0),
     AP_GROUPINFO("RPM_MAX",     14, AP_Generator, rpm_max,              0),
     AP_GROUPINFO("RPM_GAIN",    15, AP_Generator, rpm_gain,        0.005f),
+    AP_GROUPINFO("STALL_TIME",  16, AP_Generator, stall_timeout,        0),
 
     AP_GROUPEND
 };
@@ -172,6 +173,15 @@ void AP_Generator::update_desired_state()
     if (is_zero(_limit)) {
         if (_should_run)
             gcs().send_text(MAV_SEVERITY_CRITICAL, "Generator: engine overheating");
+        _should_run = false;
+    }
+    
+    if (!_should_run || _gen_current > AP_GENERATOR_MIN_CURRENT)
+        _last_unstalled_ms = now;
+
+    if (is_positive(stall_timeout) && now - _last_unstalled_ms > stall_timeout * 1000) {
+        if (_should_run)
+            gcs().send_text(MAV_SEVERITY_CRITICAL, "Generator: engine stalled");
         _should_run = false;
     }
 }
