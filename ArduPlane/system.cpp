@@ -241,7 +241,7 @@ void Plane::startup_ground(void)
 
 bool Plane::set_mode(Mode &new_mode, const ModeReason reason)
 {
-    if (control_mode == &new_mode) {
+    if (control_mode == &new_mode && control_mode != &mode_rtl && control_mode != &mode_qrtl) {
         // don't switch modes if we are already in the correct mode.
         return true;
     }
@@ -253,6 +253,17 @@ bool Plane::set_mode(Mode &new_mode, const ModeReason reason)
         return false;
     }
 #endif
+
+    if (quadplane.available() && &new_mode == &mode_qland) {
+        float height_above_ground = relative_ground_altitude(g.rangefinder_landing);
+        if (quadplane.land_max_alt > 0 && height_above_ground > quadplane.land_max_alt) {
+            gcs().send_text(MAV_SEVERITY_ALERT, "Spiral QLAND at %dm", (int)height_above_ground);
+            rally.set_override_loc(current_loc);
+            bool rtl_ok = set_mode(mode_rtl, ModeReason::FENCE_BREACHED);
+            rally.clear_override_loc();
+            return rtl_ok;
+        }
+    }
 
     // backup current control_mode and previous_mode
     Mode &old_previous_mode = *previous_mode;

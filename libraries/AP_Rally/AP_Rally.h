@@ -57,6 +57,9 @@ public:
     // append a rally point to the list
     bool append(const RallyLocation &loc) WARN_IF_UNUSED;
 
+    void set_override_loc(const Location &override_loc) { _override_loc = override_loc; }
+    void clear_override_loc() { _override_loc.zero(); }
+
     float get_rally_limit_km() const { return _rally_limit_km; }
 
     Location rally_location_to_location(const RallyLocation &ret) const;
@@ -88,6 +91,8 @@ private:
     AP_Int8  _rally_incl_home;
 
     uint32_t _last_change_time_ms = 0xFFFFFFFF;
+
+    Location _override_loc = {};
 };
 
 namespace AP {

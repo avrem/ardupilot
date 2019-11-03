@@ -455,7 +455,9 @@ void Plane::update_navigation()
                   are within the maximum of the stopping distance and the
                   RTL_RADIUS
                  */
+                rally.set_override_loc(next_WP_loc);
                 set_mode(mode_qrtl, ModeReason::UNKNOWN);
+                rally.clear_override_loc();
             }
             break;
         } else if (g.rtl_autoland == 1 &&
