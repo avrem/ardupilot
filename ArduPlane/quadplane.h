@@ -298,6 +298,10 @@ private:
     uint32_t alt_error_start_ms;
     bool in_alt_assist;
 
+    // altitude to trigger emergency landing
+    AP_Int16 fence_alt;
+    uint32_t fence_error_start_ms;
+
     // maximum yaw rate in degrees/second
     AP_Float yaw_rate_max;
 
@@ -520,6 +524,8 @@ private:
     
     // adjust altitude target smoothly
     void adjust_alt_target(float target_cm);
+
+    void check_alt_fence(void);
 
     // additional options
     AP_Int32 options;
