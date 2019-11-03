@@ -706,7 +706,7 @@ void Plane::update_navigation()
                   are within the maximum of the stopping distance and the
                   RTL_RADIUS
                  */
-                set_mode(QRTL, MODE_REASON_UNKNOWN);
+                set_mode(QRTL, control_mode_reason == MODE_REASON_RTL_OVERRIDE ? control_mode_reason : MODE_REASON_UNKNOWN);
             }
             break;
         } else if (g.rtl_autoland == 1 &&

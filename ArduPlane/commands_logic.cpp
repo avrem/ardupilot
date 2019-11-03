@@ -384,7 +384,14 @@ void Plane::do_RTL(int32_t rtl_altitude)
     auto_state.next_wp_crosstrack = false;
     auto_state.crosstrack = false;
     prev_WP_loc = current_loc;
-    next_WP_loc = rally.calc_best_rally_or_home_location(current_loc, rtl_altitude);
+    if (control_mode_reason == MODE_REASON_RTL_OVERRIDE) {
+        next_WP_loc = rtl_override_loc;
+        next_WP_loc.alt = rtl_altitude;
+        next_WP_loc.flags.relative_alt = false;
+    }
+    else {
+        next_WP_loc = rally.calc_best_rally_or_home_location(current_loc, rtl_altitude);
+    }
     setup_terrain_target_alt(next_WP_loc);
     set_target_altitude_location(next_WP_loc);
 

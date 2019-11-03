@@ -707,6 +707,8 @@ private:
     // The location of the active waypoint in Guided mode.
     struct Location guided_WP_loc {};
 
+    Location rtl_override_loc {};
+
     // Altitude control
     struct {
         // target altitude above sea level in cm. Used for barometric

@@ -269,7 +269,7 @@ enum FlightMode Plane::get_previous_mode() {
 
 void Plane::set_mode(enum FlightMode mode, mode_reason_t reason)
 {
-    if(control_mode == mode) {
+    if(control_mode == mode && ((control_mode != RTL && control_mode != QRTL) || control_mode_reason == reason)) {
         // don't switch modes if we are already in the correct mode.
         return;
     }
@@ -300,6 +300,17 @@ void Plane::set_mode(enum FlightMode mode, mode_reason_t reason)
     // reset external attitude guidance
     guided_state.last_forced_rpy_ms.zero();
     guided_state.last_forced_throttle_ms = 0;
+
+    if (quadplane.available() && mode == QLAND) { // check height
+        float height_above_ground = relative_ground_altitude(plane.g.rangefinder_landing);
+        if (height_above_ground > quadplane.land_max_alt + 10.0f) {
+            mode = RTL;
+            reason = MODE_REASON_RTL_OVERRIDE;
+            rtl_override_loc = current_loc;
+            rtl_override_loc.alt = home.alt + quadplane.land_max_alt;
+            gcs().send_text(MAV_SEVERITY_ALERT, "Too high for direct QLAND at %.2fm, switching to RTL", height_above_ground);
+        }
+    }
 
     // set mode
     previous_mode = control_mode;
@@ -428,7 +439,7 @@ void Plane::set_mode(enum FlightMode mode, mode_reason_t reason)
         auto_throttle_mode = true;
         auto_navigation_mode = true;
         prev_WP_loc = current_loc;
-        do_RTL(get_RTL_altitude());
+        do_RTL(reason == MODE_REASON_RTL_OVERRIDE ? rtl_override_loc.alt : get_RTL_altitude());
         break;
 
     case LOITER:
