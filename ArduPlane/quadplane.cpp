@@ -18,6 +18,8 @@ const AP_Param::GroupInfo QuadPlane::var_info[] = {
 
     AP_GROUPINFO("WP_NAVALT_MIN", 4, QuadPlane, wp_navalt_min, 0),
 
+    AP_GROUPINFO("FENCE_ALT", 5, QuadPlane, fence_alt, 0),
+
     // @Param: ANGLE_MAX
     // @DisplayName: Angle Max
     // @Description: Maximum lean angle in all VTOL flight modes
@@ -1588,6 +1590,8 @@ void QuadPlane::update(void)
     }
 
     tiltrotor_update();
+
+    check_alt_fence();
 }
 
 /*
@@ -2797,4 +2801,27 @@ bool QuadPlane::in_vtol_land_descent(void) const
         return true;
     }
     return false;
+}
+
+void QuadPlane::check_alt_fence(void)
+{
+    if (fence_alt <= 0) {
+        return;
+    }
+
+    float height_above_ground = plane.relative_ground_altitude(plane.g.rangefinder_landing);
+    if (hal.util->get_soft_armed() && !in_vtol_mode() && height_above_ground < fence_alt) {
+        const uint32_t now = AP_HAL::millis();
+        if (fence_error_start_ms == 0) {
+            fence_error_start_ms = now;
+        }
+        if (now - fence_error_start_ms > 500) {
+            // we've been below fence for 0.5s
+            gcs().send_text(MAV_SEVERITY_CRITICAL, "Altitude fence breach %.1fm", (double)height_above_ground);
+            plane.set_mode(QLAND, MODE_REASON_FENCE_BREACH);
+        }
+    }
+    else {
+        fence_error_start_ms = 0;
+    }
 }
