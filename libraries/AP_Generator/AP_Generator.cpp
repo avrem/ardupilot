@@ -45,13 +45,13 @@ void AP_Generator::subscribe_msgs(AP_UAVCAN* ap_uavcan)
 
     auto esc_listener = new uavcan::Subscriber<uavcan::equipment::esc::Status>(*node);
     esc_listener->start(
-        [&](const uavcan::ReceivedDataStructure<uavcan::equipment::esc::Status>& msg)
+        [](const uavcan::ReceivedDataStructure<uavcan::equipment::esc::Status>& msg)
     {if (instance() != nullptr) instance()->escStatusCallback(msg);}
     );
 
     auto ecu_listener = new uavcan::Subscriber<aeroxo::equipment::genset::ecu::Status>(*node);
     ecu_listener->start(
-        [&](const uavcan::ReceivedDataStructure<aeroxo::equipment::genset::ecu::Status>& msg)
+        [](const uavcan::ReceivedDataStructure<aeroxo::equipment::genset::ecu::Status>& msg)
     {if (instance() != nullptr) instance()->ecuStatusCallback(msg);}
     );
 }
