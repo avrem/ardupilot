@@ -310,6 +310,10 @@ private:
 
     // QRTL start altitude, meters
     AP_Int16 qrtl_alt;
+
+    // maximum vtol landable altitude, meters
+    AP_Int16 land_max_alt;
+    int32_t get_landable_alt_cm();
     
     // alt to switch to QLAND_FINAL
     AP_Float land_final_alt;

@@ -444,12 +444,19 @@ void Plane::update_navigation()
              current_loc.past_interval_finish_line(prev_WP_loc, next_WP_loc) ||
              auto_state.wp_distance < MAX(qrtl_radius, quadplane.stopping_distance()))
             ) {
-            /*
-              for a quadplane in RTL mode we switch to QRTL when we
-              are within the maximum of the stopping distance and the
-              RTL_RADIUS
-             */
-            set_mode(mode_qrtl, ModeReason::UNKNOWN);
+            int32_t landable_alt = quadplane.get_landable_alt_cm();
+            if (next_WP_loc.alt > landable_alt) {
+                // RTL destination reached, descend to landable altitude
+                next_WP_loc.alt = landable_alt;
+            }
+            else {
+                /*
+                  for a quadplane in RTL mode we switch to QRTL when we
+                  are within the maximum of the stopping distance and the
+                  RTL_RADIUS
+                 */
+                set_mode(mode_qrtl, ModeReason::UNKNOWN);
+            }
             break;
         } else if (g.rtl_autoland == 1 &&
             !auto_state.checked_for_autoland &&
