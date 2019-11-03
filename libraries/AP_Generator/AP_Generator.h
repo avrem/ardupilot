@@ -21,6 +21,8 @@ control of hybrid power plant
 #define AP_GENERATOR_PARAM_PWM_MAX 2000
 #define AP_GENERATOR_PARAM_PWM_MIN 1000
 
+#define AP_GENERATOR_MIN_CURRENT 1
+
 class AP_Generator {
 public:
     AP_Generator();
@@ -79,6 +81,8 @@ protected:
     AP_Int32 rpm_max;
     AP_Float rpm_gain;
 
+    AP_Float stall_timeout;
+
 private:
     static AP_Generator *_singleton;
 
@@ -89,6 +93,8 @@ private:
 
     // time when we last ran the starter
     uint32_t starter_last_run_ms;
+
+    uint32_t _last_unstalled_ms;
 
     uint32_t _last_update_ms;
 
