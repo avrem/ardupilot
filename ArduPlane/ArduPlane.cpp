@@ -695,12 +695,19 @@ void Plane::update_navigation()
             ((nav_controller->reached_loiter_target() && AP_HAL::millis() - last_mode_change_ms > 1000) ||
              location_passed_point(current_loc, prev_WP_loc, next_WP_loc) ||
              auto_state.wp_distance < MAX(qrtl_radius, quadplane.stopping_distance()))) {
-            /*
-              for a quadplane in RTL mode we switch to QRTL when we
-              are within the maximum of the stopping distance and the
-              RTL_RADIUS
-             */
-            set_mode(QRTL, MODE_REASON_UNKNOWN);
+            int switch_alt_cm = quadplane.land_max_alt * 100;
+            if (next_WP_loc.alt > home.alt + switch_alt_cm + 1000) {
+                // RTL destination reached, descend to landable altitude
+                next_WP_loc.alt = home.alt + switch_alt_cm;
+            }
+            else {
+                /*
+                  for a quadplane in RTL mode we switch to QRTL when we
+                  are within the maximum of the stopping distance and the
+                  RTL_RADIUS
+                 */
+                set_mode(QRTL, MODE_REASON_UNKNOWN);
+            }
             break;
         } else if (g.rtl_autoland == 1 &&
             !auto_state.checked_for_autoland &&

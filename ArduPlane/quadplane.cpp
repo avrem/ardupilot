@@ -19,6 +19,8 @@ const AP_Param::GroupInfo QuadPlane::var_info[] = {
     AP_GROUPINFO("WP_NAVALT_MIN", 4, QuadPlane, wp_navalt_min, 0),
 
     AP_GROUPINFO("FENCE_ALT", 5, QuadPlane, fence_alt, 0),
+ 
+    AP_GROUPINFO("LAND_MAX_ALT", 6, QuadPlane, land_max_alt, 100),
 
     // @Param: ANGLE_MAX
     // @DisplayName: Angle Max
