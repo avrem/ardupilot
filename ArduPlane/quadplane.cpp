@@ -18,6 +18,8 @@ const AP_Param::GroupInfo QuadPlane::var_info[] = {
     AP_GROUPINFO("WP_NAVALT_MIN", 4, QuadPlane, wp_navalt_min, 0),
 
     AP_GROUPINFO("FENCE_ALT", 5, QuadPlane, fence_alt, 0),
+ 
+    AP_GROUPINFO("LAND_MAX_ALT", 6, QuadPlane, land_max_alt, 100),
 
     // @Param: ANGLE_MAX
     // @DisplayName: Angle Max
@@ -3336,4 +3338,12 @@ void QuadPlane::check_alt_fence(void)
     else {
         fence_error_start_ms = 0;
     }
+}
+
+int32_t QuadPlane::get_landable_alt_cm()
+{
+    if (land_max_alt > 0)
+        return plane.home.alt + land_max_alt * 100;
+    else
+        return plane.get_RTL_altitude();
 }
