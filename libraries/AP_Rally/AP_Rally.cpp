@@ -171,6 +171,13 @@ Location AP_Rally::calc_best_rally_or_home_location(const Location &current_loc,
     RallyLocation ral_loc = {};
     Location return_loc = {};
     const struct Location &home_loc = AP::ahrs().get_home();
+
+    if (!_override_loc.is_zero()) {
+        return_loc = _override_loc;
+        return_loc.alt = rtl_home_alt;
+        return_loc.relative_alt = false;
+        return return_loc;
+    }
     
     // no valid rally point, return home position
     return_loc = home_loc;
