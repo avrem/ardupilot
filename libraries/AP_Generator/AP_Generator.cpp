@@ -139,6 +139,13 @@ const AP_Param::GroupInfo AP_Generator::var_info[] = {
     // @User: Standard
     AP_GROUPINFO("STALL_TIME",  16, AP_Generator, stall_timeout,        0),
 
+    // @Param: IGN_MANUAL
+    // @DisplayName: Manual ignition control
+    // @Description: Manual ignition control
+    // @Values: 0: IGNITION AUTO, 1: IGNITION ALWAYS ON, 2: IGNITION ALWAYS OFF
+    // @User: Standard
+    AP_GROUPINFO("IGN_MANUAL",  17, AP_Generator, manual_ignition,      0),
+
     AP_GROUPEND
 };
 
@@ -416,7 +423,20 @@ void AP_Generator::update_starter(float dt)
     _starter = constrain_float(starter_target, _starter - 0.7f * dt, _starter + 1.4f * dt);
 
     AP_UAVCAN::act_write(AEROXO_UAVCAN_STARTER_ID, _starter);
-    AP_UAVCAN::act_write(AEROXO_UAVCAN_IGNITION_ID, ignition_on ? 1.0f : 0.0f);
+
+    float ignition_act;
+    switch (manual_ignition) {
+    case IGNITION_ON:
+        ignition_act = 1.0f;
+        break;
+    case IGNITION_OFF:
+        ignition_act = 0.0f;
+        break;
+    default:
+        ignition_act = ignition_on ? 1.0f : 0.0f;
+        break;
+    }
+    AP_UAVCAN::act_write(AEROXO_UAVCAN_IGNITION_ID, ignition_act);
 }
 
 void AP_Generator::update_throttle(float dt)
