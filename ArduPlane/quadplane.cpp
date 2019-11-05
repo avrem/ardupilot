@@ -2376,15 +2376,7 @@ void QuadPlane::vtol_position_controller(void)
         }
         if (plane.control_mode == &plane.mode_qrtl || plane.control_mode == &plane.mode_guided || vtol_loiter_auto) {
             plane.ahrs.get_position(plane.current_loc);
-            float target_altitude = plane.next_WP_loc.alt;
-            if (poscontrol.slow_descent) {
-                // gradually descend as we approach target
-                plane.auto_state.wp_proportion = plane.current_loc.line_path_proportion(plane.prev_WP_loc, plane.next_WP_loc);
-                target_altitude = linear_interpolate(plane.prev_WP_loc.alt,
-                                                     plane.next_WP_loc.alt,
-                                                     plane.auto_state.wp_proportion,
-                                                     0, 1);
-            }
+            float target_altitude = plane.home.alt + plane.relative_target_altitude_cm();
             Location origin;
             if (!ahrs.get_origin(origin))
                 origin.zero();
@@ -2600,7 +2592,6 @@ void QuadPlane::init_qrtl(void)
     // use do_RTL() to setup next_WP_loc
     plane.do_RTL(plane.home.alt + qrtl_alt*100UL);
     plane.prev_WP_loc = plane.current_loc;
-    poscontrol.slow_descent = (plane.current_loc.alt > plane.next_WP_loc.alt);
     poscontrol.state = QPOS_POSITION1;
     poscontrol.speed_scale = 0;
     pos_control->set_desired_accel_xy(0.0f, 0.0f);
@@ -3057,7 +3048,6 @@ void QuadPlane::guided_start(void)
     poscontrol.speed_scale = 0;
     guided_takeoff = false;
     setup_target_position();
-    poscontrol.slow_descent = (plane.current_loc.alt > plane.next_WP_loc.alt);
 }
 
 /*
