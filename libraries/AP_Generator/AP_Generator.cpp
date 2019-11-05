@@ -24,6 +24,7 @@ const AP_Param::GroupInfo AP_Generator::var_info[] = {
     AP_GROUPINFO("RPM_MAX",     14, AP_Generator, rpm_max,              0),
     AP_GROUPINFO("RPM_GAIN",    15, AP_Generator, rpm_gain,        0.005f),
     AP_GROUPINFO("STALL_TIME",  16, AP_Generator, stall_timeout,        0),
+    AP_GROUPINFO("IGN_MANUAL",  17, AP_Generator, manual_ignition,      0),
 
     AP_GROUPEND
 };
@@ -267,7 +268,20 @@ void AP_Generator::update_starter(float dt)
     _starter = constrain_float(starter_target, _starter - 0.7f * dt, _starter + 1.4f * dt);
 
     AP_UAVCAN::act_write(AEROXO_UAVCAN_STARTER_ID, _starter);
-    AP_UAVCAN::act_write(AEROXO_UAVCAN_IGNITION_ID, ignition_on ? 1.0f : 0.0f);
+
+    float ignition_act;
+    switch (manual_ignition) {
+    case IGNITION_ON:
+        ignition_act = 1.0f;
+        break;
+    case IGNITION_OFF:
+        ignition_act = 0.0f;
+        break;
+    default:
+        ignition_act = ignition_on ? 1.0f : 0.0f;
+        break;
+    }
+    AP_UAVCAN::act_write(AEROXO_UAVCAN_IGNITION_ID, ignition_act);
 }
 
 float AP_Generator::get_gen_target()
