@@ -378,7 +378,6 @@ private:
         Vector2f target_velocity;
         float max_speed;
         Vector3f target;
-        bool slow_descent:1;
     } poscontrol;
 
     struct {

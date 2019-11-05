@@ -77,6 +77,7 @@ void Plane::setup_glide_slope(void)
      */
     switch (control_mode) {
     case RTL:
+    case QRTL:
     case AVOID_ADSB:
     case GUIDED:
         /* glide down slowly if above target altitude, but ascend more
