@@ -6,6 +6,7 @@ control of hybrid power plant
 
 #include <uavcan/equipment/esc/Status.hpp>
 #include <aeroxo/equipment/genset/ecu/Status.hpp>
+#include <aeroxo/equipment/genset/ecu/TankStatus.hpp>
 
 // generator components indices
 #define AEROXO_UAVCAN_COOLER_ID   20
@@ -108,6 +109,9 @@ private:
     float _gen_current;
     int32_t _rpm;
 
+    float _fuel_lvl_raw;
+    int _fuel_lvl_pct;
+
     float _ice_temp = NAN, _gen_temp = NAN, _vsi_temp = NAN;
 
     bool _should_run, _rc_should_run, _armed;
@@ -116,6 +120,7 @@ private:
     struct {
         uint32_t starter_status;
         uint32_t ecu_status;
+        uint32_t tank_status;
     } _last_update;
 
     float _cooler, _starter, _throttle, _rectifier;
@@ -132,6 +137,9 @@ private:
     void update_starter(float dt);
     void update_throttle(float dt);
 
+    void update_fuel();
+
     void escStatusCallback(const uavcan::equipment::esc::Status &msg);
     void ecuStatusCallback(const aeroxo::equipment::genset::ecu::Status &msg);
+    void tankStatusCallback(const aeroxo::equipment::genset::ecu::TankStatus &msg);
 };
