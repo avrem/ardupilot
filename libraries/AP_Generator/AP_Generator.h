@@ -42,6 +42,12 @@ public:
         ICE_RUNNING=4
     };
 
+    enum {
+        IGNITION_AUTO,
+        IGNITION_ON,
+        IGNITION_OFF
+    };
+
     // get current engine control state
     ICE_State get_state(void) const { return state; }
 
@@ -82,6 +88,8 @@ protected:
     AP_Float rpm_gain;
 
     AP_Float stall_timeout;
+
+    AP_Int8 manual_ignition;
 
 private:
     static AP_Generator *_singleton;
