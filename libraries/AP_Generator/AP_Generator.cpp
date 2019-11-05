@@ -1,5 +1,6 @@
 #include <SRV_Channel/SRV_Channel.h>
 #include <GCS_MAVLink/GCS.h>
+#include <AP_AHRS/AP_AHRS.h>
 #include "AP_Generator.h"
 
 extern const AP_HAL::HAL& hal;
@@ -55,6 +56,12 @@ void AP_Generator::subscribe_msgs(AP_UAVCAN* ap_uavcan)
         [](const uavcan::ReceivedDataStructure<aeroxo::equipment::genset::ecu::Status>& msg)
     {if (instance() != nullptr) instance()->ecuStatusCallback(msg);}
     );
+
+    auto fuel_listener = new uavcan::Subscriber<aeroxo::equipment::genset::ecu::TankStatus>(*node);
+    fuel_listener->start(
+        [](const uavcan::ReceivedDataStructure<aeroxo::equipment::genset::ecu::TankStatus>& msg)
+    {if (instance() != nullptr) instance()->tankStatusCallback(msg);}
+    );
 }
 
 void AP_Generator::escStatusCallback(const uavcan::equipment::esc::Status& msg)
@@ -78,6 +85,15 @@ void AP_Generator::ecuStatusCallback(const aeroxo::equipment::genset::ecu::Statu
     _gen_temp = msg.generator_temperature - C_TO_KELVIN;
 }
 
+void AP_Generator::tankStatusCallback(const aeroxo::equipment::genset::ecu::TankStatus &msg)
+{
+    if (!enable)
+        return;
+
+    _last_update.tank_status = AP_HAL::millis();
+    _fuel_lvl_raw = msg.fuel_level;
+}
+
 void AP_Generator::update()
 {
     if (!enable)
@@ -94,6 +110,8 @@ void AP_Generator::update()
     update_throttle(dt);
     update_cooler(dt);
 
+    update_fuel();
+
     _last_update_ms = now;	
 
     DataFlash_Class::instance()->Log_Write(
@@ -109,7 +127,7 @@ void AP_Generator::update()
         (double)_ice_temp,
         (double)_gen_temp,
         (double)_vsi_temp,
-        0,
+        _fuel_lvl_pct,
         (int8_t)(_cooler * 100),
         (int8_t)(_starter * 100),
         (int8_t)(_throttle * 100)
@@ -316,10 +334,23 @@ void AP_Generator::update_throttle(float dt)
     AP_UAVCAN::act_write(AEROXO_UAVCAN_THROTTLE_ID, AP_UAVCAN::calc_servo_output(_pwm_throttle));
 }
 
+void AP_Generator::update_fuel()
+{
+    uint32_t now = AP_HAL::millis();
+
+    if (now > _last_update.tank_status + AP_GENERATOR_STALE_AFTER_MS) {
+        _fuel_lvl_pct = 0;
+    }
+    else {
+        float accel_g = constrain_float(-AP::ahrs().get_accel_ef_blended().z / GRAVITY_MSS, 0.3f, 2.0f);
+        _fuel_lvl_pct = constrain_int32(_fuel_lvl_raw / accel_g * 100, 0, 100);
+    }
+}
+
 void AP_Generator::send_telemetry(mavlink_channel_t chan) const
 {
     if (enable && HAVE_PAYLOAD_SPACE(chan, GEN_STATUS))
-        mavlink_msg_gen_status_send(chan, _gen_current, _rpm, _ice_temp, _gen_temp, 0, _cooler * 100, _starter * 100, _throttle * 100, _vsi_temp);
+        mavlink_msg_gen_status_send(chan, _gen_current, _rpm, _ice_temp, _gen_temp, _fuel_lvl_pct, _cooler * 100, _starter * 100, _throttle * 100, _vsi_temp);
 }
 
 bool AP_Generator::engine_control(float start_control, float cold_start, float height_delay)
