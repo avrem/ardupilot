@@ -7,23 +7,142 @@ extern const AP_HAL::HAL& hal;
 AP_Generator *AP_Generator::_singleton;
 
 const AP_Param::GroupInfo AP_Generator::var_info[] = {
+
+    // @Param: ENABLE
+    // @DisplayName: Enable generator
+    // @Description: This enables generator control functionality
+    // @Values: 0:Disabled, 1:Enabled
+    // @User: Advanced
     AP_GROUPINFO_FLAGS("ENABLE", 0, AP_Generator, enable,               0, AP_PARAM_FLAG_ENABLE),
+
+    // @Param: START_CHAN
+    // @DisplayName: Input channel for generator start
+    // @Description: This is an RC input channel for requesting engine start. Engine will try to start when channel is at or above 1700. Engine will stop when channel is at or below 1300. Between 1301 and 1699 the engine will not change state unless a MAVLink command or mission item commands a state change, or the vehicle is disamed.
+    // @Values: 0:None,1:Chan1,2:Chan2,3:Chan3,4:Chan4,5:Chan5,6:Chan6,7:Chan7,8:Chan8,9:Chan9,10:Chan10,11:Chan11,12:Chan12,13:Chan13,14:Chan14,15:Chan15,16:Chan16
+    // @User: Standard
     AP_GROUPINFO("START_CHAN",   1, AP_Generator, start_chan,           0),
+
+    // @Param: STARTER_TIME
+    // @DisplayName: Time to run starter
+    // @Description: This is the number of seconds to run the starter when trying to start the engine
+    // @Range: 0.1 5
+    // @Units: s
+    // @User: Standard
     AP_GROUPINFO("STARTER_TIME", 2, AP_Generator, starter_time,         4),
+
+    // @Param: START_DELAY
+    // @DisplayName: Time to wait between starts
+    // @Description: Delay between start attempts
+    // @Range: 1 10
+    // @Units: s
+    // @User: Standard
     AP_GROUPINFO("START_DELAY",  3, AP_Generator, starter_delay,        2),
+
+    // @Param: PWM_STRT_LOW
+    // @DisplayName: PWM value for starter slow rotation
+    // @Description: This is the value sent to the starter in first phase of starting
+    // @Values: 1100
+    // @Units: ms
+    // @User: Standard
     AP_GROUPINFO("PWM_STRT_LOW", 4, AP_Generator, pwm_starter_low,   1100),
+
+    // @Param: PWM_THR_MIN
+    // @DisplayName: PWM value for minimum throttle angle
+    // @Description: This is the value sent to the throttle for minimum angle
+    // @Values: 1000 2000
+    // @Units: ms
+    // @User: Standard
     AP_GROUPINFO("PWM_THR_MIN",  5, AP_Generator, pwm_throttle_min,     0),
+
+    // @Param: PWM_THR_MAX
+    // @DisplayName: PWM value for maximum throttle angle
+    // @Description: This is the value sent to the throttle for maximum angle
+    // @Values: 1000 2000
+    // @Units: ms
+    // @User: Standard
     AP_GROUPINFO("PWM_THR_MAX",  6, AP_Generator, pwm_throttle_max,     0),
+
+    // @Param: THR_GAIN
+    // @DisplayName: Throttle control loop gain
+    // @Description: Throttle control loop gain
+    // @Range: 0 1.0
+    // @User: Standard
     AP_GROUPINFO("THR_GAIN",     7, AP_Generator, throttle_gain,    0.01f),
+
+    // @Param: TEMP_CHK
+    // @DisplayName: Choke temperature
+    // @Description: Throttle will be kept closed until engine warm up to this temperature
+    // @Range: 0 40
+    // @Units: degC
+    // @User: Standard
     AP_GROUPINFO("TEMP_CHK",     8, AP_Generator, choke_temp,          10),
+
+    // @Param: TEMP_MIN
+    // @DisplayName: Engine minimum temprature
+    // @Description: This value set minimum working temperature of engine
+    // @Range: 0 150
+    // @Units: degC
+    // @User: Standard
     AP_GROUPINFO("TEMP_MIN",     9, AP_Generator, ice_temp_min,        60),
+
+    // @Param: TEMP_MAX
+    // @DisplayName: Engine maximum temperature
+    // @Description: This value set maximum working temperature of engine
+    // @Range: 0 150
+    // @Units: degC
+    // @User: Standard
     AP_GROUPINFO("TEMP_MAX",    10, AP_Generator, ice_temp_max,       130),
+
+    // @Param: PWM_CLR_MAX
+    // @DisplayName: PWM value for maximum cooler output
+    // @Description: This is the maximum continuous PWM value for EDF cooler
+    // @Range: 1000 2000 
+    // @User: Standard
     AP_GROUPINFO("PWM_CLR_MAX", 11, AP_Generator, pwm_cooler_max,       0),
+
+    // @Param: CHG_THT
+    // @DisplayName: Charging current target value
+    // @Description: This value sets desired battery charging current
+    // @Range: 0 10
+    // @Units: A
+    // @User: Standard
     AP_GROUPINFO("CHG_TGT",     12, AP_Generator, charge_target,        5), // should get from batt_capacity
+
+    // @Param: CURR_MAX
+    // @DisplayName: Maximum current
+    // @Description: This value sets generator maximum current output
+    // @Range: 0 100
+    // @Units: A
+    // @User: Standard
     AP_GROUPINFO("CURR_MAX",    13, AP_Generator, gen_max,              0),
+
+    // @Param: RPM_MAX
+    // @DisplayName: Maximum RPM
+    // @Description: If non-zero, generator will try to maintain this RPM
+    // @Range: 0 2000
+    // @User: Standard
     AP_GROUPINFO("RPM_MAX",     14, AP_Generator, rpm_max,              0),
+
+    // @Param: RPM_GAIN
+    // @DisplayName: RPM control loop gain
+    // @Description: RPM control loop gain
+    // @Range: 0 0.1
+    // @User: Standard
     AP_GROUPINFO("RPM_GAIN",    15, AP_Generator, rpm_gain,        0.005f),
+
+    // @Param: STALL_TIME
+    // @DisplayName: Stall timeout
+    // @Description: The time after which generator turns off if it doesn't actually generate current
+    // @Range: 0 20
+    // @Units: s
+    // @User: Standard
     AP_GROUPINFO("STALL_TIME",  16, AP_Generator, stall_timeout,        0),
+
+    // @Param: IGN_MANUAL
+    // @DisplayName: Manual ignition control
+    // @Description: Manual ignition control
+    // @Values: 0: IGNITION AUTO, 1: IGNITION ALWAYS ON, 2: IGNITION ALWAYS OFF
+    // @User: Standard
     AP_GROUPINFO("IGN_MANUAL",  17, AP_Generator, manual_ignition,      0),
 
     AP_GROUPEND
