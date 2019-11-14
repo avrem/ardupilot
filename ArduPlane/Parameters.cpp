@@ -1126,6 +1126,8 @@ const AP_Param::GroupInfo ParametersG2::var_info[] = {
     // @Path: ../libraries/AP_ICEngine/AP_ICEngine.cpp
     AP_SUBGROUPINFO(ice_control, "ICE_", 2, ParametersG2, AP_ICEngine),
 
+    // @Group: GEN_
+    // @Path: ../libraries/AP_Generator/AP_Generator.cpp
     AP_SUBGROUPINFO(generator, "GEN_", 3, ParametersG2, AP_Generator),
    
     // @Param: SYSID_ENFORCE
