@@ -74,7 +74,7 @@ const AP_Param::GroupInfo AP_Generator::var_info[] = {
     // @DisplayName: Choke temperature
     // @Description: If ICEngine temperature lower than that value throttle will close
     // @Range: 0 40
-    // @Units: Celsius degrees
+    // @Units: degC
     // @User: Standard
     AP_GROUPINFO("TEMP_CHK",     8, AP_Generator, choke_temp,          10),
 
@@ -82,7 +82,7 @@ const AP_Param::GroupInfo AP_Generator::var_info[] = {
     // @DisplayName: ICEngine minimum temprature
     // @Description: This value set minimum temperature of ICEngine
     // @Range: 0 150
-    // @Units: Celsius degrees
+    // @Units: degC
     // @User: Standard
     AP_GROUPINFO("TEMP_MIN",     9, AP_Generator, ice_temp_min,        60),
 
@@ -90,14 +90,14 @@ const AP_Param::GroupInfo AP_Generator::var_info[] = {
     // @DisplayName: ICEngine maximum temperature
     // @Description: This value set maximum temperature of ICEngine
     // @Range: 0 150
-    // @Units: Celsius degrees
+    // @Units: degC
     // @User: Standard
     AP_GROUPINFO("TEMP_MAX",    10, AP_Generator, ice_temp_max,       130),
 
     // @Param: PWM_CLR_MAX
     // @DisplayName: PWM value for maximum cooler rotation
     // @Description: This is the value that send to the cooler for reaching maximum rotation speed
-    // @Values: 
+    // @Range: 1000 2000 
     // @User: Standard
     AP_GROUPINFO("PWM_CLR_MAX", 11, AP_Generator, pwm_cooler_max,       0),
 
@@ -113,7 +113,7 @@ const AP_Param::GroupInfo AP_Generator::var_info[] = {
     // @DisplayName: Maximum current
     // @Description: This value sets maximum current from generator
     // @Range: 0 100
-    // @Units: A 
+    // @Units: A
     // @User: Standard
     AP_GROUPINFO("CURR_MAX",    13, AP_Generator, gen_max,              0),
 
@@ -141,7 +141,7 @@ const AP_Param::GroupInfo AP_Generator::var_info[] = {
 
     // @Param: IGN_MANUAL
     // @DisplayName: Manual ignition
-    // @Description: 
+    // @Description: Manual ignition 
     // @Values: 1: IGNITION ON, 2: IGNITION OFF
     // @User: Standard
     AP_GROUPINFO("IGN_MANUAL",  17, AP_Generator, manual_ignition,      0),
