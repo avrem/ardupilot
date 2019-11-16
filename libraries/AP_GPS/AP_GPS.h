@@ -92,6 +92,8 @@ public:
         GPS_TYPE_MAV = 14,
         GPS_TYPE_NOVA = 15,
         GPS_TYPE_HEMI = 16, // hemisphere NMEA
+        GPS_TYPE_UBLOX_RTK_BASE = 17,
+        GPS_TYPE_UBLOX_RTK_ROVER = 18,
     };
 
     /// GPS status codes
@@ -119,9 +121,16 @@ public:
         GPS_ENGINE_AIRBORNE_4G = 8
     };
 
-   enum GPS_Config {
+    enum GPS_Config {
        GPS_ALL_CONFIGURED = 255
-   };
+    };
+
+    // role for auto-config
+    enum GPS_Role {
+        GPS_ROLE_NORMAL,
+        GPS_ROLE_MB_BASE,
+        GPS_ROLE_MB_ROVER,
+    };
 
     /*
       The GPS_State structure is filled in by the backend driver as it
@@ -138,6 +147,7 @@ public:
         float ground_speed;                 ///< ground speed in m/sec
         float ground_course;                ///< ground course in degrees
         float gps_yaw;                      ///< GPS derived yaw information, if available (degrees)
+        bool  gps_yaw_configured;           ///< GPS is configured to provide yaw
         uint16_t hdop;                      ///< horizontal dilution of precision in cm
         uint16_t vdop;                      ///< vertical dilution of precision in cm
         uint8_t num_sats;                   ///< Number of visible satellites
@@ -358,12 +368,19 @@ public:
         return have_vertical_velocity(primary_instance);
     }
 
-    // return true if the GPS supports yaw
+    // return true if the GPS currently has yaw available
     bool have_gps_yaw(uint8_t instance) const {
         return state[instance].have_gps_yaw;
     }
     bool have_gps_yaw(void) const {
         return have_gps_yaw(primary_instance);
+    }
+
+    // return true if the GPS is configured to provide yaw. This will
+    // be true if we expect the GPS to provide yaw, even if it
+    // currently is not able to provide yaw
+    bool have_gps_yaw_configured(uint8_t instance) const {
+        return state[instance].gps_yaw_configured;
     }
     
     // the expected lag (in seconds) in the position and velocity readings from the gps
@@ -553,12 +570,9 @@ private:
     void inject_data(uint8_t instance, const uint8_t *data, uint16_t len);
 
     // GPS blending and switching
-    Vector2f _NE_pos_offset_m[GPS_MAX_RECEIVERS]; // Filtered North,East position offset from GPS instance to blended solution in _output_state.location (m)
-    float _hgt_offset_cm[GPS_MAX_RECEIVERS]; // Filtered height offset from GPS instance relative to blended solution in _output_state.location (cm)
     Vector3f _blended_antenna_offset; // blended antenna offset
     float _blended_lag_sec; // blended receiver lag in seconds
     float _blend_weights[GPS_MAX_RECEIVERS]; // blend weight for each GPS. The blend weights must sum to 1.0 across all instances.
-    uint32_t _last_time_updated[GPS_MAX_RECEIVERS]; // the last value of state.last_gps_time_ms read for that GPS instance - used to detect new data.
     float _omega_lpf; // cutoff frequency in rad/sec of LPF applied to position offsets
     bool _output_is_blended; // true when a blended GPS solution being output
     uint8_t _blend_health_counter;  // 0 = perfectly health, 100 = very unhealthy
@@ -572,6 +586,12 @@ private:
     bool should_log() const;
 
     bool needs_uart(GPS_Type type) const;
+
+    /// Update primary instance
+    void update_primary(void);
+
+    // helper function for mavlink gps yaw
+    uint16_t gps_yaw_cdeg(uint8_t instance) const;
 
     // Auto configure types
     enum GPS_AUTO_CONFIG {
