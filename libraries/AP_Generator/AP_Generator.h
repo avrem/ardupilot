@@ -125,7 +125,6 @@ private:
 
     float _cooler, _starter, _throttle, _rectifier;
 
-    float get_gen_target();
     float get_temp_limit(float temp, float temp_min, float temp_max);
 
     void update_desired_state();

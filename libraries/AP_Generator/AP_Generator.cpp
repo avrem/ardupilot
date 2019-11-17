@@ -301,27 +301,30 @@ void AP_Generator::update_starter(float dt)
     AP_UAVCAN::act_write(AEROXO_UAVCAN_IGNITION_ID, ignition_act);
 }
 
-float AP_Generator::get_gen_target()
-{
-    auto& batt = AP::battery();
-    if (!batt.healthy())
-        return 0;
-    const float v_min = 48, v_max = 50;
-    float v = constrain_float(batt.voltage(), v_min, v_max);
-    float k = (v - v_min) / (v_max - v_min);
-    float c_min = 0, c_max = _gen_current + batt.current_amps() + charge_target;
-    float gen_target = k * c_min + (1 - k) * c_max;
-    if (gen_max > 0)
-        gen_target = MIN(gen_target, gen_max * _limit);
-    return gen_target;
-}
-
 void AP_Generator::update_throttle(float dt)
 {
-    float error = get_gen_target() - _gen_current;
-    const float max_step = 1.f; // 100% per second
-    float step = constrain_float(error * throttle_gain, -max_step, max_step);
-    _throttle = constrain_float(_throttle + step * dt, 0.f, 1.f);
+    auto& batt = AP::battery();
+    if (batt.healthy()) {
+        float batt_amps = batt.current_amps();
+        float gen_amps = MAX(_gen_current, -batt_amps);
+
+        const float v_min = 48, v_max = 50;
+        float v = constrain_float(batt.voltage(), v_min, v_max);
+        float k = (v - v_min) / (v_max - v_min);
+        float c_min = 0, c_max = gen_amps + batt_amps + charge_target;
+        float gen_target = k * c_min + (1 - k) * c_max;
+
+        if (gen_max > 0)
+            gen_target = MIN(gen_target, gen_max * _limit);
+
+        float error = gen_target - gen_amps;
+        const float max_step = 1.f; // 100% per second
+        float step = constrain_float(error * throttle_gain, -max_step, max_step);
+        _throttle = constrain_float(_throttle + step * dt, 0.f, 1.f);
+    }
+    else {
+        _throttle = 0;
+    }
 
     if (_ice_temp < choke_temp) // wait for engine warm up
         _throttle = 0;
