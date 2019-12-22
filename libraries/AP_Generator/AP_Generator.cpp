@@ -145,6 +145,15 @@ const AP_Param::GroupInfo AP_Generator::var_info[] = {
     // @User: Standard
     AP_GROUPINFO("IGN_MANUAL",  17, AP_Generator, manual_ignition,      0),
 
+    // @Param: STR_MANUAL
+    // @DisplayName: Manual rectifier control
+    // @Description: If non-zero, apply specified value as rectifier DC
+    // @Units: %
+    // @Range: 0 100
+    // @Increment: 1
+    // @User: Standard
+    AP_GROUPINFO("RCT_MANUAL",  18, AP_Generator, manual_rectifier,     0),
+
     AP_GROUPEND
 };
 
@@ -354,6 +363,9 @@ void AP_Generator::update_rectifier(float dt)
 
     if (state != ICE_RUNNING)
         _rectifier = rectifier_max;
+
+    if (manual_rectifier != 0)
+        _rectifier = constrain_float(1.0f - manual_rectifier * 0.01f, 0.0f, 1.0f);
 }
 
 void AP_Generator::update_starter(float dt)

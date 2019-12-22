@@ -90,6 +90,7 @@ protected:
     AP_Float stall_timeout;
 
     AP_Int8 manual_ignition;
+    AP_Int8 manual_rectifier;
 
 private:
     static AP_Generator *_singleton;
