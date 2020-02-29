@@ -92,6 +92,8 @@ protected:
     AP_Int8 manual_ignition;
     AP_Int8 manual_rectifier;
 
+    AP_Int8 cell_count;
+
 private:
     static AP_Generator *_singleton;
 

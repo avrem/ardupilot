@@ -154,6 +154,8 @@ const AP_Param::GroupInfo AP_Generator::var_info[] = {
     // @User: Standard
     AP_GROUPINFO("RCT_MANUAL",  18, AP_Generator, manual_rectifier,     0),
 
+    AP_GROUPINFO("CELL_CNT",    19, AP_Generator, cell_count,          12),
+
     AP_GROUPEND
 };
 
@@ -439,7 +441,7 @@ void AP_Generator::update_throttle(float dt)
         float batt_amps = batt.current_amps();
         float gen_amps = MAX(_gen_current, -batt_amps);
 
-        const float v_min = 48, v_max = 50;
+        const float v_min = cell_count * 4.0f, v_max = cell_count * 4.15f;
         float v = constrain_float(batt.voltage(), v_min, v_max);
         float k = (v - v_min) / (v_max - v_min);
         float c_min = 0, c_max = gen_amps + batt_amps + charge_target;
