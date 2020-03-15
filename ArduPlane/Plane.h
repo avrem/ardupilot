@@ -565,6 +565,13 @@ private:
         uint32_t impact_timer_ms;
     } crash_state;
 
+    struct {
+        bool valid;
+        Vector3f dist_vec;
+        Vector3f dist_vec_offs;
+        Vector3f velocity;
+    } follow_target;
+
     // true if we are in an auto-throttle mode, which means
     // we need to run the speed/height controller
     bool auto_throttle_mode:1;
@@ -1018,6 +1025,8 @@ private:
 #if OSD_ENABLED == ENABLED
     void publish_osd_info();
 #endif
+    bool is_following();
+    void update_follow_target();
     void accel_cal_update(void);
 #if SOARING_ENABLED == ENABLED
     void update_soaring();

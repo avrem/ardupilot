@@ -357,4 +357,33 @@ bool Plane::reached_loiter_target(void)
     }
     return nav_controller->reached_loiter_target();
 }
+
+bool Plane::is_following()
+{
+    if ((g2.follow_options & FollowOptions::RELATIVE_LAND) &&
+        (control_mode == &mode_rtl || control_mode == &mode_qrtl ||
+        (control_mode == &mode_auto && mission.get_current_nav_cmd().id == MAV_CMD_NAV_VTOL_LAND)))
+        return true;
+
+    if ((g2.follow_options & FollowOptions::RELATIVE_TAKEOFF) &&
+        (control_mode == &mode_auto && quadplane.is_vtol_takeoff(mission.get_current_nav_cmd().id)))
+        return true;
+
+    return false;
+}
     
+void Plane::update_follow_target()
+{
+    if (is_following() && g2.follow.get_target_dist_and_vel_ned(follow_target.dist_vec, follow_target.dist_vec_offs, follow_target.velocity)) {
+        follow_target.valid = true;
+        Location loc;
+        if (ahrs.get_position(loc)) {
+            loc.offset(follow_target.dist_vec_offs.x, follow_target.dist_vec_offs.y);
+            next_WP_loc.lat = loc.lat;
+            next_WP_loc.lng = loc.lng;
+        }
+    }
+    else {
+        follow_target.valid = false;
+    }
+}

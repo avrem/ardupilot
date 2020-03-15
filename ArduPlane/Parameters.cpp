@@ -1243,6 +1243,8 @@ const AP_Param::GroupInfo ParametersG2::var_info[] = {
     // @Path: ../libraries/AP_Follow/AP_Follow.cpp
     AP_SUBGROUPINFO(follow, "FOLL", 40, ParametersG2, AP_Follow),
 
+    AP_GROUPINFO("FOLL_OPTIONS", 41, ParametersG2, follow_options, 0),
+
     AP_GROUPEND
 };
 

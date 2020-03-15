@@ -2342,9 +2342,10 @@ void QuadPlane::vtol_position_controller(void)
         FALLTHROUGH;
 
     case QPOS_LAND_FINAL:
-
-        // set position controller desired velocity and acceleration to zero
-        pos_control->set_desired_velocity_xy(0.0f,0.0f);
+        if (plane.follow_target.valid)
+            pos_control->set_desired_velocity_xy(plane.follow_target.velocity.x*100, plane.follow_target.velocity.y*100);
+        else
+            pos_control->set_desired_velocity_xy(0.0f,0.0f);
         pos_control->set_desired_accel_xy(0.0f,0.0f);
 
         // set position control target and update
@@ -2473,8 +2474,11 @@ void QuadPlane::takeoff_controller(void)
 
     setup_target_position();
 
-    // set position controller desired velocity and acceleration to zero
-    pos_control->set_desired_velocity_xy(0.0f,0.0f);
+    // set position controller desired velocity and acceleration
+    if (plane.follow_target.valid)
+        pos_control->set_desired_velocity_xy(plane.follow_target.velocity.x*100, plane.follow_target.velocity.y*100);
+    else
+        pos_control->set_desired_velocity_xy(0.0f,0.0f);
     pos_control->set_desired_accel_xy(0.0f,0.0f);
 
     // set position control target and update
