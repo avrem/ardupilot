@@ -1845,6 +1845,13 @@ void QuadPlane::update(void)
     tiltrotor_update();
 
     check_alt_fence();
+
+    if (plane.g2.follow_options & FollowOptions::MAGNETIC_BASE) {
+        bool engage_magnets = (motors->get_throttle() < 0.01f) &&
+            ((plane.control_mode == &plane.mode_auto && is_vtol_takeoff(plane.mission.get_current_nav_cmd().id)) ||
+             (in_vtol_land() && poscontrol.state >= QPOS_LAND_FINAL));
+        SRV_Channels::set_output_pwm(SRV_Channel::k_gripper, engage_magnets ? 1900 : 1100);
+    }
 }
 
 /*
@@ -2341,10 +2348,11 @@ void QuadPlane::vtol_position_controller(void)
         plane.nav_controller->update_waypoint(plane.prev_WP_loc, loc);
         FALLTHROUGH;
 
-    case QPOS_LAND_FINAL:
-
-        // set position controller desired velocity and acceleration to zero
-        pos_control->set_desired_velocity_xy(0.0f,0.0f);
+    case QPOS_LAND_FINAL: {
+        if (plane.follow_target.valid)
+            pos_control->set_desired_velocity_xy(plane.follow_target.velocity.x*100, plane.follow_target.velocity.y*100);
+        else
+            pos_control->set_desired_velocity_xy(0.0f,0.0f);
         pos_control->set_desired_accel_xy(0.0f,0.0f);
 
         // set position control target and update
@@ -2362,10 +2370,15 @@ void QuadPlane::vtol_position_controller(void)
         update_psc_tilt();
 
         // call attitude controller
-        attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(plane.nav_roll_cd,
+        float target_hdg = 0.0f;
+        if (plane.follow_target.valid && (plane.g2.follow_options & FollowOptions::MATCH_HEADING) && plane.g2.follow.get_target_heading_deg(target_hdg))
+            attitude_control->input_euler_angle_roll_pitch_yaw(plane.nav_roll_cd, plane.nav_pitch_cd, target_hdg * 100, true);
+        else
+            attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(plane.nav_roll_cd,
                                                                       plane.nav_pitch_cd,
                                                                       get_pilot_input_yaw_rate_cds() + get_weathervane_yaw_rate_cds());
         break;
+    }
 
     case QPOS_LAND_COMPLETE:
         // nothing to do
@@ -2473,8 +2486,11 @@ void QuadPlane::takeoff_controller(void)
 
     setup_target_position();
 
-    // set position controller desired velocity and acceleration to zero
-    pos_control->set_desired_velocity_xy(0.0f,0.0f);
+    // set position controller desired velocity and acceleration
+    if (plane.follow_target.valid)
+        pos_control->set_desired_velocity_xy(plane.follow_target.velocity.x*100, plane.follow_target.velocity.y*100);
+    else
+        pos_control->set_desired_velocity_xy(0.0f,0.0f);
     pos_control->set_desired_accel_xy(0.0f,0.0f);
 
     // set position control target and update

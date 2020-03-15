@@ -153,3 +153,9 @@ enum CrowFlapOptions {
     PROGRESSIVE_CROW = (1 << 2),
 }; 
 
+enum FollowOptions {
+    RELATIVE_LAND    = (1 << 0),
+    RELATIVE_TAKEOFF = (1 << 1),
+    MAGNETIC_BASE    = (1 << 2),
+    MATCH_HEADING    = (1 << 3),
+};

@@ -126,6 +126,11 @@ bool AP_Arming_Plane::pre_arm_checks(bool display_failure)
     }
 #endif
 
+    if (plane.g2.follow_options != 0 && !plane.g2.follow.have_target()) {
+        check_failed(display_failure, "Follow target not ready");
+        ret = false;
+    }
+
     return ret;
 }
 

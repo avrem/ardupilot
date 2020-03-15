@@ -566,6 +566,7 @@ public:
     AP_Int8 crow_flap_aileron_matching;
 
     AP_Follow follow;
+    AP_Int32 follow_options;
 };
 
 extern const AP_Param::Info var_info[];
