@@ -1051,8 +1051,8 @@ void QuadPlane::control_loiter()
     pos_control->set_accel_z(pilot_accel_z);
 
     // process pilot's roll and pitch input
-    loiter_nav->set_pilot_desired_acceleration(plane.channel_roll->get_control_in(),
-                                               plane.channel_pitch->get_control_in(),
+    loiter_nav->set_pilot_desired_acceleration(plane.control_mode == QLAND ? 0 : plane.channel_roll->get_control_in(),
+                                               plane.control_mode == QLAND ? 0 : plane.channel_pitch->get_control_in(),
                                                plane.G_Dt);
 
     // Update EKF speed limit - used to limit speed when we are using optical flow
