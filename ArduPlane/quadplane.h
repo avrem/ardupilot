@@ -133,6 +133,7 @@ public:
         int16_t  target_climb_rate;
         int16_t  climb_rate;
         float    throttle_mix;
+        float    tilt_angle;
     };
         
 private:

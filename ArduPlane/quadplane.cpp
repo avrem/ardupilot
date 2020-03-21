@@ -2481,6 +2481,7 @@ void QuadPlane::Log_Write_QControl_Tuning()
         target_climb_rate   : target_climb_rate_cms,
         climb_rate          : int16_t(inertial_nav.get_velocity_z()),
         throttle_mix        : attitude_control->get_throttle_mix(),
+        tilt_angle          : tilt.current_tilt * 90.0f,
     };
     plane.DataFlash.WriteBlock(&pkt, sizeof(pkt));
 
