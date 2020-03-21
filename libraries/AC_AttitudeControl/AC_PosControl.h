@@ -175,6 +175,8 @@ public:
     void set_speed_xy(float speed_cms);
     float get_speed_xy() const { return _speed_cms; }
 
+    void set_fwd_tilt(float fwd_tilt_cds) { _fwd_tilt_cds = fwd_tilt_cds; }
+
     /// set_limit_accel_xy - mark that accel has been limited
     ///     this prevents integrator buildup
     void set_limit_accel_xy(void) { _limit.accel_xy = true; }
@@ -268,6 +270,7 @@ public:
     /// get desired roll, pitch which should be fed into stabilize controllers
     float get_roll() const { return _roll_target; }
     float get_pitch() const { return _pitch_target; }
+    float get_tilt() const { return _tilt_target; }
 
     // get_leash_xy - returns horizontal leash length in cm
     float get_leash_xy() const { return _leash; }
@@ -284,7 +287,7 @@ public:
     const Vector3f& get_accel_target() const { return _accel_target; }
 
     // lean_angles_to_accel - convert roll, pitch lean angles to lat/lon frame accelerations in cm/s/s
-    void accel_to_lean_angles(float accel_x_cmss, float accel_y_cmss, float& roll_target, float& pitch_target) const;
+    void accel_to_lean_angles(float accel_x_cmss, float accel_y_cmss, float& roll_target, float& pitch_target, float &tilt_target) const;
 
     // lean_angles_to_accel - convert roll, pitch lean angles to lat/lon frame accelerations in cm/s/s
     void lean_angles_to_accel(float& accel_x_cmss, float& accel_y_cmss) const;
@@ -383,6 +386,7 @@ protected:
     float       _dt;                    // time difference (in seconds) between calls from the main program
     uint32_t    _last_update_xy_ms;     // system time of last update_xy_controller call
     uint32_t    _last_update_z_ms;      // system time of last update_z_controller call
+    float       _fwd_tilt_cds;          // max forward tilt angle in centi-degrees
     float       _speed_down_cms;        // max descent rate in cm/s
     float       _speed_up_cms;          // max climb rate in cm/s
     float       _speed_cms;             // max horizontal speed in cm/s
@@ -396,6 +400,7 @@ protected:
     // output from controller
     float       _roll_target;           // desired roll angle in centi-degrees calculated by position controller
     float       _pitch_target;          // desired roll pitch in centi-degrees calculated by position controller
+    float       _tilt_target;           // desired forward tilt in centi-degrees calculated by position controller
 
     // position controller internal variables
     Vector3f    _pos_target;            // target location in cm from home

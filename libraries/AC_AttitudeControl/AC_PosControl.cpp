@@ -784,6 +784,7 @@ void AC_PosControl::init_xy_controller()
     // todo: this should probably be based on the desired attitude not the current attitude
     _roll_target = _ahrs.roll_sensor;
     _pitch_target = _ahrs.pitch_sensor;
+    _tilt_target = 0;
 
     // initialise I terms from lean angles
     _pid_vel_xy.reset_filter();
@@ -866,6 +867,7 @@ void AC_PosControl::init_vel_controller_xyz()
     // set roll, pitch lean angle targets to current attitude
     _roll_target = _ahrs.roll_sensor;
     _pitch_target = _ahrs.pitch_sensor;
+    _tilt_target = 0;
 
     _pid_vel_xy.reset_filter();
     lean_angles_to_accel(_accel_target.x, _accel_target.y);
@@ -1094,11 +1096,11 @@ void AC_PosControl::run_xy_controller(float dt, float ekfNavVelGainScaler)
     _limit.accel_xy = limit_vector_length(_accel_target.x, _accel_target.y, accel_max);
 
     // update angle targets that will be passed to stabilize controller
-    accel_to_lean_angles(_accel_target.x, _accel_target.y, _roll_target, _pitch_target);
+    accel_to_lean_angles(_accel_target.x, _accel_target.y, _roll_target, _pitch_target, _tilt_target);
 }
 
 // get_lean_angles_to_accel - convert roll, pitch lean angles to lat/lon frame accelerations in cm/s/s
-void AC_PosControl::accel_to_lean_angles(float accel_x_cmss, float accel_y_cmss, float& roll_target, float& pitch_target) const
+void AC_PosControl::accel_to_lean_angles(float accel_x_cmss, float accel_y_cmss, float& roll_target, float& pitch_target, float &tilt_target) const
 {
     float accel_right, accel_forward;
 
@@ -1109,6 +1111,8 @@ void AC_PosControl::accel_to_lean_angles(float accel_x_cmss, float accel_y_cmss,
 
     // update angle targets that will be passed to stabilize controller
     pitch_target = atanf(-accel_forward/(GRAVITY_MSS * 100.0f))*(18000.0f/M_PI);
+    tilt_target = constrain_float(-pitch_target, 0, _fwd_tilt_cds);
+    pitch_target += tilt_target;
     float cos_pitch_target = cosf(pitch_target*M_PI/18000.0f);
     roll_target = atanf(accel_right*cos_pitch_target/(GRAVITY_MSS * 100.0f))*(18000.0f/M_PI);
 }

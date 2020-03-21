@@ -2509,7 +2509,18 @@ int8_t QuadPlane::forward_throttle_pct(void)
         vel_forward.gain <= 0 ||
         plane.control_mode == QSTABILIZE ||
         plane.control_mode == QHOVER) {
+        pos_control->set_fwd_tilt(0);
         return 0;
+    }
+
+    if (is_tiltquad()) {
+        // directly control forward tilt
+        // If we are below alt_cutoff then scale down maximum tilt angle to zero at alt_cutoff
+        float alt_cutoff = MAX(0, vel_forward_alt_cutoff);
+        float height_above_ground = plane.relative_ground_altitude(plane.g.rangefinder_landing);
+        float max_fwd_tilt = linear_interpolate(0, tilt.max_angle_deg * 100, height_above_ground, alt_cutoff, alt_cutoff + 2);
+        pos_control->set_fwd_tilt(max_fwd_tilt * vel_forward.gain);
+        return 50 * pos_control->get_tilt() * 0.01f / tilt.max_angle_deg;
     }
 
     float deltat = (AP_HAL::millis() - vel_forward.last_ms) * 0.001f;
