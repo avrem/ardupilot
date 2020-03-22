@@ -318,6 +318,8 @@ private:
         uint32_t last_pilot_input_ms;
         float last_output;
     } weathervane;
+
+    AP_Float sideslip_damp_gain;
     
     bool initialised;
     

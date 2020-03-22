@@ -22,6 +22,8 @@ const AP_Param::GroupInfo QuadPlane::var_info[] = {
  
     AP_GROUPINFO("LAND_MAX_ALT", 6, QuadPlane, land_max_alt, 100),
 
+    AP_GROUPINFO("SS_DAMP_GAIN", 7, QuadPlane, sideslip_damp_gain, 0),
+
     // @Param: ANGLE_MAX
     // @DisplayName: Angle Max
     // @Description: Maximum lean angle in all VTOL flight modes
@@ -727,6 +729,12 @@ void QuadPlane::init_stabilize(void)
 void QuadPlane::multicopter_attitude_rate_update(float yaw_rate_cds)
 {
     check_attitude_relax();
+
+    if (is_tiltquad()) {
+	    float accel_y = plane.ins.get_accel().y;
+        float sideslip_damping = -accel_y * sideslip_damp_gain * tilt.current_tilt;
+        yaw_rate_cds += RadiansToCentiDegrees(sideslip_damping);
+    }
 
     if (in_vtol_mode() || is_tailsitter() || is_tiltquad()) {
         // use euler angle attitude control
