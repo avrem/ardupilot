@@ -2134,8 +2134,10 @@ void QuadPlane::takeoff_controller(void)
     plane.nav_roll_cd = pos_control->get_roll();
     plane.nav_pitch_cd = pos_control->get_pitch();
 
+    bool navalt_reached = true;
     if (wp_navalt_min > 0 && inertial_nav.get_altitude() < takeoff_start_alt_cm + wp_navalt_min * 100) {
         // we haven't reached the takeoff navigation altitude yet
+        navalt_reached = false;
         plane.nav_roll_cd = 0;
         plane.nav_pitch_cd = 0;
         // tell the position controller that we have limited roll/pitch demand to prevent integrator buildup
@@ -2161,7 +2163,7 @@ void QuadPlane::takeoff_controller(void)
     else
         attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(plane.nav_roll_cd,
                                                                       plane.nav_pitch_cd,
-                                                                      get_pilot_input_yaw_rate_cds() + get_weathervane_yaw_rate_cds());
+                                                                      navalt_reached ? get_pilot_input_yaw_rate_cds() + get_weathervane_yaw_rate_cds() : 0);
 
     pos_control->set_alt_target_from_climb_rate(wp_nav->get_speed_up(), plane.G_Dt, true);
     run_z_controller();
