@@ -162,6 +162,13 @@ const AP_Param::GroupInfo AP_Generator::var_info[] = {
     // @User: Standard
     AP_GROUPINFO("CELL_CNT",    19, AP_Generator, cell_count,          12),
 
+    // @Param: USE_TC
+    // @DisplayName: Use thermocouple
+    // @Description: Use thermocouple as engine temperature sensor
+    // @Values: 0: Use thermistor, 1: Use thermocouple
+    // @User: Standard
+    AP_GROUPINFO("USE_TC",      20, AP_Generator, use_tc,               0),
+
     AP_GROUPEND
 };
 
@@ -194,6 +201,12 @@ void AP_Generator::subscribe_msgs(AP_UAVCAN* ap_uavcan)
     {if (_singleton != nullptr) _singleton->ecuStatusCallback(msg);}
     );
 
+    auto ecu2_listener = new uavcan::Subscriber<aeroxo::equipment::genset::ecu::Status2>(*node);
+    ecu2_listener->start(
+        [](const uavcan::ReceivedDataStructure<aeroxo::equipment::genset::ecu::Status2>& msg)
+    {if (_singleton != nullptr) _singleton->ecuStatus2Callback(msg);}
+    );
+
     auto fuel_listener = new uavcan::Subscriber<aeroxo::equipment::genset::ecu::TankStatus>(*node);
     fuel_listener->start(
         [](const uavcan::ReceivedDataStructure<aeroxo::equipment::genset::ecu::TankStatus>& msg)
@@ -220,6 +233,24 @@ void AP_Generator::ecuStatusCallback(const aeroxo::equipment::genset::ecu::Statu
     _last_update.ecu_status = AP_HAL::millis();
     _ice_temp = msg.engine_temperature - C_TO_KELVIN;
     _gen_temp = msg.generator_temperature - C_TO_KELVIN;
+}
+
+void AP_Generator::ecuStatus2Callback(const aeroxo::equipment::genset::ecu::Status2 &msg)
+{
+    if (!enable)
+        return;
+
+    _last_update.ecu_status = AP_HAL::millis();
+    if (use_tc) {
+        _ice_temp = msg.engine_temperature_tc - C_TO_KELVIN;
+        _ice_temp_alt = msg.engine_temperature_rtd - C_TO_KELVIN;
+    }
+    else {
+        _ice_temp = msg.engine_temperature_rtd - C_TO_KELVIN;
+        _ice_temp_alt = msg.engine_temperature_tc - C_TO_KELVIN;
+    }
+    _gen_temp = msg.generator_temperature - C_TO_KELVIN;
+    _rpm_alt = msg.rpm;
 }
 
 void AP_Generator::tankStatusCallback(const aeroxo::equipment::genset::ecu::TankStatus &msg)
@@ -256,15 +287,17 @@ void AP_Generator::update()
         batt_current = 0.0f;
 
     AP::logger().Write("GEN",
-                       "TimeUS,Curr,CTot,RPM,T,GT,VT,Fuel,Clr,Str,Thr",
-                       "sAAqOOO%%%%",
-                       "F0000000000",
-                       "QffIfffbbbb",
+                       "TimeUS,Curr,CTot,RPM,RPM2,T,T2,GT,VT,Fuel,Clr,Str,Thr",
+                       "sAAqqOOOO%%%%",
+                       "F000000000000",
+                       "QffIIffffbbbb",
                        AP_HAL::micros64(),
                        (double)_gen_current,
                        (double)(_gen_current + batt_current),
                        _rpm,
+                       _rpm_alt,
                        (double)_ice_temp,
+                       (double)_ice_temp_alt,
                        (double)_gen_temp,
                        (double)_vsi_temp,
                        _fuel_lvl_pct,
@@ -324,6 +357,8 @@ void AP_Generator::update_desired_state()
         _ecu_healthy = false;
         _ice_temp = NAN;
         _gen_temp = NAN;
+        _rpm_alt = 0;
+        _ice_temp_alt = NAN;
     }
 
     float ice_limit = get_temp_limit(_ice_temp, ice_temp_max * 1.05f, ice_temp_max * 1.15f);
@@ -508,7 +543,7 @@ void AP_Generator::update_fuel()
 void AP_Generator::send_status(mavlink_channel_t chan) const
 {
     if (enable)
-        mavlink_msg_gen_status_send(chan, _gen_current, _rpm, _ice_temp, _gen_temp, _fuel_lvl_pct, _cooler * 100, _starter * 100, _throttle * 100, _vsi_temp, 0, 0);
+        mavlink_msg_gen_status_send(chan, _gen_current, _rpm, _ice_temp, _gen_temp, _fuel_lvl_pct, _cooler * 100, _starter * 100, _throttle * 100, _vsi_temp, _rpm_alt, _ice_temp_alt);
 }
 
 bool AP_Generator::engine_control(float start_control, float cold_start, float height_delay)
