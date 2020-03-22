@@ -11,11 +11,13 @@
 #include <AP_UAVCAN/AP_UAVCAN.h>
 
 #include <uavcan/equipment/power/BatteryInfo.hpp>
+#include <aeroxo/equipment/power/BatteryInfo.hpp>
 
 extern const AP_HAL::HAL& hal;
 #define debug_bm_uavcan(level_debug, can_driver, fmt, args...) do { if ((level_debug) <= AP::can().get_debug_level_driver(can_driver)) { printf(fmt, ##args); }} while (0)
 
 UC_REGISTRY_BINDER(BattInfoCb, uavcan::equipment::power::BatteryInfo);
+UC_REGISTRY_BINDER(BattInfo2Cb, aeroxo::equipment::power::BatteryInfo);
 
 /// Constructor
 AP_BattMonitor_UAVCAN::AP_BattMonitor_UAVCAN(AP_BattMonitor &mon, AP_BattMonitor::BattMonitor_State &mon_state, BattMonitor_UAVCAN_Type type, AP_BattMonitor_Params &params) :
@@ -39,6 +41,15 @@ void AP_BattMonitor_UAVCAN::subscribe_msgs(AP_UAVCAN* ap_uavcan)
     // Backend Msg Handler
     const int battinfo_listener_res = battinfo_listener->start(BattInfoCb(ap_uavcan, &handle_battery_info_trampoline));
     if (battinfo_listener_res < 0) {
+        AP_HAL::panic("UAVCAN BatteryInfo subscriber start problem\n\r");
+        return;
+    }
+
+    uavcan::Subscriber<aeroxo::equipment::power::BatteryInfo, BattInfo2Cb> *battinfo2_listener;
+    battinfo2_listener = new uavcan::Subscriber<aeroxo::equipment::power::BatteryInfo, BattInfo2Cb>(*node);
+    // Backend Msg Handler
+    const int battinfo2_listener_res = battinfo2_listener->start(BattInfo2Cb(ap_uavcan, &handle_battery_info2_trampoline));
+    if (battinfo2_listener_res < 0) {
         AP_HAL::panic("UAVCAN BatteryInfo subscriber start problem\n\r");
         return;
     }
@@ -103,6 +114,34 @@ void AP_BattMonitor_UAVCAN::handle_battery_info(const BattInfoCb &cb)
     _interim_state.healthy = true;
 }
 
+void AP_BattMonitor_UAVCAN::handle_battery_info2(const BattInfo2Cb &cb)
+{
+    WITH_SEMAPHORE(_sem_battmon);
+    _interim_state.temperature = cb.msg->temperature;
+    _interim_state.voltage = cb.msg->voltage;
+    _interim_state.current_amps = cb.msg->current;
+
+    for (size_t i = 0; i < ARRAY_SIZE(_interim_state.cell_voltages.cells); i++)
+        _interim_state.cell_voltages.cells[i] = (i < cb.msg->cell_voltages.size()) ? cb.msg->cell_voltages[i] * 1000: 0;
+    _has_cell_voltages = true;
+
+    uint32_t tnow = AP_HAL::micros();
+    uint32_t dt = tnow - _interim_state.last_time_micros;
+
+    // update total current drawn since startup
+    if (_interim_state.last_time_micros != 0 && dt < 2000000) {
+        // .0002778 is 1/3600 (conversion to hours)
+        float mah = (float) ((double) _interim_state.current_amps * (double) dt * (double) 0.0000002778f);
+        _interim_state.consumed_mah += mah;
+        _interim_state.consumed_wh  += 0.001f * mah * _interim_state.voltage;
+    }
+
+    // record time
+    _interim_state.last_time_micros = tnow;
+
+    _interim_state.healthy = true;
+}
+
 void AP_BattMonitor_UAVCAN::handle_battery_info_trampoline(AP_UAVCAN* ap_uavcan, uint8_t node_id, const BattInfoCb &cb)
 {
     AP_BattMonitor_UAVCAN* driver = get_uavcan_backend(ap_uavcan, node_id);
@@ -110,6 +149,15 @@ void AP_BattMonitor_UAVCAN::handle_battery_info_trampoline(AP_UAVCAN* ap_uavcan,
         return;
     }
     driver->handle_battery_info(cb);
+}
+
+void AP_BattMonitor_UAVCAN::handle_battery_info2_trampoline(AP_UAVCAN* ap_uavcan, uint8_t node_id, const BattInfo2Cb &cb)
+{
+    AP_BattMonitor_UAVCAN* driver = get_uavcan_backend(ap_uavcan, node_id);
+    if (driver == nullptr) {
+        return;
+    }
+    driver->handle_battery_info2(cb);
 }
 
 // read - read the voltage and current
@@ -125,6 +173,7 @@ void AP_BattMonitor_UAVCAN::read()
     WITH_SEMAPHORE(_sem_battmon);
     _state.temperature = _interim_state.temperature;
     _state.voltage = _interim_state.voltage;
+    _state.cell_voltages = _interim_state.cell_voltages;
     _state.current_amps = _interim_state.current_amps;
     _state.consumed_mah = _interim_state.consumed_mah;
     _state.consumed_wh = _interim_state.consumed_wh;

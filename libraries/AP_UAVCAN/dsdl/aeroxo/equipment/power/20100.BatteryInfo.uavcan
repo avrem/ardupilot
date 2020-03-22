@@ -1,0 +1,7 @@
+float16 temperature             # [Kelvin]
+float16 voltage                 # [Volt]
+float16 current                 # [Ampere]
+uint8 status
+uint8 battery_id                # Identifies the battery within this vehicle, e.g. 0 - primary battery
+uint32 model_instance_id        # Set to zero if not applicable
+float16[<=10] cell_voltages     # [Volt]
