@@ -1114,11 +1114,9 @@ float QuadPlane::get_pilot_input_yaw_rate_cds(void)
         return 0;
     }
 
-    if (plane.control_mode == AUTO ||
-        plane.control_mode == GUIDED ||
-        plane.control_mode == QRTL ||
-        plane.control_mode == QLAND) {
-        // ignore rc yaw in VTOL auto modes
+    if (plane.control_mode != QSTABILIZE &&
+        plane.control_mode != QHOVER &&
+        plane.control_mode != QLOITER) {
         return 0;
     }
 
