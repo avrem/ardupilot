@@ -134,6 +134,7 @@ public:
         int16_t  climb_rate;
         float    throttle_mix;
         float    tilt_angle;
+        float    weathervane_rate;
     };
         
 private:

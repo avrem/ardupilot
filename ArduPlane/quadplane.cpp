@@ -1980,7 +1980,7 @@ void QuadPlane::vtol_position_controller(void)
         // call attitude controller
         attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(plane.nav_roll_cd,
                                                                              plane.nav_pitch_cd,
-                                                                             desired_auto_yaw_rate_cds());
+                                                                             desired_auto_yaw_rate_cds() + get_weathervane_yaw_rate_cds());
         if (plane.auto_state.wp_proportion >= 1 ||
             plane.auto_state.wp_distance < 5) {
             poscontrol.state = QPOS_POSITION2;
@@ -2482,6 +2482,7 @@ void QuadPlane::Log_Write_QControl_Tuning()
         climb_rate          : int16_t(inertial_nav.get_velocity_z()),
         throttle_mix        : attitude_control->get_throttle_mix(),
         tilt_angle          : tilt.current_tilt * 90.0f,
+        weathervane_rate    : weathervane.last_output,
     };
     plane.DataFlash.WriteBlock(&pkt, sizeof(pkt));
 
@@ -2606,7 +2607,7 @@ float QuadPlane::get_weathervane_yaw_rate_cds(void)
         weathervane.last_output = 0;
         return 0;
     }
-    if (get_pilot_input_yaw_rate_cds() != 0) {
+    if (!is_zero(get_pilot_input_yaw_rate_cds())) {
         weathervane.last_pilot_input_ms = AP_HAL::millis();
         weathervane.last_output = 0;
         return 0;
@@ -2616,26 +2617,22 @@ float QuadPlane::get_weathervane_yaw_rate_cds(void)
         return 0;
     }
 
-    float roll = wp_nav->get_roll() / 100.0f;
-    if (fabsf(roll) < weathervane.min_roll) {
-        weathervane.last_output = 0;
-        return 0;        
+    float output = 0;
+
+    Vector2f psc_accel_xy = {pos_control->get_accel_target().x, pos_control->get_accel_target().y}; // cm/s/s
+    float min_accel = GRAVITY_MSS * 100.0f * tanf(radians(weathervane.min_roll));
+    if (psc_accel_xy.length() > min_accel) {
+        float thrust_bearing_cds = RadiansToCentiDegrees(wrap_2PI(atan2f(psc_accel_xy.y, psc_accel_xy.x)));
+        float yaw_error = wrap_180_cd(thrust_bearing_cds - ahrs.yaw_sensor);
+        output = constrain_float(yaw_error * weathervane.gain, -yaw_rate_max * 100, yaw_rate_max * 100);
     }
-    if (roll > 0) {
-        roll -= weathervane.min_roll;
-    } else {
-        roll += weathervane.min_roll;
-    }
-    
-    float output = constrain_float((roll/45.0f) * weathervane.gain, -1, 1);
+
     if (should_relax()) {
         output = 0;
     }
     weathervane.last_output = 0.98f * weathervane.last_output + 0.02f * output;
 
-    // scale over half of yaw_rate_max. This gives the pilot twice the
-    // authority of the weathervane controller
-    return weathervane.last_output * (yaw_rate_max/2) * 100;
+    return weathervane.last_output;
 }
 
 /*
