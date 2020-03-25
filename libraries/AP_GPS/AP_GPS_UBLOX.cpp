@@ -1389,6 +1389,14 @@ AP_GPS_UBLOX::_parse_gps(void)
                 state.have_gps_yaw = false;
                 state.have_gps_yaw_accuracy = false;
             }
+
+            state.rtk_week_number   = state.time_week;
+            state.rtk_time_week_ms  = _buffer.relposned.iTOW;
+            state.rtk_baseline_x_mm = _buffer.relposned.relPosN * 10 + _buffer.relposned.relPosHPN / 10;
+            state.rtk_baseline_y_mm = _buffer.relposned.relPosE * 10 + _buffer.relposned.relPosHPE / 10;
+            state.rtk_baseline_z_mm = _buffer.relposned.relPosD * 10 + _buffer.relposned.relPosHPD / 10;
+            state.rtk_accuracy      = _buffer.relposned.accLength / 10;
+            state.rtk_iar_num_hypotheses = _buffer.relposned.flags;
         }
         break;
     case MSG_PVT:
