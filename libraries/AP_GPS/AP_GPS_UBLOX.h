@@ -116,6 +116,8 @@ public:
 
     AP_GPS::GPS_Status highest_supported_status(void) override { return AP_GPS::GPS_OK_FIX_3D_RTK_FIXED; }
 
+    bool supports_mavlink_gps_rtk_message() override { return true; }
+
     static bool _detect(struct UBLOX_detect_state &state, uint8_t data);
 
     bool is_configured(void) override {
