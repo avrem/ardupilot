@@ -1397,6 +1397,10 @@ AP_GPS_UBLOX::_parse_gps(void)
             state.rtk_baseline_z_mm = _buffer.relposned.relPosD * 10 + _buffer.relposned.relPosHPD / 10;
             state.rtk_accuracy      = _buffer.relposned.accLength / 10;
             state.rtk_iar_num_hypotheses = _buffer.relposned.flags;
+
+            if (((_buffer.relposned.flags & valid_mask) == valid_mask) &&
+                ((_buffer.relposned.flags & invalid_mask) == 0))
+                publish_rtk_base_location();
         }
         break;
     case MSG_PVT:

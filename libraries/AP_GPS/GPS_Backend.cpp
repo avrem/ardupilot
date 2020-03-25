@@ -289,3 +289,15 @@ void AP_GPS_Backend::check_new_itow(uint32_t itow, uint32_t msg_length)
         state.uart_timestamp_ms = local_us / 1000U;
     }
 }
+
+void AP_GPS_Backend::publish_rtk_base_location()
+{
+    Location loc;
+    if (!AP::ahrs().get_position(loc))
+        return;
+    loc.offset(-state.rtk_baseline_x_mm * 0.001f, -state.rtk_baseline_y_mm * 0.001f);
+    loc.alt += state.rtk_baseline_z_mm * 0.1f;
+    // fixme: add antenna position
+    state.rtk_base_loc = loc;
+    state.rtk_base_time_ms = AP_HAL::millis();
+}

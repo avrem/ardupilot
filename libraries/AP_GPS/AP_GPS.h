@@ -180,6 +180,9 @@ public:
         int32_t  rtk_baseline_z_mm;        ///< Current baseline in ECEF z or NED down component in mm
         uint32_t rtk_accuracy;             ///< Current estimate of 3D baseline accuracy (receiver dependent, typical 0 to 9999)
         int32_t  rtk_iar_num_hypotheses;   ///< Current number of integer ambiguity hypotheses
+
+        Location rtk_base_loc;             ///< Base location calculated from last precise baseline
+        uint32_t rtk_base_time_ms;
     };
 
     /// Startup initialisation.
@@ -396,6 +399,14 @@ public:
 
     // return a 3D vector defining the offset of the GPS antenna in meters relative to the body frame origin
     const Vector3f &get_antenna_offset(uint8_t instance) const;
+
+    const Location &get_rtk_base_location(uint8_t instance) const {
+        return state[instance].rtk_base_loc;
+    }
+
+    uint32_t get_rtk_base_time_ms(uint8_t instance) const {
+        return state[instance].rtk_base_time_ms;
+    }
 
     // set position for HIL
     void setHIL(uint8_t instance, GPS_Status status, uint64_t time_epoch_ms,

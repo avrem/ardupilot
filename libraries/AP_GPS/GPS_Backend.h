@@ -108,6 +108,8 @@ protected:
         return uint16_t(gps._driver_options.get());
     }
 
+    void publish_rtk_base_location();
+    
 private:
     // itow from previous message
     uint32_t _last_itow;
