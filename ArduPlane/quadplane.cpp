@@ -3149,7 +3149,11 @@ bool QuadPlane::do_user_takeoff(float takeoff_altitude)
 // return true if the wp_nav controller is being updated
 bool QuadPlane::using_wp_nav(void) const
 {
-    return plane.control_mode == &plane.mode_qloiter || plane.control_mode == &plane.mode_qland || plane.control_mode == &plane.mode_qrtl;
+    return plane.control_mode == &plane.mode_qloiter ||
+           plane.control_mode == &plane.mode_qland ||
+           plane.control_mode == &plane.mode_qrtl ||
+           ((plane.control_mode == &plane.mode_guided || plane.control_mode == &plane.mode_avoidADSB) && plane.auto_state.vtol_loiter) ||
+           in_vtol_auto();
 }
 
 /*
