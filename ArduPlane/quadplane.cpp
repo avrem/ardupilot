@@ -2364,7 +2364,10 @@ void QuadPlane::vtol_position_controller(void)
                                                      plane.auto_state.wp_proportion,
                                                      0, 1);
             }
-            adjust_alt_target(target_altitude - plane.home.alt);
+            Location origin;
+            if (!ahrs.get_origin(origin))
+                origin.zero();
+            pos_control->set_alt_target(target_altitude - origin.alt);
         } else {
             pos_control->set_alt_target_from_climb_rate(0, plane.G_Dt, false);
         }
@@ -2527,8 +2530,6 @@ void QuadPlane::control_qrtl(void)
 {
     vtol_position_controller();
     if (poscontrol.state >= QPOS_POSITION2) {
-        // change target altitude to home alt
-        plane.next_WP_loc.alt = plane.home.alt;
         verify_vtol_land();
     }
 }

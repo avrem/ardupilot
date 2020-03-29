@@ -444,10 +444,10 @@ void Plane::update_navigation()
             
     case Mode::Number::RTL:
         if (quadplane.available() && quadplane.rtl_mode == 1 &&
-            (nav_controller->reached_loiter_target() ||
+            ((nav_controller->reached_loiter_target() && AP_HAL::millis() - last_mode_change_ms > 1000) ||
              current_loc.past_interval_finish_line(prev_WP_loc, next_WP_loc) ||
-             auto_state.wp_distance < MAX(qrtl_radius, quadplane.stopping_distance())) &&
-            AP_HAL::millis() - last_mode_change_ms > 1000) {
+             auto_state.wp_distance < MAX(qrtl_radius, quadplane.stopping_distance()))
+            ) {
             /*
               for a quadplane in RTL mode we switch to QRTL when we
               are within the maximum of the stopping distance and the
