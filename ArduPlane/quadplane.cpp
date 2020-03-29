@@ -2740,7 +2740,7 @@ void QuadPlane::check_land_complete(void)
         // only apply to final landing phase
         return;
     }
-    if (land_detector(4000)) {
+    if (land_detector(2000)) {
         plane.arming.disarm();
         poscontrol.state = QPOS_LAND_COMPLETE;
         gcs().send_text(MAV_SEVERITY_INFO,"Land complete");
@@ -2760,11 +2760,7 @@ bool QuadPlane::check_land_final(void)
         return true;
     }
 
-    /*
-      also apply landing detector, in case we have landed in descent
-      phase. Use a longer threshold
-     */
-    return land_detector(6000);
+    return false;
 }
 
 /*
