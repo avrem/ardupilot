@@ -62,6 +62,8 @@ const AP_Param::GroupInfo AP_Parachute::var_info[] = {
     // @Increment: 1
     // @User: Standard
     AP_GROUPINFO("DELAY_MS", 5, AP_Parachute, _delay_ms, AP_PARACHUTE_RELEASE_DELAY_MS),
+
+    AP_GROUPINFO("WDT_MS", 6, AP_Parachute, _watchdog_ms, 0),
     
     // @Param: CRT_SINK
     // @DisplayName: Critical sink speed rate in m/s to trigger emergency parachute
@@ -70,7 +72,7 @@ const AP_Param::GroupInfo AP_Parachute::var_info[] = {
     // @Units: m/s
     // @Increment: 1
     // @User: Standard
-    AP_GROUPINFO("CRT_SINK", 6, AP_Parachute, _critical_sink, AP_PARACHUTE_CRITICAL_SINK_DEFAULT),
+    AP_GROUPINFO("CRT_SINK", 7, AP_Parachute, _critical_sink, AP_PARACHUTE_CRITICAL_SINK_DEFAULT),
     
     
     AP_GROUPEND
@@ -112,6 +114,44 @@ void AP_Parachute::release()
     AP::arming().disarm();
 }
 
+void AP_Parachute::auto_release_check()
+{
+    // return immediately if parachute watchdog is not configured
+    if (_watchdog_ms <= 0 || is_negative(_critical_sink))
+        return;
+
+    static uint16_t control_loss_count; // number of iterations we have been out of control
+    const int dt = 1000 / 10;
+    const int parachute_check_trigger = (_watchdog_ms + dt - 1) / dt;
+
+    // ensure we are flying
+    if (!hal.util->get_soft_armed() || !_is_flying) {
+        control_loss_count = 0;
+        return;
+    }
+
+    // ensure the first control_loss event is from above the min altitude
+    if (control_loss_count == 0 && _alt_min > 0 && _altitude < _alt_min)
+        return;
+
+    // check if we regained control
+    if (_sink_rate <= _critical_sink) {
+        if (control_loss_count > 0)
+            control_loss_count--;
+        return;
+    }
+
+    // nope, still falling
+    if (control_loss_count < parachute_check_trigger)
+        control_loss_count++;
+
+    // release if watchdog delay has passed
+    if (control_loss_count >= parachute_check_trigger) {
+        control_loss_count = 0;
+        release();
+    }
+}
+
 /// update - shuts off the trigger should be called at about 10hz
 void AP_Parachute::update()
 {
@@ -119,18 +159,8 @@ void AP_Parachute::update()
     if (_enabled <= 0) {
         return;
     }
-    // check if the plane is sinking too fast for more than a second and release parachute
-    uint32_t time = AP_HAL::millis();
-    if((_critical_sink > 0) && (_sink_rate > _critical_sink) && !_release_initiated && _is_flying) {
-        if(_sink_time == 0) {
-            _sink_time = AP_HAL::millis();
-        }
-        if((time - _sink_time) >= 1000) {
-            release();
-        }
-    } else {
-        _sink_time = 0;
-    }
+
+    auto_release_check();
     
     // calc time since release
     uint32_t time_diff = AP_HAL::millis() - _release_time;

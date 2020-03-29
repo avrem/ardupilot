@@ -558,6 +558,7 @@ void Plane::update_alt()
     auto_state.sink_rate = 0.8f * auto_state.sink_rate + 0.2f*sink_rate;
 #if PARACHUTE == ENABLED
     parachute.set_sink_rate(auto_state.sink_rate);
+    parachute.set_altitude(relative_ground_altitude(false));
 #endif
     geofence_check(true);
 

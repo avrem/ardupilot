@@ -20,7 +20,7 @@
 
 #define AP_PARACHUTE_ALT_MIN_DEFAULT            10     // default min altitude the vehicle should have before parachute is released
 
-#define AP_PARACHUTE_CRITICAL_SINK_DEFAULT      0    // default critical sink speed in m/s to trigger emergency parachute
+#define AP_PARACHUTE_CRITICAL_SINK_DEFAULT      12     // default critical sink speed in m/s to trigger emergency parachute
 
 /// @class	AP_Parachute
 /// @brief	Class managing the release of a parachute
@@ -66,9 +66,6 @@ public:
     /// update - shuts off the trigger should be called at about 10hz
     void update();
     
-    /// critical_sink - returns the configured maximum sink rate to trigger emergency release
-    float critical_sink() const { return _critical_sink; }
-
     /// alt_min - returns the min altitude above home the vehicle should have before parachute is released
     ///   0 = altitude check disabled
     int16_t alt_min() const { return _alt_min; }
@@ -78,6 +75,8 @@ public:
 
     // set_sink_rate - set vehicle sink rate
     void set_sink_rate(float sink_rate) { _sink_rate = sink_rate; }
+
+    void set_altitude(float altitude) { _altitude = altitude; }
 
     static const struct AP_Param::GroupInfo        var_info[];
 
@@ -93,7 +92,8 @@ private:
     AP_Int16    _servo_off_pwm; // PWM value to move servo to when shutter is deactivated
     AP_Int16    _alt_min;       // min altitude the vehicle should have before parachute is released
     AP_Int16    _delay_ms;      // delay before chute release for motors to stop
-    AP_Float    _critical_sink;      // critical sink rate to trigger emergency parachute
+    AP_Int16    _watchdog_ms;   // emergency watchdog trigger time
+    AP_Float    _critical_sink; // maximum sink rate to trigger emergency parachute
 
     // internal variables
     AP_Relay   &_relay;         // pointer to relay object from the base class Relay.
@@ -103,7 +103,9 @@ private:
     bool        _released:1;             // true if the parachute has been released
     bool        _is_flying:1;            // true if the vehicle is flying
     float       _sink_rate;              // vehicle sink rate in m/s
-    uint32_t    _sink_time;              // time that the vehicle exceeded critical sink rate
+    float       _altitude;               // vehicle altitude above ground
+
+    void auto_release_check();
 };
 
 namespace AP {
