@@ -287,7 +287,7 @@ void Plane::one_second_loop()
 void Plane::compass_save()
 {
     if (AP::compass().enabled() &&
-        compass.get_learn_type() >= Compass::LEARN_INTERNAL &&
+        compass.get_learn_type() == Compass::LEARN_INTERNAL &&
         !hal.util->get_soft_armed()) {
         /*
           only save offsets when disarmed
