@@ -212,6 +212,8 @@ const AP_Param::GroupInfo AP_MotorsMulticopter::var_info[] = {
     // @User: Advanced
     AP_GROUPINFO("SAFE_TIME", 42, AP_MotorsMulticopter, _safe_time, AP_MOTORS_SAFE_TIME_DEFAULT),
 
+    AP_GROUPINFO("THR_MAX", 50, AP_MotorsMulticopter, _thr_max, 1.0f),
+
     AP_GROUPEND
 };
 
@@ -302,14 +304,14 @@ float AP_MotorsMulticopter::get_current_limit_max_throttle()
         !_flags.armed || // remove throttle limit if disarmed
         !battery.current_amps(_batt_current, _batt_idx)) { // no current monitoring is available
         _throttle_limit = 1.0f;
-        return 1.0f;
+        return _thr_max;
     }
 
     float _batt_resistance = battery.get_resistance(_batt_idx);
 
     if (is_zero(_batt_resistance)) {
         _throttle_limit = 1.0f;
-        return 1.0f;
+        return _thr_max;
     }
 
     // calculate the maximum current to prevent voltage sag below _batt_voltage_min
@@ -324,7 +326,7 @@ float AP_MotorsMulticopter::get_current_limit_max_throttle()
     _throttle_limit = constrain_float(_throttle_limit, 0.2f, 1.0f);
 
     // limit max throttle
-    return get_throttle_hover() + ((1.0 - get_throttle_hover()) * _throttle_limit);
+    return (get_throttle_hover() + ((1.0 - get_throttle_hover()) * _throttle_limit)) * _thr_max;
 }
 
 // apply_thrust_curve_and_volt_scaling - returns throttle in the range 0 ~ 1
