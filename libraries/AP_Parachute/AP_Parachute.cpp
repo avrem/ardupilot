@@ -93,7 +93,7 @@ void AP_Parachute::enabled(bool on_off)
 void AP_Parachute::release()
 {
     // exit immediately if not enabled
-    if (_enabled <= 0) {
+    if (_enabled <= 0 || _release_initiated) {
         return;
     }
 
