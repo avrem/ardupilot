@@ -853,7 +853,7 @@ void QuadPlane::multicopter_attitude_rate_update(float yaw_rate_cds)
     }
 
     // normal control modes for VTOL and FW flight
-    if (in_vtol_mode() || is_tailsitter()) {
+    if (in_vtol_mode() || is_tailsitter() || is_tiltquad()) {
         // use euler angle attitude control
         attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(plane.nav_roll_cd,
                                                                       plane.nav_pitch_cd,
@@ -1492,7 +1492,7 @@ void QuadPlane::update_transition(void)
         plane.control_mode == &plane.mode_acro ||
         plane.control_mode == &plane.mode_training) {
         // in manual modes quad motors are always off
-        if (!tilt.motors_active && !is_tailsitter()) {
+        if (!tilt.motors_active && !is_tailsitter() && !is_tiltquad()) {
             motors->set_desired_spool_state(AP_Motors::DesiredSpoolState::SHUT_DOWN);
             motors->output();
         }
@@ -1597,6 +1597,12 @@ void QuadPlane::update_transition(void)
         if (have_airspeed && aspeed > plane.aparm.airspeed_min && !assisted_flight) {
             transition_state = TRANSITION_TIMER;
             gcs().send_text(MAV_SEVERITY_INFO, "Transition airspeed reached %.1f", (double)aspeed);
+            if (is_tiltquad()) { // go directly to TRANSITION_DONE
+                transition_state = TRANSITION_DONE;
+                transition_start_ms = 0;
+                transition_low_airspeed_ms = 0;
+                return; // prevent inconsistent TRANSITION_DONE/assisted_flight state
+            }
         }
         assisted_flight = true;
 
@@ -1609,11 +1615,21 @@ void QuadPlane::update_transition(void)
         }
         hold_hover(climb_rate_cms);
 
-        // set desired yaw to current yaw in both desired angle and
-        // rate request. This reduces wing twist in transition due to
-        // multicopter yaw demands
-        attitude_control->set_yaw_target_to_current_heading();
-        attitude_control->rate_bf_yaw_target(ahrs.get_gyro().z);
+        if (is_tiltquad()) {
+            // use slewed fixed-wing throttle
+            float thr_diff = fabsf(plane.aparm.throttle_max * 0.01f - motors->get_throttle_hover());
+            float slew_step = constrain_float(thr_diff / (transition_time_ms * 0.001f), 0.05f, 1.0f) * plane.G_Dt;
+            float throttle = SRV_Channels::get_output_scaled(SRV_Channel::k_throttle) * 0.01f;
+            throttle = constrain_float(throttle, last_throttle - slew_step, last_throttle + slew_step);
+            attitude_control->set_throttle_out(throttle, true, 0);
+        }
+        else {
+            // set desired yaw to current yaw in both desired angle and
+            // rate request. This reduces wing twist in transition due to
+            // multicopter yaw demands
+            attitude_control->set_yaw_target_to_current_heading();
+            attitude_control->rate_bf_yaw_target(ahrs.get_gyro().z);
+        }
 
         last_throttle = motors->get_throttle();
 
@@ -1688,7 +1704,7 @@ void QuadPlane::update_transition(void)
         return;
 
     case TRANSITION_DONE:
-        if (!tilt.motors_active && !is_tailsitter()) {
+        if (!tilt.motors_active && !is_tailsitter() && !is_tiltquad()) {
             motors->set_desired_spool_state(AP_Motors::DesiredSpoolState::SHUT_DOWN);
             motors->output();
         }

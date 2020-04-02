@@ -679,9 +679,6 @@ void Plane::set_servos(void)
     }
 #endif
 
-    // do any transition updates for quadplane
-    quadplane.update();    
-
     if (control_mode == &mode_auto && auto_state.idle_mode) {
         // special handling for balloon launch
         set_servos_idle();
@@ -719,6 +716,9 @@ void Plane::set_servos(void)
     } else {
         set_servos_controlled();
     }
+
+    // do any transition updates for quadplane
+    quadplane.update();    
 
     // setup flap outputs
     set_servos_flaps();
