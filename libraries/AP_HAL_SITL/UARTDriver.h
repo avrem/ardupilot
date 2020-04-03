@@ -82,6 +82,7 @@ public:
      */
     uint64_t receive_time_constraint_us(uint16_t nbytes) override;
     
+    uint32_t bw_in_kilobytes_per_second() const override;
 private:
     uint8_t _portNumber;
     bool _connected = false; // true if a client has connected

@@ -749,5 +749,14 @@ uint64_t UARTDriver::receive_time_constraint_us(uint16_t nbytes)
     return last_receive_us;
 }
 
+uint32_t UARTDriver::bw_in_kilobytes_per_second() const
+{
+    SITL::SITL *_sitl = AP::sitl();
+    if (_sitl && _sitl->telem_baudlimit_enable) {
+        return _uart_baudrate / (10 * 1024);
+    }
+    return 10000;
+}
+
 #endif // CONFIG_HAL_BOARD
 
