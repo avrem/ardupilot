@@ -26,9 +26,7 @@
 #include <AP_Radio/AP_Radio.h>
 #endif
 
-#ifndef HAL_WATCHDOG_ENABLED_DEFAULT
 #define HAL_WATCHDOG_ENABLED_DEFAULT false
-#endif
 
 extern "C" typedef int (*main_fn_t)(int argc, char **);
 
