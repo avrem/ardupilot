@@ -761,6 +761,54 @@ void AP_UAVCAN::handle_ESC_status(AP_UAVCAN* ap_uavcan, uint8_t node_id, const E
                                  cb.msg->rpm,
                                  cb.msg->power_rating_pct);
 
+    int idx = cb.msg->esc_index - 1;
+    if (idx >= 0 && idx < ARRAY_SIZE(_esc_telemetry)) {
+        ap_uavcan->_esc_telemetry[idx].timestamp_ms = AP_HAL::millis();
+        ap_uavcan->_esc_telemetry[idx].voltage = constrain_float(roundf(cb.msg->voltage * 100.0f), 0, UINT16_MAX);
+        ap_uavcan->_esc_telemetry[idx].current = constrain_float(roundf(cb.msg->current * 100.0f), 0, UINT16_MAX);
+        ap_uavcan->_esc_telemetry[idx].rpm = cb.msg->rpm;
+        ap_uavcan->_esc_telemetry[idx].temperature = constrain_float(roundf(cb.msg->temperature - C_TO_KELVIN), 0, UINT8_MAX);
+    }    
+}
+
+void AP_UAVCAN::send_esc_telemetry_mavlink(uint8_t mav_chan)
+{
+    uint32_t now = AP_HAL::millis();
+
+    uint16_t voltage[4];
+    uint16_t current[4];
+    uint16_t rpm[4];
+    uint8_t  temperature[4];
+    uint16_t totalcurrent[4];
+    uint16_t count[4];
+
+    for (uint8_t i = 0; i < 8; i++) {
+        uint8_t idx = i % 4;
+        uint32_t timestamp = _esc_telemetry[i].timestamp_ms;
+        if (timestamp && (now - timestamp < 1000)) {
+            voltage[idx]     = _esc_telemetry[i].voltage;
+            current[idx]     = _esc_telemetry[i].current;
+            rpm[idx]         = _esc_telemetry[i].rpm;
+            temperature[idx] = _esc_telemetry[i].temperature;
+        } else {
+            voltage[idx]     = 0;
+            current[idx]     = 0;
+            rpm[idx]         = 0;
+            temperature[idx] = 0;
+        }
+        totalcurrent[idx] = 0;
+        count[idx] = 0;
+        if (i % 4 == 3) {
+            if (!HAVE_PAYLOAD_SPACE((mavlink_channel_t)mav_chan, ESC_TELEMETRY_1_TO_4)) {
+                return;
+            }
+            if (i < 4) {
+                mavlink_msg_esc_telemetry_1_to_4_send((mavlink_channel_t)mav_chan, temperature, voltage, current, totalcurrent, rpm, count);
+            } else {
+                mavlink_msg_esc_telemetry_5_to_8_send((mavlink_channel_t)mav_chan, temperature, voltage, current, totalcurrent, rpm, count);
+            }
+        }
+    }
 }
 
 #endif // HAL_WITH_UAVCAN
