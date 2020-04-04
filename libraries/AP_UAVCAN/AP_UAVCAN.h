@@ -93,6 +93,9 @@ public:
     // send RTCMStream packets
     void send_RTCMStream(const uint8_t *data, uint32_t len);
 
+    // send ESC telemetry messages over MAVLink
+    void send_esc_telemetry_mavlink(uint8_t mav_chan);
+
     template <typename DataType_>
     class RegistryBinder {
     protected:
@@ -224,6 +227,15 @@ private:
     
     // safety status send state
     uint32_t _last_safety_state_ms;
+
+    // telemetry buffer
+    struct {
+        uint32_t timestamp_ms;
+        uint16_t voltage;
+        uint16_t current;
+        uint16_t rpm;
+        uint8_t  temperature;
+    } _esc_telemetry[8];
 
     // safety button handling
     static void handle_button(AP_UAVCAN* ap_uavcan, uint8_t node_id, const ButtonCb &cb);
