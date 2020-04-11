@@ -200,11 +200,11 @@ void AP_UAVCAN::init(uint8_t driver_index)
     esc_listener->start(&AP_UAVCAN::esc_read_status);
 
     act_out_array[driver_index] = new uavcan::Publisher<uavcan::equipment::actuator::ArrayCommand>(*_node);
-    act_out_array[driver_index]->setTxTimeout(uavcan::MonotonicDuration::fromMSec(2));
+    act_out_array[driver_index]->setTxTimeout(uavcan::MonotonicDuration::fromMSec(20));
     act_out_array[driver_index]->setPriority(uavcan::TransferPriority::OneLowerThanHighest);
 
     esc_raw[driver_index] = new uavcan::Publisher<uavcan::equipment::esc::RawCommand>(*_node);
-    esc_raw[driver_index]->setTxTimeout(uavcan::MonotonicDuration::fromMSec(2));
+    esc_raw[driver_index]->setTxTimeout(uavcan::MonotonicDuration::fromUSec(2500));
     esc_raw[driver_index]->setPriority(uavcan::TransferPriority::OneLowerThanHighest);
 
     rgb_led[driver_index] = new uavcan::Publisher<uavcan::equipment::indication::LightsCommand>(*_node);
