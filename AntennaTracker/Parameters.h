@@ -41,6 +41,10 @@ public:
         k_param_format_version = 0,
         k_param_software_type,      // deprecated
 
+        k_param_NavEKF2 = 10,
+        k_param_NavEKF3,
+        k_param_logger,
+
         k_param_gcs0 = 100,         // stream rates for uartA
         k_param_gcs1,               // stream rates for uartC
         k_param_sysid_this_mav,
