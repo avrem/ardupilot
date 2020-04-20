@@ -113,7 +113,8 @@ void QuadPlane::tiltrotor_continuous_update(void)
     if (plane.control_mode == &plane.mode_qstabilize ||
         plane.control_mode == &plane.mode_qhover ||
         plane.control_mode == &plane.mode_qautotune) {
-        tiltrotor_slew(0);
+        float manual_tilt = constrain_float(1.0f - RC_Channels::rc_channel(6-1)->percent_input() * 0.01f, 0, 1);
+        tiltrotor_slew(manual_tilt);
         return;
     }
 
