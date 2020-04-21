@@ -2375,7 +2375,6 @@ void QuadPlane::vtol_position_controller(void)
             }
         }
         if (plane.control_mode == &plane.mode_qrtl || plane.control_mode == &plane.mode_guided || vtol_loiter_auto) {
-            plane.ahrs.get_position(plane.current_loc);
             float target_altitude = plane.home.alt + plane.relative_target_altitude_cm();
             Location origin;
             if (!ahrs.get_origin(origin))
