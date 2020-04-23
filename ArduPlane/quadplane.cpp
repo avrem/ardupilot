@@ -3094,7 +3094,8 @@ bool QuadPlane::guided_mode_enabled(void)
     }
     if (plane.control_mode == &plane.mode_auto &&
         (plane.mission.get_current_nav_cmd().id == MAV_CMD_NAV_LOITER_TURNS ||
-         plane.mission.get_current_nav_cmd().id == MAV_CMD_NAV_LOITER_TO_ALT)) {
+         plane.mission.get_current_nav_cmd().id == MAV_CMD_NAV_LOITER_TO_ALT ||
+         plane.mission.get_current_nav_cmd().id == MAV_CMD_NAV_VTOL_LAND)) {
         // loiter turns and loiter to alt are fixed wing only
         return false;
     }
