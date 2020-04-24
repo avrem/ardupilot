@@ -294,7 +294,7 @@ void AP_Generator::update()
 float AP_Generator::get_temp_limit(float temp, float temp_min, float temp_max)
 {
     if (isnan(temp))
-        return 0.0f;
+        return _armed ? 1.0f : 0.0f;
     return constrain_float((temp_max - temp) / (temp_max - temp_min), 0.0f, 1.0f);
 }
 
@@ -337,7 +337,7 @@ void AP_Generator::update_desired_state()
         _ice_temp_alt = NAN;
     }
 
-    if (isnan(_ice_temp) || isnan(_gen_temp)) {
+    if (!_armed && (isnan(_ice_temp) || isnan(_gen_temp))) {
         if (_should_run)
             gcs().send_text(MAV_SEVERITY_CRITICAL, "Generator: temperature monitor unhealthy");
         _should_run = false;
@@ -348,7 +348,7 @@ void AP_Generator::update_desired_state()
 
     _limit = MIN(ice_limit, gen_limit);
 
-    if (is_zero(_limit)) {
+    if (!_armed && is_zero(_limit)) {
         if (_should_run)
             gcs().send_text(MAV_SEVERITY_CRITICAL, "Generator: engine overheating");
         _should_run = false;
