@@ -52,7 +52,7 @@ public:
     //
 
     // true if we have a valid target location estimate
-    bool have_target() const;
+    bool have_target();
 
     // get target's estimated location and velocity (in NED)
     bool get_target_location_and_velocity(Location &loc, Vector3f &vel_ned) const;
@@ -86,6 +86,8 @@ public:
     // get bearing to target (including offset) in degrees (for reporting purposes)
     float get_bearing_to_target() const { return _bearing_to_target; }
 
+    void send_status(mavlink_channel_t chan);
+
     // parameter list
     static const struct AP_Param::GroupInfo var_info[];
 
@@ -105,6 +107,9 @@ private:
 
     // set recorded distance and bearing to target to zero
     void clear_dist_and_bearing_to_target();
+
+    bool target_seen() const;
+    bool target_recent() const;
 
     // parameters
     AP_Int8     _enabled;           // 1 if this subsystem is enabled

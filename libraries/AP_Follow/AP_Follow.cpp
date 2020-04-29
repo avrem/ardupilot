@@ -408,3 +408,46 @@ void AP_Follow::clear_dist_and_bearing_to_target()
     _dist_to_target = 0.0f;
     _bearing_to_target = 0.0f;
 }
+
+bool AP_Follow::target_seen() const
+{
+    return _sysid != 0 && _last_location_update_ms != 0 && _last_heading_update_ms != 0;
+}
+
+bool AP_Follow::target_recent() const
+{
+    return target_seen() &&
+        (AP_HAL::millis() - _last_location_update_ms < AP_FOLLOW_TIMEOUT_MS) &&
+        (AP_HAL::millis() - _last_heading_update_ms < AP_FOLLOW_TIMEOUT_MS);
+}
+
+bool AP_Follow::have_target()
+{
+    Vector3f dist_ned, dist_with_offs, vel_ned;
+    return _enabled && target_recent() && get_target_dist_and_vel_ned(dist_ned, dist_with_offs, vel_ned);
+}
+
+void AP_Follow::send_status(mavlink_channel_t chan)
+{
+    if (!_enabled)
+        return;
+
+    mavlink_follow_target_t ft = {};
+
+    ft.timestamp = AP_HAL::micros64();
+
+    if (target_seen())
+        ft.est_capabilities |= 1;
+    if (target_recent())
+        ft.est_capabilities |= 2;
+
+    Vector3f dist_ned, dist_with_offs, vel_ned;
+    if (get_target_dist_and_vel_ned(dist_ned, dist_with_offs, vel_ned)) {
+        ft.est_capabilities |= 4;
+        ft.vel[0] = dist_with_offs.x;
+        ft.vel[1] = dist_with_offs.y;
+        ft.vel[2] = dist_with_offs.z;
+    }
+
+    mavlink_msg_follow_target_send_struct(chan, &ft);
+}
