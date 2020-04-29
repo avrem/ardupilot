@@ -408,3 +408,28 @@ void AP_Follow::clear_dist_and_bearing_to_target()
     _dist_to_target = 0.0f;
     _bearing_to_target = 0.0f;
 }
+
+void AP_Follow::send_status(mavlink_channel_t chan)
+{
+    if (!_enabled)
+        return;
+
+    mavlink_follow_target_t ft = {};
+
+    ft.timestamp = AP_HAL::micros64();
+
+    if (_sysid != 0 && _last_location_update_ms != 0 && _last_heading_update_ms != 0)
+        ft.est_capabilities |= 1; // target captured
+    if (!(AP_HAL::millis() - _last_location_update_ms > AP_FOLLOW_TIMEOUT_MS))
+        ft.est_capabilities |= 2; // target actual
+
+    Vector3f dist_ned, dist_with_offs, vel_ned;
+    if (get_target_dist_and_vel_ned(dist_ned, dist_with_offs, vel_ned)) {
+        ft.est_capabilities |= 4; // target vector ready
+        ft.vel[0] = dist_with_offs.x;
+        ft.vel[1] = dist_with_offs.y;
+        ft.vel[2] = dist_with_offs.z;
+    }
+
+    mavlink_msg_follow_target_send_struct(chan, &ft);
+}

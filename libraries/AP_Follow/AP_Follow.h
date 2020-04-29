@@ -86,6 +86,8 @@ public:
     // get bearing to target (including offset) in degrees (for reporting purposes)
     float get_bearing_to_target() const { return _bearing_to_target; }
 
+    void send_status(mavlink_channel_t chan);
+
     // parameter list
     static const struct AP_Param::GroupInfo var_info[];
 
