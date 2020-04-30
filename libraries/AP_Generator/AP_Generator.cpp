@@ -162,6 +162,12 @@ void AP_Generator::subscribe_msgs(AP_UAVCAN* ap_uavcan)
         [](const uavcan::ReceivedDataStructure<aeroxo::equipment::genset::ecu::Status>& msg)
     {if (_singleton != nullptr) _singleton->ecuStatusCallback(msg);}
     );
+
+    auto fuel_listener = new uavcan::Subscriber<aeroxo::equipment::genset::ecu::TankStatus>(*node);
+    fuel_listener->start(
+        [](const uavcan::ReceivedDataStructure<aeroxo::equipment::genset::ecu::TankStatus>& msg)
+    {if (_singleton != nullptr) _singleton->tankStatusCallback(msg);}
+    );
 }
 
 void AP_Generator::escStatusCallback(const uavcan::equipment::esc::Status& msg)
@@ -185,6 +191,15 @@ void AP_Generator::ecuStatusCallback(const aeroxo::equipment::genset::ecu::Statu
     _gen_temp = msg.generator_temperature - C_TO_KELVIN;
 }
 
+void AP_Generator::tankStatusCallback(const aeroxo::equipment::genset::ecu::TankStatus &msg)
+{
+    if (!enable)
+        return;
+
+    _last_update.tank_status = AP_HAL::millis();
+    _fuel_lvl_raw = msg.fuel_level;
+}
+
 void AP_Generator::update()
 {
     if (!enable)
@@ -200,6 +215,8 @@ void AP_Generator::update()
     update_starter(dt);
     update_throttle(dt);
     update_cooler(dt);
+
+    update_fuel();
 
     _last_update_ms = now;	
 
@@ -418,6 +435,18 @@ void AP_Generator::update_throttle(float dt)
 
     uint16_t _pwm_throttle = pwm_throttle_min + _throttle * (pwm_throttle_max - pwm_throttle_min);
     AP_UAVCAN::act_write(AEROXO_UAVCAN_THROTTLE_ID, AP_UAVCAN::calc_servo_output(_pwm_throttle));
+}
+
+void AP_Generator::update_fuel()
+{
+    uint32_t now = AP_HAL::millis();
+
+    if (isnan(_fuel_lvl_raw) || now > _last_update.tank_status + AP_GENERATOR_STALE_AFTER_MS) {
+        _fuel_lvl_pct = 0;
+    }
+    else {
+        _fuel_lvl_pct = constrain_float(_fuel_lvl_raw * 100 + 0.5f, 0, 100);
+    }
 }
 
 void AP_Generator::send_status(mavlink_channel_t chan) const
