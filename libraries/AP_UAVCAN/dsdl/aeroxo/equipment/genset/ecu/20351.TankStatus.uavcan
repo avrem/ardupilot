@@ -1,0 +1,6 @@
+#
+# Fuel tank status
+#
+
+float16 fuel_level
+float16 raw_data
