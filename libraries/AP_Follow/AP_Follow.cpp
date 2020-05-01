@@ -23,7 +23,7 @@
 
 extern const AP_HAL::HAL& hal;
 
-#define AP_FOLLOW_TIMEOUT_MS    3000    // position estimate timeout after 1 second
+#define AP_FOLLOW_TIMEOUT_MS    3000UL   // position estimate timeout after 3 second
 #define AP_FOLLOW_SYSID_TIMEOUT_MS 10000 // forget sysid we are following if we haave not heard from them in 10 seconds
 
 #define AP_FOLLOW_OFFSET_TYPE_NED       0   // offsets are in north-east-down frame
@@ -151,13 +151,13 @@ bool AP_Follow::get_target_location_and_velocity(Location &loc, Vector3f &vel_ne
         return false;
     }
 
-    // check for timeout
-    if ((_last_location_update_ms == 0) || (AP_HAL::millis() - _last_location_update_ms > AP_FOLLOW_TIMEOUT_MS)) {
+    // check that we have a location
+    if (_last_location_update_ms == 0) {
         return false;
     }
 
     // calculate time since last actual position update
-    const float dt = (AP_HAL::millis() - _last_location_update_ms) * 0.001f;
+    const float dt = MIN(AP_HAL::millis() - _last_location_update_ms, AP_FOLLOW_TIMEOUT_MS) * 0.001f;
 
     // get velocity estimate
     if (!get_velocity_ned(vel_ned, dt)) {
@@ -240,8 +240,8 @@ bool AP_Follow::get_target_heading_deg(float &heading) const
         return false;
     }
 
-    // check for timeout
-    if ((_last_heading_update_ms == 0) || (AP_HAL::millis() - _last_heading_update_ms > AP_FOLLOW_TIMEOUT_MS)) {
+    // check that we have a heading
+    if (_last_heading_update_ms == 0) {
         return false;
     }
 
