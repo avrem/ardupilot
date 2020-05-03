@@ -84,7 +84,7 @@ protected:
     AP_Int16 ice_temp_max;
 
     AP_Int16 charge_target;
-    AP_Int16 gen_max;
+    AP_Int16 gen_max, gen_min;
 
     AP_Int32 rpm_max;
     AP_Float rpm_gain;

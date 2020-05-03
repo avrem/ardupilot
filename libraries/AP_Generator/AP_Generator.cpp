@@ -169,6 +169,14 @@ const AP_Param::GroupInfo AP_Generator::var_info[] = {
     // @User: Standard
     AP_GROUPINFO("USE_TC",      20, AP_Generator, use_tc,               0),
 
+    // @Param: CURR_MIN
+    // @DisplayName: Minimum current
+    // @Description: This value sets minimum soft-limited current output
+    // @Range: 0 100
+    // @Units: A
+    // @User: Standard
+    AP_GROUPINFO("CURR_MIN",    21, AP_Generator, gen_min,              0),
+
     AP_GROUPEND
 };
 
@@ -507,7 +515,7 @@ void AP_Generator::update_throttle(float dt)
         float gen_target = k * c_min + (1 - k) * c_max;
 
         if (gen_max > 0)
-            gen_target = MIN(gen_target, gen_max * _limit);
+            gen_target = MIN(gen_target, MAX(gen_max * _limit, gen_min));
 
         float error = gen_target - gen_amps;
         const float max_step = 1.f; // 100% per second
