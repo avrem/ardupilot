@@ -1254,6 +1254,8 @@ void QuadPlane::control_loiter()
     plane.nav_roll_cd = loiter_nav->get_roll();
     plane.nav_pitch_cd = loiter_nav->get_pitch();
 
+    update_psc_tilt();
+
     if (now - last_pidz_init_ms < (uint32_t)transition_time_ms*2 && !is_tailsitter()) {
         // we limit pitch during initial transition
         float pitch_limit_cd = linear_interpolate(loiter_initial_pitch_cd, aparm.angle_max,
@@ -2269,6 +2271,8 @@ void QuadPlane::vtol_position_controller(void)
         plane.nav_roll_cd = pos_control->get_roll();
         plane.nav_pitch_cd = pos_control->get_pitch();
 
+        update_psc_tilt();
+
         if (!is_tiltquad()) {
             /*
             limit the pitch down with an expanding envelope. This
@@ -2354,6 +2358,8 @@ void QuadPlane::vtol_position_controller(void)
         // nav roll and pitch are controller by position controller
         plane.nav_roll_cd = pos_control->get_roll();
         plane.nav_pitch_cd = pos_control->get_pitch();
+
+        update_psc_tilt();
 
         // call attitude controller
         attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(plane.nav_roll_cd,
@@ -2492,6 +2498,8 @@ void QuadPlane::takeoff_controller(void)
         plane.next_WP_loc.lat = stopping_loc.lat;
         plane.next_WP_loc.lng = stopping_loc.lng;
     }
+
+    update_psc_tilt();
 
     float yaw_align_height = plane.next_WP_loc.alt;
     if (is_positive(attitude_control->get_slew_yaw_rads()))

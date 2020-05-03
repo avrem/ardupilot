@@ -457,6 +457,7 @@ private:
         AP_Int8  max_angle_deg;
         AP_Int8  tilt_type;
         AP_Float tilt_yaw_angle;
+        float psc_tilt;
         float current_tilt;
         float current_throttle;
         bool motors_active:1;
@@ -518,6 +519,7 @@ private:
     }
     bool tiltrotor_fully_fwd(void);
     float tilt_max_change(bool up);
+    void update_psc_tilt();
 
     void afs_terminate(void);
     bool guided_mode_enabled(void);

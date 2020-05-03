@@ -133,13 +133,11 @@ void QuadPlane::tiltrotor_continuous_update(void)
         // we are starting fixed wing transition - tilt the motors to intermediate state
         tiltrotor_slew(tilt.max_angle_deg / 90.0f);
     } else {
-        // until we have completed the transition we limit the tilt to
-        // Q_TILT_MAX. Anything above 50% throttle gets
-        // Q_TILT_MAX. Below 50% throttle we decrease linearly. This
-        // relies heavily on Q_VFWD_GAIN being set appropriately.
-        float settilt = constrain_float(SRV_Channels::get_output_scaled(SRV_Channel::k_throttle) / 50.0f, 0, 1);
-        tiltrotor_slew(settilt * tilt.max_angle_deg / 90.0f);
+        // in regular VTOL modes tilt the motors as PSC commands
+        tiltrotor_slew(tilt.psc_tilt);
     }
+
+    tilt.psc_tilt = 0.0f;
 }
 
 
@@ -427,6 +425,27 @@ void QuadPlane::tiltrotor_bicopter(void)
 
     SRV_Channels::set_output_scaled(SRV_Channel::k_tiltMotorLeft,  tilt_left);
     SRV_Channels::set_output_scaled(SRV_Channel::k_tiltMotorRight, tilt_right);
+}
+
+void QuadPlane::update_psc_tilt()
+{
+    if (tilt.max_angle_deg <= 0 ||
+        !in_vtol_mode() ||
+        !motors->armed() ||
+        vel_forward.gain <= 0 ||
+        plane.control_mode == &plane.mode_qstabilize ||
+        plane.control_mode == &plane.mode_qhover ||
+        plane.control_mode == &plane.mode_qautotune ||
+        motors->get_desired_spool_state() < AP_Motors::DesiredSpoolState::GROUND_IDLE) {
+        tilt.psc_tilt = 0.0f;
+        return;        
+    }
+
+    int32_t tilt_max_cd = constrain_float(vel_forward.gain, 0.0f, 1.0f) * tilt.max_angle_deg * 100;
+    int32_t tilt_cd = constrain_int32(-plane.nav_pitch_cd, 0, tilt_max_cd);
+
+    plane.nav_pitch_cd += tilt_cd;
+    tilt.psc_tilt = tilt_cd / 9000.0f;
 }
 
 bool QuadPlane::is_tiltquad(void)
