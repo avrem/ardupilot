@@ -98,6 +98,9 @@ protected:
 
     AP_Int8 use_tc;
 
+    AP_Int32 rpm_min;
+    AP_Int8 thr_low;
+
 private:
     static AP_Generator *_singleton;
 
