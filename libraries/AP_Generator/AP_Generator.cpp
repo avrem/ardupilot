@@ -373,7 +373,7 @@ void AP_Generator::update_desired_state()
         _ice_temp_alt = NAN;
     }
 
-    float ice_limit = get_temp_limit(_ice_temp, ice_temp_max + 5, ice_temp_max + 20);
+    float ice_limit = get_temp_limit(_ice_temp, ice_temp_max * 1.05f, ice_temp_max * 1.15f);
     float gen_limit = get_temp_limit(_gen_temp, 100, 115);
 
     _limit = MIN(ice_limit, gen_limit);
