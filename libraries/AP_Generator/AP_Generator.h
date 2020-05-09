@@ -113,6 +113,8 @@ private:
 
     uint32_t _last_update_ms;
 
+    bool _batt_healthy, _starter_healthy, _ecu_healthy;
+
     float _gen_current;
     int32_t _rpm, _rpm_alt;
 

@@ -317,7 +317,7 @@ void AP_Generator::update()
 float AP_Generator::get_temp_limit(float temp, float temp_min, float temp_max)
 {
     if (isnan(temp))
-        return _armed ? 1.0f : 0.0f;
+        return 0.0f;
     return constrain_float((temp_max - temp) / (temp_max - temp_min), 0.0f, 1.0f);
 }
 
@@ -338,32 +338,25 @@ void AP_Generator::update_desired_state()
 
     uint32_t now = AP_HAL::millis();
 
-    if (!AP::battery().healthy()) {
-        if (_should_run)
-            gcs().send_text(MAV_SEVERITY_CRITICAL, "Generator: battery monitor unhealthy");
-        _should_run = false;
-    }
+    _batt_healthy = AP::battery().healthy();
 
-    if (now > _last_update.starter_status + AP_GENERATOR_STALE_AFTER_MS) {
-        if (_should_run)
-            gcs().send_text(MAV_SEVERITY_CRITICAL, "Generator: starter unhealthy");
-        _should_run = false;
+    if (now < _last_update.starter_status + AP_GENERATOR_STALE_AFTER_MS)
+        _starter_healthy = true;
+    else {
+        _starter_healthy = false;
         _rpm = 0;
         _gen_current = 0;
         _vsi_temp = NAN;
     }
 
-    if (now > _last_update.ecu_status + AP_GENERATOR_STALE_AFTER_MS) {
+    if (now < _last_update.ecu_status + AP_GENERATOR_STALE_AFTER_MS)
+        _ecu_healthy = true;
+    else {
+        _ecu_healthy = false;
         _ice_temp = NAN;
         _gen_temp = NAN;
         _rpm_alt = 0;
         _ice_temp_alt = NAN;
-    }
-
-    if (!_armed && (isnan(_ice_temp) || isnan(_gen_temp))) {
-        if (_should_run)
-            gcs().send_text(MAV_SEVERITY_CRITICAL, "Generator: temperature monitor unhealthy");
-        _should_run = false;
     }
 
     float ice_limit = get_temp_limit(_ice_temp, ice_temp_max + 5, ice_temp_max + 20);
@@ -427,14 +420,22 @@ void AP_Generator::update_starter(float dt)
 {
     uint32_t now = AP_HAL::millis();
 
-    if (!_should_run && state != ICE_OFF) {
+    bool healthy = _batt_healthy && _starter_healthy && _ecu_healthy;
+
+    if ((!healthy || !_should_run) && state != ICE_OFF) {
+        if (!_batt_healthy)
+            gcs().send_text(MAV_SEVERITY_CRITICAL, "Generator: batt unhealthy");
+        if (!_starter_healthy)
+            gcs().send_text(MAV_SEVERITY_CRITICAL, "Generator: starter unhealthy");
+        if (!_ecu_healthy)
+            gcs().send_text(MAV_SEVERITY_CRITICAL, "Generator: ecu unhealthy");
         gcs().send_text(MAV_SEVERITY_INFO, "Stopping generator");
         state = ICE_OFF;
     }
 
     switch (state) {
     case ICE_OFF:
-        if (_should_run)
+        if (healthy && _should_run)
             state = ICE_START_DELAY;
         break;
     case ICE_START_DELAY:
