@@ -542,13 +542,7 @@ void AP_Generator::send_status(mavlink_channel_t chan) const
 
 bool AP_Generator::engine_control(float start_control, float cold_start, float height_delay)
 {
-    if (is_zero(start_control) && is_zero(cold_start) && is_positive(height_delay)) {
-        // old-style toggle control
-        _should_run = !_should_run;
-    }
-    else {
-        _should_run = is_positive(start_control);
-    }
+    _should_run = is_positive(start_control);
 
     return true;
 }
