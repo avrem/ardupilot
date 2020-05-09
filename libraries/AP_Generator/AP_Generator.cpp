@@ -177,6 +177,20 @@ const AP_Param::GroupInfo AP_Generator::var_info[] = {
     // @User: Standard
     AP_GROUPINFO("CURR_MIN",    21, AP_Generator, gen_min,              0),
 
+    // @Param: RPM_MIN
+    // @DisplayName: Minimum RPM
+    // @Description: Throttle will be constrained to THR_LOW below this RPM
+    // @Range: 0 10000
+    // @User: Standard
+    AP_GROUPINFO("RPM_MIN",     22, AP_Generator, rpm_min,               0),
+
+    // @Param: THR_LOW
+    // @DisplayName: Throttle low threshold
+    // @Description: Throttle value which will not be exceeded if RPM is below minimum
+    // @Range: 0 100
+    // @User: Standard
+    AP_GROUPINFO("THR_LOW",     23, AP_Generator, thr_low,               0),
+
     AP_GROUPEND
 };
 
@@ -531,6 +545,9 @@ void AP_Generator::update_throttle(float dt)
 
     if (state != ICE_RUNNING)
         _throttle = 0;
+
+    if (_rpm < rpm_min && thr_low >= 0)
+        _throttle = MIN(_throttle, thr_low * 0.01f);
 
     uint16_t _pwm_throttle = pwm_throttle_min + _throttle * (pwm_throttle_max - pwm_throttle_min);
     AP_UAVCAN::act_write(AEROXO_UAVCAN_THROTTLE_ID, AP_UAVCAN::calc_servo_output(_pwm_throttle));
