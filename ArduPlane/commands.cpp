@@ -66,7 +66,7 @@ void Plane::set_next_WP(const struct Location &loc)
     setup_turn_angle();
 }
 
-void Plane::set_guided_WP(void)
+void Plane::set_guided_WP(VtolType vtol_type)
 {
     if (aparm.loiter_radius < 0 || guided_WP_loc.loiter_ccw) {
         loiter.direction = -1;
@@ -97,6 +97,8 @@ void Plane::set_guided_WP(void)
 
     // start in non-VTOL mode
     auto_state.vtol_loiter = false;
+
+    guided_state.vtol_type = vtol_type;
     
     loiter_angle_reset();
 }

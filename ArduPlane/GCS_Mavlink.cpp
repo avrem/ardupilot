@@ -790,7 +790,15 @@ MAV_RESULT GCS_MAVLINK_Plane::handle_command_int_do_reposition(const mavlink_com
             plane.guided_WP_loc.relative_alt = 0;
         }
 
-        plane.set_guided_WP();
+        VtolType vtol_type;
+        if ((int32_t)packet.param2 & MAV_DO_REPOSITION_FLAGS_VTOL_FORCE_FW)
+            vtol_type = VtolType::FixedWing;
+        else if ((int32_t)packet.param2 & MAV_DO_REPOSITION_FLAGS_VTOL_FORCE_MC)
+            vtol_type = VtolType::MultiCopter;
+        else
+            vtol_type = VtolType::Default;
+
+        plane.set_guided_WP(vtol_type);
 
         return MAV_RESULT_ACCEPTED;
     }
