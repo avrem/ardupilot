@@ -534,6 +534,8 @@ private:
         // throttle  commanded from external controller in percent
         float forced_throttle;
         uint32_t last_forced_throttle_ms;
+
+        VtolType vtol_type;
     } guided_state;
 
 #if LANDING_GEAR_ENABLED == ENABLED
@@ -836,7 +838,7 @@ private:
     void rangefinder_height_update(void);
     void rangefinder_terrain_correction(float &height);
     void set_next_WP(const struct Location &loc);
-    void set_guided_WP(void);
+    void set_guided_WP(VtolType vtol_type = VtolType::Default);
     void update_home();
     // set home location and store it persistently:
     bool set_home_persistently(const Location &loc) WARN_IF_UNUSED;

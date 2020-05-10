@@ -3112,6 +3112,12 @@ bool QuadPlane::guided_mode_enabled(void)
         // loiter turns and loiter to alt are fixed wing only
         return false;
     }
+    if (plane.control_mode == &plane.mode_guided) {
+        if (plane.guided_state.vtol_type == VtolType::FixedWing)
+            return false;
+        if (plane.guided_state.vtol_type == VtolType::MultiCopter)
+            return true;
+    }
     return guided_mode != 0;
 }
 

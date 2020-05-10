@@ -153,6 +153,12 @@ enum CrowFlapOptions {
     PROGRESSIVE_CROW = (1 << 2),
 }; 
 
+enum class VtolType {
+    Default = 0,
+    FixedWing,
+    MultiCopter
+};
+
 enum FollowOptions {
     RELATIVE_LAND    = (1 << 0),
     RELATIVE_TAKEOFF = (1 << 1),
