@@ -758,6 +758,7 @@ MAV_RESULT GCS_MAVLINK_Plane::handle_command_int_do_reposition(const mavlink_com
         requested_position.relative_alt = 1;
     }
     else if (packet.frame == MAV_FRAME_GLOBAL_TERRAIN_ALT_INT) {
+        requested_position.relative_alt = 1;
         requested_position.terrain_alt = 1;
     }
     else if (packet.frame != MAV_FRAME_GLOBAL_INT &&
