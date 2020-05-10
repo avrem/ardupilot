@@ -52,7 +52,7 @@ public:
     //
 
     // true if we have a valid target location estimate
-    bool have_target() const;
+    bool have_target();
 
     // get target's estimated location and velocity (in NED)
     bool get_target_location_and_velocity(Location &loc, Vector3f &vel_ned) const;
@@ -107,6 +107,9 @@ private:
 
     // set recorded distance and bearing to target to zero
     void clear_dist_and_bearing_to_target();
+
+    bool target_seen() const;
+    bool target_recent() const;
 
     // parameters
     AP_Int8     _enabled;           // 1 if this subsystem is enabled
