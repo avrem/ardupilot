@@ -35,7 +35,7 @@ const AP_Scheduler::Task Tracker::scheduler_tasks[] = {
     SCHED_TASK(update_ahrs,            50,   1000),
     SCHED_TASK(read_radio,             50,    200),
     SCHED_TASK(update_tracking,        50,   1000),
-    SCHED_TASK(update_GPS,             10,   4000),
+    SCHED_TASK(update_GPS,             50,   400),
     SCHED_TASK(update_compass,         10,   1500),
     SCHED_TASK(compass_save,           0.02,   200),
     SCHED_TASK_CLASS(AP_BattMonitor,    &tracker.battery,   read,           10, 1500),
