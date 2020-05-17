@@ -118,6 +118,9 @@ private:
 
     bool _batt_healthy, _starter_healthy, _ecu_healthy;
 
+    bool is_healthy() const { return _batt_healthy && _starter_healthy && _ecu_healthy; }
+    void report_unhealthy();
+
     float _gen_current;
     int32_t _rpm, _rpm_alt;
 
@@ -139,6 +142,7 @@ private:
 
     float get_temp_limit(float temp, float temp_min, float temp_max);
 
+    void update_should_run(bool should_run);
     void update_desired_state();
 
     static float param_pwm_to_value(uint16_t pwm);

@@ -335,13 +335,23 @@ float AP_Generator::get_temp_limit(float temp, float temp_min, float temp_max)
     return constrain_float((temp_max - temp) / (temp_max - temp_min), 0.0f, 1.0f);
 }
 
+void AP_Generator::update_should_run(bool should_run)
+{
+    if (should_run && !is_healthy()) {
+        report_unhealthy();
+        _should_run = false;
+    }
+    else
+        _should_run = should_run;
+}
+
 void AP_Generator::update_desired_state()
 {
     if (start_chan != 0) {
         bool rc_should_run = RC_Channels::get_radio_in(start_chan - 1) > 1700;
         if (_rc_should_run != rc_should_run) {
             _rc_should_run = rc_should_run;
-            _should_run = _rc_should_run;
+            update_should_run(_rc_should_run);
         }
     }
 
@@ -430,26 +440,29 @@ void AP_Generator::update_rectifier(float dt)
         _rectifier = constrain_float(1.0f - manual_rectifier * 0.01f, 0.0f, 1.0f);
 }
 
+void AP_Generator::report_unhealthy()
+{
+    if (!_batt_healthy)
+        gcs().send_text(MAV_SEVERITY_CRITICAL, "Generator: batt unhealthy");
+    if (!_starter_healthy)
+        gcs().send_text(MAV_SEVERITY_CRITICAL, "Generator: starter unhealthy");
+    if (!_ecu_healthy)
+        gcs().send_text(MAV_SEVERITY_CRITICAL, "Generator: ecu unhealthy");
+}
+
 void AP_Generator::update_starter(float dt)
 {
     uint32_t now = AP_HAL::millis();
 
-    bool healthy = _batt_healthy && _starter_healthy && _ecu_healthy;
-
-    if ((!healthy || !_should_run) && state != ICE_OFF) {
-        if (!_batt_healthy)
-            gcs().send_text(MAV_SEVERITY_CRITICAL, "Generator: batt unhealthy");
-        if (!_starter_healthy)
-            gcs().send_text(MAV_SEVERITY_CRITICAL, "Generator: starter unhealthy");
-        if (!_ecu_healthy)
-            gcs().send_text(MAV_SEVERITY_CRITICAL, "Generator: ecu unhealthy");
+    if ((!is_healthy() || !_should_run) && state != ICE_OFF) {
+        report_unhealthy();
         gcs().send_text(MAV_SEVERITY_INFO, "Stopping generator");
         state = ICE_OFF;
     }
 
     switch (state) {
     case ICE_OFF:
-        if (healthy && _should_run)
+        if (is_healthy() && _should_run)
             state = ICE_START_DELAY;
         break;
     case ICE_START_DELAY:
@@ -560,7 +573,7 @@ void AP_Generator::send_status(mavlink_channel_t chan) const
 
 bool AP_Generator::engine_control(float start_control, float cold_start, float height_delay)
 {
-    _should_run = is_positive(start_control);
+    update_should_run(is_positive(start_control));
 
     return true;
 }
