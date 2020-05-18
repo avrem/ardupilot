@@ -235,7 +235,7 @@ def create_degree(lat, lon):
 
     print("Creating for %d %d" % (lat_int, lon_int))
 
-    total_blocks = east_blocks(lat_int*1e7, lon_int*1e7) * TERRAIN_GRID_BLOCK_SIZE_Y
+    total_blocks = east_blocks(lat_int*1e7, lon_int*1e7) * 47
 
     for blocknum in range(total_blocks):
         (lat_e7, lon_e7) = pos_from_file_offset(lat_int, lon_int, blocknum * IO_BLOCK_SIZE)
