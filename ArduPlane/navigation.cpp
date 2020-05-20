@@ -247,9 +247,6 @@ void Plane::update_loiter(uint16_t radius)
                 // starting a loiter in GUIDED means we just reached the target point
                 gcs().send_mission_item_reached_message(0);
             }
-            if (quadplane.guided_mode_enabled()) {
-                quadplane.guided_start();
-            }
         }
     }
 }
