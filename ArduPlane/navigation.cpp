@@ -211,6 +211,7 @@ void Plane::update_loiter(uint16_t radius)
     }
 
     if (loiter.start_time_ms != 0 &&
+        fabsf(height_above_target()) < 10.0f &&
         quadplane.guided_mode_enabled()) {
         if (!auto_state.vtol_loiter) {
             auto_state.vtol_loiter = true;
