@@ -157,7 +157,7 @@ bool AP_BattMonitor_Backend::arming_checks(char * buffer, size_t buflen) const
     check_failsafe_types(low_voltage, low_capacity, critical_voltage, critical_capacity);
 
     bool below_arming_voltage = is_positive(_params._arming_minimum_voltage) &&
-                                (_state.voltage < _params._arming_minimum_voltage);
+                                (voltage_resting_estimate() < _params._arming_minimum_voltage);
     bool below_arming_capacity = (_params._arming_minimum_capacity > 0) &&
                                  ((_params._pack_capacity - _state.consumed_mah) < _params._arming_minimum_capacity);
     bool fs_capacity_inversion = is_positive(_params._critical_capacity) &&
