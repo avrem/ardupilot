@@ -557,7 +557,7 @@ void AP_Generator::update_fuel()
 {
     uint32_t now = AP_HAL::millis();
 
-    if (now > _last_update.tank_status + AP_GENERATOR_STALE_AFTER_MS) {
+    if (isnan(_fuel_lvl_raw) || now > _last_update.tank_status + AP_GENERATOR_STALE_AFTER_MS) {
         _fuel_lvl_pct = 0;
     }
     else {
