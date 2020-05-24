@@ -536,6 +536,8 @@ private:
         uint32_t last_forced_throttle_ms;
 
         VtolType vtol_type;
+
+        uint32_t last_local_target_ms;
     } guided_state;
 
 #if LANDING_GEAR_ENABLED == ENABLED

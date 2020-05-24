@@ -1273,16 +1273,28 @@ void GCS_MAVLINK_Plane::handleMessage(const mavlink_message_t &msg)
             break;
         }
 
-        // only local moves for now
-        if (packet.coordinate_frame != MAV_FRAME_LOCAL_OFFSET_NED) {
+        // check for supported coordinate frames
+        if (packet.coordinate_frame != MAV_FRAME_LOCAL_NED &&
+            packet.coordinate_frame != MAV_FRAME_LOCAL_OFFSET_NED &&
+            packet.coordinate_frame != MAV_FRAME_BODY_NED &&
+            packet.coordinate_frame != MAV_FRAME_BODY_OFFSET_NED) {
             break;
         }
 
-        // just do altitude for now
-        plane.next_WP_loc.alt += -packet.z*100.0;
-        gcs().send_text(MAV_SEVERITY_INFO, "Change alt to %.1f",
-                        (double)((plane.next_WP_loc.alt - plane.home.alt)*0.01));
-        
+        if (packet.type_mask == 0b1101111111100111) {
+            Vector2f vel_vector = { packet.vx, packet.vy };
+            if (packet.coordinate_frame == MAV_FRAME_BODY_NED || packet.coordinate_frame == MAV_FRAME_BODY_OFFSET_NED)
+                vel_vector = AP::ahrs().rotate_body_to_earth2D(vel_vector);
+
+            float dt = 0.0f;
+            if (plane.guided_state.last_local_target_ms != 0)
+                dt = (packet.time_boot_ms - plane.guided_state.last_local_target_ms) * 0.001f;
+            plane.guided_state.last_local_target_ms = packet.time_boot_ms;
+
+            if (is_positive(dt) && dt <= 0.2f && vel_vector.length() < 15)
+                plane.next_WP_loc.offset(vel_vector.x * dt, vel_vector.y * dt);
+        }
+
         break;
     }
 
