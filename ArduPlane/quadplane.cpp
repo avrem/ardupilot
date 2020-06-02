@@ -3044,10 +3044,13 @@ float QuadPlane::get_weathervane_yaw_rate_cds(void)
 
     Vector2f psc_accel_xy = {pos_control->get_accel_target().x, pos_control->get_accel_target().y}; // cm/s/s
     float min_accel = GRAVITY_MSS * 100.0f * tanf(radians(weathervane.min_roll));
-    if (psc_accel_xy.length() > min_accel) {
+    float accel_length = psc_accel_xy.length();
+    if (accel_length > min_accel) {
+        float max_accel = GRAVITY_MSS * 100.0f * tanf(radians(aparm.angle_max*0.01f));
         float thrust_bearing_cds = RadiansToCentiDegrees(wrap_2PI(atan2f(psc_accel_xy.y, psc_accel_xy.x)));
         float yaw_error = wrap_180_cd(thrust_bearing_cds - ahrs.yaw_sensor);
-        output = constrain_float(yaw_error * weathervane.gain, -yaw_rate_max * 100, yaw_rate_max * 100);
+        float accel_gain = linear_interpolate(0.0f, 1.0f, accel_length, min_accel, max_accel);
+        output = constrain_float(yaw_error * weathervane.gain * accel_gain, -yaw_rate_max * 100, yaw_rate_max * 100);
     }
 
     if (should_relax()) {
