@@ -159,6 +159,8 @@ const AP_Param::GroupInfo AP_AHRS::var_info[] = {
     // @User: Advanced
     AP_GROUPINFO("CUSTOM_YAW", 17, AP_AHRS, _custom_yaw, 0),
 
+    AP_GROUPINFO("EKF_ALWAYS", 60, AP_AHRS, _ekf_always, 0),
+
     AP_GROUPEND
 };
 

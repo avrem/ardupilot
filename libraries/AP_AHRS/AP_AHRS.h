@@ -612,6 +612,8 @@ protected:
     AP_Float _custom_pitch;
     AP_Float _custom_yaw;
 
+    AP_Int8 _ekf_always;
+
     Matrix3f _custom_rotation;
 
     // flags structure
