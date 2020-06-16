@@ -1021,6 +1021,7 @@ AP_AHRS_NavEKF::EKF_TYPE AP_AHRS_NavEKF::active_EKF_type(void) const
       wing and rover
      */
     if (ret != EKF_TYPE_NONE &&
+        !always_use_EKF() &&
         (_vehicle_class == AHRS_VEHICLE_FIXED_WING ||
          _vehicle_class == AHRS_VEHICLE_GROUND) &&
         (_flags.fly_forward || !hal.util->get_soft_armed())) {

@@ -282,6 +282,8 @@ private:
     EKF_TYPE active_EKF_type(void) const;
 
     bool always_use_EKF() const {
+        if (_ekf_always)
+            return true;
         return _ekf_flags & FLAG_ALWAYS_USE_EKF;
     }
 
