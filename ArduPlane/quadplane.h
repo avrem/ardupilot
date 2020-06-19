@@ -541,6 +541,7 @@ private:
         OPTION_RESPECT_TAKEOFF_FRAME=(1<<3),
         OPTION_MISSION_LAND_FW_APPROACH=(1<<4),
         OPTION_FS_QRTL=(1<<5),
+        OPTION_DISABLE_QLAND=(1<<16),
     };
 
     AP_Float takeoff_failure_scalar;

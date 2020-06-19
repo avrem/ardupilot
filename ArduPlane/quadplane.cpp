@@ -3346,7 +3346,7 @@ bool QuadPlane::in_vtol_land_sequence(void) const
 
 void QuadPlane::check_alt_fence(void)
 {
-    if (fence_alt <= 0) {
+    if (fence_alt <= 0 || (options & QuadPlane::OPTION_DISABLE_QLAND)) {
         return;
     }
 

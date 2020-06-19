@@ -254,6 +254,11 @@ bool Plane::set_mode(Mode &new_mode, const ModeReason reason)
     }
 #endif
 
+    if (&new_mode == &mode_qland && (quadplane.options & QuadPlane::OPTION_DISABLE_QLAND)) {
+        gcs().send_text(MAV_SEVERITY_INFO,"QLAND disabled");
+        return set_mode(plane.mode_rtl, ModeReason::UNAVAILABLE);
+    }
+
     if (quadplane.available() && &new_mode == &mode_qland) {
         float height_above_ground = relative_ground_altitude(g.rangefinder_landing);
         if (quadplane.land_max_alt > 0 && height_above_ground > quadplane.land_max_alt) {

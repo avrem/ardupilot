@@ -98,6 +98,11 @@ bool AP_Arming_Plane::pre_arm_checks(bool display_failure)
         ret = false;
     }
 
+    if (plane.quadplane.available() && plane.quadplane.fence_alt > 0 && (plane.quadplane.options & QuadPlane::OPTION_DISABLE_QLAND)) {
+        check_failed(display_failure, "Q_FENCE_ALT enabled without QLAND");
+        ret = false;
+    }
+
     // check adsb avoidance failsafe
     if (plane.failsafe.adsb) {
         check_failed(display_failure, "ADSB threat detected");
