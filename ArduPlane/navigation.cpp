@@ -225,6 +225,7 @@ void Plane::update_loiter(uint16_t radius)
                 auto_state.crosstrack &&
                 current_loc.get_distance(next_WP_loc) > radius*3) ||
                (quadplane.guided_mode_enabled() && fabsf(height_above_target()) < 10.0f) ||
+               (control_mode == &mode_guided && (g2.flight_options & FlightOptions::GUIDED_LOITER_XTRACK) && fabsf(height_above_target()) < 10.0f) ||
                (control_mode == &mode_rtl && quadplane.available() && quadplane.rtl_mode == 1 &&
                 height_above_target() < 10.0f && next_WP_loc.alt <= quadplane.get_landable_alt_cm())) {
         /*
