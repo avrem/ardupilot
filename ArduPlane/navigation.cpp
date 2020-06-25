@@ -210,7 +210,7 @@ void Plane::update_loiter(uint16_t radius)
         }
     }
 
-    if (loiter.start_time_ms != 0 &&
+    if (auto_state.wp_distance < quadplane.stopping_distance() &&
         fabsf(height_above_target()) < 10.0f &&
         quadplane.guided_mode_enabled()) {
         if (!auto_state.vtol_loiter) {
@@ -224,6 +224,7 @@ void Plane::update_loiter(uint16_t radius)
                 (control_mode == &mode_auto || control_mode == &mode_guided) &&
                 auto_state.crosstrack &&
                 current_loc.get_distance(next_WP_loc) > radius*3) ||
+               (quadplane.guided_mode_enabled() && fabsf(height_above_target()) < 10.0f) ||
                (control_mode == &mode_rtl && quadplane.available() && quadplane.rtl_mode == 1 &&
                 height_above_target() < 10.0f && next_WP_loc.alt <= quadplane.get_landable_alt_cm())) {
         /*
