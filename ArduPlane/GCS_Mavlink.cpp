@@ -790,6 +790,9 @@ MAV_RESULT GCS_MAVLINK_Plane::handle_command_int_do_reposition(const mavlink_com
             plane.guided_WP_loc.relative_alt = 0;
         }
 
+        if (plane.g.FBWB_min_altitude_cm != 0)
+            plane.guided_WP_loc.alt = MAX(plane.home.alt + plane.g.FBWB_min_altitude_cm, plane.guided_WP_loc.alt);
+
         VtolType vtol_type;
         if ((int32_t)packet.param2 & MAV_DO_REPOSITION_FLAGS_VTOL_FORCE_FW)
             vtol_type = VtolType::FixedWing;
@@ -1281,7 +1284,7 @@ void GCS_MAVLINK_Plane::handleMessage(const mavlink_message_t &msg)
             break;
         }
 
-        if (packet.type_mask == 0b1101111111100111) {
+        if (packet.type_mask == 0b1101111111000111) {
             Vector2f vel_vector = { packet.vx, packet.vy };
             if (packet.coordinate_frame == MAV_FRAME_BODY_NED || packet.coordinate_frame == MAV_FRAME_BODY_OFFSET_NED)
                 vel_vector = AP::ahrs().rotate_body_to_earth2D(vel_vector);
@@ -1291,8 +1294,11 @@ void GCS_MAVLINK_Plane::handleMessage(const mavlink_message_t &msg)
                 dt = (packet.time_boot_ms - plane.guided_state.last_local_target_ms) * 0.001f;
             plane.guided_state.last_local_target_ms = packet.time_boot_ms;
 
-            if (is_positive(dt) && dt <= 0.2f && vel_vector.length() < 15)
+            if (is_positive(dt) && dt <= 0.4f && vel_vector.length() < 15) {
                 plane.next_WP_loc.offset(vel_vector.x * dt, vel_vector.y * dt);
+                if (plane.g.FBWB_min_altitude_cm != 0) // only control height if lower alt bound is set
+                    plane.next_WP_loc.alt = MAX(plane.home.alt + plane.g.FBWB_min_altitude_cm, plane.next_WP_loc.alt - 100 * packet.vz * dt);
+            }
         }
 
         break;
