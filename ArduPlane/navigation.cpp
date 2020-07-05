@@ -379,8 +379,11 @@ void Plane::update_follow_target()
         Location loc;
         if (ahrs.get_position(loc)) {
             loc.offset(follow_target.dist_vec_offs.x, follow_target.dist_vec_offs.y);
+            bool last_auto_same = (quadplane.last_auto_target.same_latlon_as(next_WP_loc) && quadplane.last_auto_target.alt == next_WP_loc.alt);
             next_WP_loc.lat = loc.lat;
             next_WP_loc.lng = loc.lng;
+            if (last_auto_same)
+                plane.quadplane.last_auto_target = plane.next_WP_loc;
         }
     }
     else {
