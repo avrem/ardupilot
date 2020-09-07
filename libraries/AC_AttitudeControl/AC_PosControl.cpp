@@ -1126,7 +1126,7 @@ void AC_PosControl::run_xy_controller(float dt)
 
     // limit acceleration using maximum lean angles
     float angle_max = MIN(_attitude_control.get_althold_lean_angle_max(), get_lean_angle_max_cd());
-    float accel_max = MIN(GRAVITY_MSS * 100.0f * tanf(ToRad(angle_max * 0.01f)), POSCONTROL_ACCEL_XY_MAX);
+    float accel_max = GRAVITY_MSS * 100.0f * tanf(ToRad(angle_max * 0.01f));
     _limit.accel_xy = limit_vector_length(_accel_target.x, _accel_target.y, accel_max);
 
     // update angle targets that will be passed to stabilize controller
