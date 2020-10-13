@@ -299,7 +299,7 @@ private:
     bool in_alt_assist;
 
     // altitude to trigger emergency landing
-    AP_Int16 fence_alt;
+    AP_Int16 fw_alt_min;
     uint32_t fence_error_start_ms;
 
     // maximum yaw rate in degrees/second
@@ -314,6 +314,9 @@ private:
     // maximum vtol landable altitude, meters
     AP_Int16 land_max_alt;
     int32_t get_landable_alt_cm();
+
+    AP_Int16 tran_alt_min;
+    AP_Int16 tran_alt_max;
     
     // alt to switch to QLAND_FINAL
     AP_Float land_final_alt;

@@ -17,9 +17,12 @@ const AP_Param::GroupInfo QuadPlane::var_info[] = {
 
     AP_GROUPINFO("WP_NAVALT_MIN", 4, QuadPlane, wp_navalt_min, 0),
 
-    AP_GROUPINFO("FENCE_ALT", 5, QuadPlane, fence_alt, 0),
+    AP_GROUPINFO("FENCE_ALT", 5, QuadPlane, fw_alt_min, 0),
  
     AP_GROUPINFO("LAND_MAX_ALT", 6, QuadPlane, land_max_alt, 100),
+
+    AP_GROUPINFO("TRAN_ALT_MIN", 7, QuadPlane, tran_alt_min, 0),
+    AP_GROUPINFO("TRAN_ALT_MAX", 8, QuadPlane, tran_alt_max, 0),
 
     // @Param: ANGLE_MAX
     // @DisplayName: Angle Max
@@ -1613,7 +1616,7 @@ void QuadPlane::update_transition(void)
         }
 
         transition_low_airspeed_ms = now;
-        if (have_airspeed && aspeed > plane.aparm.airspeed_min && !assisted_flight) {
+        if (have_airspeed && aspeed > plane.aparm.airspeed_min && !assisted_flight && plane.relative_ground_altitude(plane.g.rangefinder_landing) >= tran_alt_max) {
             transition_state = TRANSITION_TIMER;
             gcs().send_text(MAV_SEVERITY_INFO, "Transition airspeed reached %.1f", (double)aspeed);
             if (is_tiltquad()) { // go directly to TRANSITION_DONE
@@ -3359,6 +3362,8 @@ bool QuadPlane::in_vtol_land_sequence(void) const
 
 void QuadPlane::check_alt_fence(void)
 {
+    int fence_alt = (in_transition() && tran_alt_min > 0) ? tran_alt_min : fw_alt_min;
+
     if (fence_alt <= 0 || (options & QuadPlane::OPTION_DISABLE_QLAND)) {
         return;
     }
