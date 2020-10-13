@@ -24,6 +24,8 @@ const AP_Param::GroupInfo QuadPlane::var_info[] = {
     AP_GROUPINFO("TRAN_ALT_MIN", 7, QuadPlane, tran_alt_min, 0),
     AP_GROUPINFO("TRAN_ALT_MAX", 8, QuadPlane, tran_alt_max, 0),
 
+    AP_GROUPINFO("USE_FW_RATES", 9, QuadPlane, use_fw_rates, 0),
+
     // @Param: ANGLE_MAX
     // @DisplayName: Angle Max
     // @Description: Maximum lean angle in all VTOL flight modes
@@ -862,7 +864,7 @@ void QuadPlane::multicopter_attitude_rate_update(float yaw_rate_cds)
     }
 
     // normal control modes for VTOL and FW flight
-    if (in_vtol_mode() || is_tailsitter() || is_tiltquad()) {
+    if (in_vtol_mode() || is_tailsitter() || (is_tiltquad() && !use_fw_rates)) {
         // use euler angle attitude control
         attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(plane.nav_roll_cd,
                                                                       plane.nav_pitch_cd,

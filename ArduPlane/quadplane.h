@@ -349,6 +349,8 @@ private:
     AP_Float acro_pitch_rate;
     AP_Float acro_yaw_rate;
 
+    AP_Int8 use_fw_rates;
+
     // time we last got an EKF yaw reset
     uint32_t ekfYawReset_ms;
 
