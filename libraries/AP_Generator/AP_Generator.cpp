@@ -546,7 +546,7 @@ void AP_Generator::update_throttle(float dt)
     if (state != ICE_RUNNING)
         _throttle = 0;
 
-    if (_rpm < rpm_min && thr_low >= 0)
+    if (_gen_current < AP_GENERATOR_MIN_CURRENT && thr_low > 0)
         _throttle = MIN(_throttle, thr_low * 0.01f);
 
     uint16_t _pwm_throttle = pwm_throttle_min + _throttle * (pwm_throttle_max - pwm_throttle_min);
