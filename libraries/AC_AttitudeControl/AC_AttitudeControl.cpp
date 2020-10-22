@@ -541,19 +541,26 @@ void AC_AttitudeControl::input_rate_bf_roll_pitch_yaw(float roll_rate_bf_cds, fl
 }
 
 // Command an angular velocity with angular velocity smoothing using rate loops only with no attitude loop stabilization
-void AC_AttitudeControl::input_rate_bf_roll_pitch_yaw_2(float roll_rate_bf_cds, float pitch_rate_bf_cds, float yaw_rate_bf_cds)
+void AC_AttitudeControl::input_rate_bf_roll_pitch_yaw_2(float roll_rate_bf_cds, float pitch_rate_bf_cds, float yaw_rate_bf_cds, bool unsmoothed)
 {
     // Convert from centidegrees on public interface to radians
     float roll_rate_rads = radians(roll_rate_bf_cds * 0.01f);
     float pitch_rate_rads = radians(pitch_rate_bf_cds * 0.01f);
     float yaw_rate_rads = radians(yaw_rate_bf_cds * 0.01f);
 
-    // Compute acceleration-limited body frame rates
-    // When acceleration limiting is enabled, the input shaper constrains angular acceleration about the axis, slewing
-    // the output rate towards the input rate.
-    _attitude_target_ang_vel.x = input_shaping_ang_vel(_attitude_target_ang_vel.x, roll_rate_rads, get_accel_roll_max_radss(), _dt);
-    _attitude_target_ang_vel.y = input_shaping_ang_vel(_attitude_target_ang_vel.y, pitch_rate_rads, get_accel_pitch_max_radss(), _dt);
-    _attitude_target_ang_vel.z = input_shaping_ang_vel(_attitude_target_ang_vel.z, yaw_rate_rads, get_accel_yaw_max_radss(), _dt);
+    if (unsmoothed) {
+        _attitude_target_ang_vel.x = roll_rate_rads;
+        _attitude_target_ang_vel.y = pitch_rate_rads;
+        _attitude_target_ang_vel.z = yaw_rate_rads;
+    }
+    else {
+        // Compute acceleration-limited body frame rates
+        // When acceleration limiting is enabled, the input shaper constrains angular acceleration about the axis, slewing
+        // the output rate towards the input rate.
+        _attitude_target_ang_vel.x = input_shaping_ang_vel(_attitude_target_ang_vel.x, roll_rate_rads, get_accel_roll_max_radss(), _dt);
+        _attitude_target_ang_vel.y = input_shaping_ang_vel(_attitude_target_ang_vel.y, pitch_rate_rads, get_accel_pitch_max_radss(), _dt);
+        _attitude_target_ang_vel.z = input_shaping_ang_vel(_attitude_target_ang_vel.z, yaw_rate_rads, get_accel_yaw_max_radss(), _dt);
+    }
 
     // Update the unused targets attitude based on current attitude to condition mode change
     _ahrs.get_quat_body_to_ned(_attitude_target_quat);
