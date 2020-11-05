@@ -123,12 +123,18 @@ void AP_MotorsTiltQuad::output_tilt()
     float folding_thrust_ratio = 1.0f - constrain_float((float)(now - _last_unfolded_ms) / 2000, 0.0f, 1.0f);
 
     for (int i = 0; i < 4; i++) {
-        uint16_t s = 1000 + _conv + _servos[i].trim;
+        bool swing_stab = _in_recovery && i == _recovery_motor;
+
+        uint16_t s = 1000 + (swing_stab ? 0 : _conv) + _servos[i].trim;
 
         float mot_thrust = _thrust_rpyt_out[i] * _lift_max;
         if (_flags.armed && !is_zero(mot_thrust)) {
             float thrust_vert = _roll_tilt * _roll_factor[i] + _pitch_tilt * _pitch_factor[i];
             float thrust_horiz = _yaw_tilt * _yaw_factor[i];
+            if (swing_stab) {
+                thrust_vert = _roll_tilt_full * _roll_factor[i] + _pitch_tilt_full * _pitch_factor[i];
+                thrust_horiz = 0;
+            }
             mot_thrust *= (1.0f + folding_thrust_ratio) * 0.5f;
             mot_thrust = constrain_float(mot_thrust, 0.1f, 1.0f);
             float angle = constrain_float(thrust_vert / (mot_thrust * _thrust_speed_scale + _elevon_scale) - thrust_horiz / mot_thrust, -M_PI_2, M_PI_2);
@@ -161,3 +167,25 @@ void AP_MotorsTiltQuad::output()
         _last_unfolded_ms = AP_HAL::millis();
 }
 
+void AP_MotorsTiltQuad::output_armed_stabilizing()
+{
+    AP_MotorsMatrix::output_armed_stabilizing();
+    if (_in_recovery) {
+        _thrust_rpyt_out[_failed_motor] = 0;
+        _thrust_rpyt_out[_recovery_motor] = get_throttle_hover();
+    }
+}
+
+void AP_MotorsTiltQuad::engage_recovery()
+{
+    if (_in_recovery)
+        return;
+
+    const uint8_t paired_motors[] = {1, 0, 3, 2};
+
+    _in_recovery = true;
+    _failed_motor = get_lost_motor();
+    _recovery_motor = paired_motors[_failed_motor];
+
+    gcs().send_text(MAV_SEVERITY_EMERGENCY, "Potential Thrust Loss (%d)", (int)_failed_motor + 1);
+}

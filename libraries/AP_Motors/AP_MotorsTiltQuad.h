@@ -22,6 +22,9 @@ public:
     void set_pitch_tilt(float pitch_tilt) { _pitch_tilt = pitch_tilt; }
     void set_yaw_tilt(float yaw_tilt) { _yaw_tilt = yaw_tilt; }
 
+    void set_roll_tilt_full(float roll_tilt_full) { _roll_tilt_full = roll_tilt_full; }
+    void set_pitch_tilt_full(float pitch_tilt_full) { _pitch_tilt_full = pitch_tilt_full; }
+
     void set_airspeed(float aspeed);
 
     void output() override;
@@ -32,6 +35,12 @@ public:
 
     static const struct AP_Param::GroupInfo var_info[];
 
+    bool motor_maybe_lost() const { return _thrust_rpyt_out_filt[_motor_lost_index] > 0.95f; }
+
+    void engage_recovery();
+    void disengage_recovery() { _in_recovery = false; }
+    bool in_recovery() { return _in_recovery; }
+    
 protected:
     struct {
         SRV_Channel *chan;
@@ -51,8 +60,8 @@ protected:
 
     int16_t  _conv = 1000;
 
-    float    _roll_tilt;
-    float    _pitch_tilt;
+    float    _roll_tilt, _roll_tilt_full;
+    float    _pitch_tilt, _pitch_tilt_full;
     float    _yaw_tilt;
 
     float    _thrust_speed_scale = 1.0f;
@@ -62,4 +71,10 @@ protected:
 
     void     add_motor_tq(int8_t motor_num, float angle_degrees, float yaw_factor, uint8_t testing_order, float servo_factor);
     void     output_tilt();
+
+    bool _in_recovery;
+    uint8_t _failed_motor;
+    uint8_t _recovery_motor;
+
+    void output_armed_stabilizing() override;
 };

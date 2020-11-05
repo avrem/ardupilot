@@ -66,13 +66,15 @@ void AC_AttitudeControl_TiltQuad::rate_controller_run()
 
     Vector3f gyro_latest = _ahrs.get_gyro_latest();
 
-    float roll_tilt_in = _pid_rate_roll_tilt.update_all(_rate_target_ang_vel.x, gyro_latest.x, _motors_tq.limit_tilt);
-    _motors_tq.set_roll_tilt(control_mix(0, roll_tilt_in + _pid_rate_roll_tilt.get_ff()));
+    float roll_tilt_in = _pid_rate_roll_tilt.update_all(_rate_target_ang_vel.x, gyro_latest.x, _motors_tq.limit_tilt) + _pid_rate_roll_tilt.get_ff();
+    _motors_tq.set_roll_tilt(control_mix(0, roll_tilt_in));
+    _motors_tq.set_roll_tilt_full(roll_tilt_in);
     float roll_in = _pid_rate_roll.update_all(_rate_target_ang_vel.x, gyro_latest.x, _motors_tq.limit.roll);
     _motors_tq.set_roll(control_mix(roll_in, 0));
 
-    float pitch_tilt_in = _pid_rate_pitch_tilt.update_all(_rate_target_ang_vel.y, gyro_latest.y, _motors_tq.limit_tilt);
-    _motors_tq.set_pitch_tilt(control_mix(0, pitch_tilt_in + _pid_rate_pitch_tilt.get_ff()));
+    float pitch_tilt_in = _pid_rate_pitch_tilt.update_all(_rate_target_ang_vel.y, gyro_latest.y, _motors_tq.limit_tilt) + _pid_rate_pitch_tilt.get_ff();
+    _motors_tq.set_pitch_tilt(control_mix(0, pitch_tilt_in));
+    _motors_tq.set_pitch_tilt_full(pitch_tilt_in);
     float pitch_in = _pid_rate_pitch.update_all(_rate_target_ang_vel.y, gyro_latest.y, _motors_tq.limit.pitch);
     _motors_tq.set_pitch(control_mix(pitch_in, 0));
 
