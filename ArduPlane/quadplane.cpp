@@ -485,6 +485,9 @@ const AP_Param::GroupInfo QuadPlane::var_info2[] = {
 };
 
 const AP_Param::GroupInfo QuadPlane::var_info_tq[] = {
+    AP_GROUPINFO("REC_WDT_SEC", 1, QuadPlane, recovery.watchdog_sec, 0),
+    AP_GROUPINFO("REC_CRT_SINK", 2, QuadPlane, recovery.critical_sink, AP_PARACHUTE_CRITICAL_SINK_DEFAULT),
+    AP_GROUPINFO("REC_ANG_ERR", 3, QuadPlane, recovery.min_angle_error, 30),
     AP_GROUPEND
 };
 
@@ -3398,4 +3401,38 @@ int32_t QuadPlane::get_landable_alt_cm()
         return plane.home.alt + land_max_alt * 100;
     else
         return plane.get_RTL_altitude();
+}
+
+void QuadPlane::tiltquad_recovery_check()
+{
+    if (!available() || !is_positive(recovery.watchdog_sec))
+        return;
+
+    if (!hal.util->get_soft_armed() || !plane.is_flying() || !in_vtol_mode()) {
+        motors->disengage_recovery();
+        recovery.loss_count = 0;
+        return;
+    }
+
+    if (motors->in_recovery())
+        return;
+
+    const int check_trigger = ceilf(recovery.watchdog_sec * 10); // check called at 10hz
+
+    bool mostly_copter = tilt.current_tilt < 0.5f;
+    bool falling = plane.auto_state.sink_rate > recovery.critical_sink;
+    bool out_of_control = attitude_control->get_att_error_angle_deg() > recovery.min_angle_error;
+    bool motor_lost = motors->motor_maybe_lost();
+
+    bool should_trigger = mostly_copter && falling && out_of_control && motor_lost; // definitely falling
+    bool should_relax = !falling && !out_of_control && !motor_lost; // definitely not falling
+
+    if (should_trigger) {
+        if (++recovery.loss_count >= check_trigger)
+            motors->engage_recovery();
+    }
+    else if (should_relax) {
+        if (recovery.loss_count > 0)
+            recovery.loss_count--;
+    }
 }

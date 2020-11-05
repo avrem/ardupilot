@@ -561,6 +561,17 @@ private:
     // altitude at which nav control can start in takeoff
     AP_Float wp_navalt_min;
 
+    struct {
+        AP_Float watchdog_sec;
+        AP_Float critical_sink;
+        AP_Float min_angle_error;
+        int loss_count;
+        bool engaged;
+        uint8_t lost_motor;
+    } recovery;
+
+    void tiltquad_recovery_check();
+
     /*
       return true if current mission item is a vtol takeoff
      */

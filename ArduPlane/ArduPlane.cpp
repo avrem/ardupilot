@@ -84,6 +84,7 @@ const AP_Scheduler::Task Plane::scheduler_tasks[] = {
     SCHED_TASK(update_soaring,         50,    400),
 #endif
     SCHED_TASK(parachute_check,        10,    200),
+    SCHED_TASK_CLASS(QuadPlane, &plane.quadplane, tiltquad_recovery_check, 10, 200),
 #if AP_TERRAIN_AVAILABLE
     SCHED_TASK_CLASS(AP_Terrain, &plane.terrain, update, 10, 200),
 #endif // AP_TERRAIN_AVAILABLE
