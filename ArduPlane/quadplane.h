@@ -45,6 +45,7 @@ public:
     // var_info for holding Parameter information
     static const struct AP_Param::GroupInfo var_info[];
     static const struct AP_Param::GroupInfo var_info2[];
+    static const struct AP_Param::GroupInfo var_info_tq[];
 
     void control_run(void);
     void control_auto(void);

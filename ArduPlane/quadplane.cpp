@@ -484,6 +484,10 @@ const AP_Param::GroupInfo QuadPlane::var_info2[] = {
     AP_GROUPEND
 };
 
+const AP_Param::GroupInfo QuadPlane::var_info_tq[] = {
+    AP_GROUPEND
+};
+
 /*
   defaults for all quadplanes
  */
@@ -556,6 +560,7 @@ QuadPlane::QuadPlane(AP_AHRS_NavEKF &_ahrs) :
 {
     AP_Param::setup_object_defaults(this, var_info);
     AP_Param::setup_object_defaults(this, var_info2);
+    AP_Param::setup_object_defaults(this, var_info_tq);
 }
 
 

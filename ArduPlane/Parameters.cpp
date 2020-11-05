@@ -1094,6 +1094,8 @@ const AP_Param::Info Plane::var_info[] = {
     // @Path: mode_takeoff.cpp
     GOBJECT(mode_takeoff, "TKOFF_", ModeTakeoff),
 
+    { AP_PARAM_GROUP, "TQ_", Parameters::k_param_tiltquad, (const void *)&plane.quadplane, {group_info : QuadPlane::var_info_tq} },
+
     AP_VAREND
 };
 
@@ -1272,7 +1274,6 @@ ParametersG2::ParametersG2(void) :
  */
 const AP_Param::ConversionInfo conversion_table[] = {
     { Parameters::k_param_log_bitmask_old,    0,      AP_PARAM_INT16, "LOG_BITMASK" },
-    { Parameters::k_param_rally_limit_km_old, 0,      AP_PARAM_FLOAT, "RALLY_LIMIT_KM" },
     { Parameters::k_param_rally_total_old,    0,      AP_PARAM_INT8, "RALLY_TOTAL" },
     { Parameters::k_param_serial0_baud,       0,      AP_PARAM_INT16, "SERIAL0_BAUD" },
     { Parameters::k_param_serial1_baud,       0,      AP_PARAM_INT16, "SERIAL1_BAUD" },

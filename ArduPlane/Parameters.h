@@ -93,7 +93,7 @@ public:
         k_param_waypoint_max_radius,
         k_param_ground_steer_alt,        
         k_param_ground_steer_dps,
-        k_param_rally_limit_km_old, //unused anymore -- just holding this index
+        k_param_tiltquad, // was rally_limit_km_old
         k_param_hil_err_limit,
         k_param_sonar_old, // unused
         k_param_log_bitmask,
