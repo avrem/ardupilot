@@ -3414,6 +3414,17 @@ void QuadPlane::tiltquad_recovery_check()
         return;
     }
 
+    // for testing: engage/disengage recovery on switch
+    RC_Channel *ch9 = RC_Channels::rc_channel(9-1);
+    if (ch9) {
+        if (ch9->percent_input() > 50) {
+            motors->engage_recovery();
+        }
+        else {
+            motors->disengage_recovery();
+        }
+    }
+
     if (motors->in_recovery())
         return;
 

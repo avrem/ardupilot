@@ -97,7 +97,11 @@ void AP_MotorsMatrix::output_to_motors()
             // set motor output based on thrust requests
             for (i = 0; i < AP_MOTORS_MAX_NUM_MOTORS; i++) {
                 if (motor_enabled[i]) {
-                    set_actuator_with_slew(_actuator[i], thrust_to_actuator(_thrust_rpyt_out[i]));
+                    RC_Channel *ch8 = RC_Channels::rc_channel(8-1);
+                    if (ch8 && i == 0)
+                        set_actuator_with_slew(_actuator[i], thrust_to_actuator(_thrust_rpyt_out[i]) * ch8->percent_input() * 0.01f);
+                    else
+                        set_actuator_with_slew(_actuator[i], thrust_to_actuator(_thrust_rpyt_out[i]));
                 }
             }
             break;
