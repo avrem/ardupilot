@@ -2313,16 +2313,26 @@ void QuadPlane::vtol_position_controller(void)
         else {
             uint32_t now = AP_HAL::millis();
             if (now - last_pidz_init_ms < (uint32_t)transition_time_ms*4) {
-                // we limit pitch during initial transition
-                float pitch_limit_cd = linear_interpolate(0, aparm.angle_max,
+                // we limit roll and pitch during initial transition
+                float angle_limit_cd = linear_interpolate(0, aparm.angle_max,
                                                   now,
                                                   last_pidz_init_ms, last_pidz_init_ms+transition_time_ms*4);
-                if (plane.nav_pitch_cd > pitch_limit_cd) {
-                    plane.nav_pitch_cd = pitch_limit_cd;
+
+                if (plane.nav_pitch_cd > angle_limit_cd) {
+                    plane.nav_pitch_cd = angle_limit_cd;
                     pos_control->set_limit_accel_xy();
                 }
-                else if (plane.nav_pitch_cd < -pitch_limit_cd) {
-                    plane.nav_pitch_cd = -pitch_limit_cd;
+                else if (plane.nav_pitch_cd < -angle_limit_cd) {
+                    plane.nav_pitch_cd = -angle_limit_cd;
+                    pos_control->set_limit_accel_xy();
+                }
+
+                if (plane.nav_roll_cd > angle_limit_cd) {
+                    plane.nav_roll_cd = angle_limit_cd;
+                    pos_control->set_limit_accel_xy();
+                }
+                else if (plane.nav_roll_cd < -angle_limit_cd) {
+                    plane.nav_roll_cd = -angle_limit_cd;
                     pos_control->set_limit_accel_xy();
                 }
             }
