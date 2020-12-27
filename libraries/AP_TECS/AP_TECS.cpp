@@ -249,6 +249,8 @@ const AP_Param::GroupInfo AP_TECS::var_info[] = {
     // @User: Advanced
     AP_GROUPINFO("OPTIONS", 28, AP_TECS, _options, 0),
 
+    AP_GROUPINFO("VTOL_H_MIN", 55, AP_TECS, _vtol_hgt_min, 0),
+
     AP_GROUPEND
 };
 
@@ -471,6 +473,8 @@ void AP_TECS::_update_height_demand(void)
     {
         _hgt_dem = _hgt_dem_prev - max_sink_rate * 0.1f;
     }
+    if (_flight_stage == AP_Vehicle::FixedWing::FLIGHT_VTOL)
+        _hgt_dem = MAX(_hgt_dem, _vtol_hgt_min);
     _hgt_dem_prev = _hgt_dem;
 
     // Apply first order lag to height demand

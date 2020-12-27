@@ -171,6 +171,7 @@ private:
     AP_Int8  _pitch_min;
     AP_Int8  _land_pitch_max;
     AP_Float _maxSinkRate_approach;
+    AP_Float _vtol_hgt_min;
     AP_Int32 _options;
 
     enum {
