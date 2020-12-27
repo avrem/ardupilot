@@ -554,6 +554,10 @@ void AP_TECS::_detect_underspeed(void)
         // airspeed
         _flags.underspeed = false;
     }
+
+    // ignore underspeed if prioritising height
+    if (is_zero(_spdWeight))
+        _flags.underspeed = false;
 }
 
 void AP_TECS::_update_energies(void)
