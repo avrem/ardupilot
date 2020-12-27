@@ -250,6 +250,7 @@ const AP_Param::GroupInfo AP_TECS::var_info[] = {
     AP_GROUPINFO("OPTIONS", 28, AP_TECS, _options, 0),
 
     AP_GROUPINFO("VTOL_H_MIN", 55, AP_TECS, _vtol_hgt_min, 0),
+    AP_GROUPINFO("VTOL_H_LAT", 56, AP_TECS, _vtol_latch_height, 0),
 
     AP_GROUPEND
 };
@@ -946,6 +947,11 @@ void AP_TECS::_initialise_states(int32_t ptchMinCO_cd, float hgt_afe)
         _TAS_dem_adj       = _TAS_dem;
         _flags.underspeed        = false;
         _flags.badDescent  = false;
+    }
+    else if (_vtol_latch_height && _flight_stage == AP_Vehicle::FixedWing::FLIGHT_VTOL) {
+        _hgt_dem_in_old    = MAX(hgt_afe, _hgt_dem_in_old);
+        _hgt_dem_prev      = MAX(hgt_afe, _hgt_dem_prev);
+        _hgt_dem_adj_last  = MAX(hgt_afe, _hgt_dem_adj_last);
     }
     
     if (_flight_stage != AP_Vehicle::FixedWing::FLIGHT_TAKEOFF && _flight_stage != AP_Vehicle::FixedWing::FLIGHT_ABORT_LAND) {
