@@ -606,9 +606,9 @@ void AP_MotorsMulticopter::output_logic()
         // Servos should exhibit normal flight behavior.
 
         // initialize limits flags
-        limit.roll = false;
-        limit.pitch = false;
-        limit.yaw = false;
+        limit.roll = true;
+        limit.pitch = true;
+        limit.yaw = true;
         limit.throttle_lower = false;
         limit.throttle_upper = false;
 
