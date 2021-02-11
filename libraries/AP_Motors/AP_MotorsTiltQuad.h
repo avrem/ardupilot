@@ -24,6 +24,8 @@ public:
 
     void set_airspeed(float aspeed);
 
+    uint32_t get_last_unfolded_ms() const { return _last_unfolded_ms; }
+
     void output() override;
 
     bool limit_tilt = true;

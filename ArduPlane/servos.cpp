@@ -409,6 +409,13 @@ void Plane::set_servos_controlled(void)
         min_throttle = 0;
     }
     
+#if FRAME_CONFIG == TILT_QUAD_FRAME    
+    if (aparm.takeoff_throttle_max != 0 && quadplane.available()) {
+        uint32_t time_folded = millis() - quadplane.motors->get_last_unfolded_ms();
+        max_throttle = linear_interpolate(aparm.takeoff_throttle_max, aparm.throttle_max, time_folded, 1000, 3000);
+    }
+#endif
+    
     // apply watt limiter
     throttle_watt_limiter(min_throttle, max_throttle);
     
